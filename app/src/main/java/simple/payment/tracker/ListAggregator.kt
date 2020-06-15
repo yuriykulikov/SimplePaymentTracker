@@ -42,30 +42,35 @@ class ListAggregator(
         payments: List<Payment>,
         notifications: Map<Long, Notification>
     ): List<Transaction> {
-        val confirmedTransactions = payments.map { payment: Payment ->
-            if (payment.notificationId != null) {
-                val notification: Notification = notifications.getValue(payment.notificationId)
-                Transaction(
-                    confirmed = true,
-                    sum = payment.sum ?: notification.sum(),
-                    merchant = notification.merchant(),
-                    comment = payment.comment ?: "",
-                    category = payment.category,
-                    notificationId = notification.time,
-                    paymentId = null,
-                    time = notification.time
-                )
-            } else {
-                Transaction(
-                    confirmed = true,
-                    sum = payment.sum!!,
-                    merchant = payment.merchant ?: "",
-                    comment = payment.comment ?: "",
-                    category = payment.category,
-                    notificationId = null,
-                    paymentId = payment.time,
-                    time = payment.time!!
-                )
+        val confirmedTransactions = payments.mapNotNull { payment: Payment ->
+            when {
+                payment.notificationId != null && notifications.containsKey(payment.notificationId) -> {
+                    val notification: Notification = notifications.getValue(payment.notificationId)
+                    Transaction(
+                        confirmed = true,
+                        sum = payment.sum ?: notification.sum(),
+                        merchant = notification.merchant(),
+                        comment = payment.comment ?: "",
+                        category = payment.category,
+                        notificationId = notification.time,
+                        paymentId = null,
+                        time = notification.time
+                    )
+                }
+                // not synced
+                payment.notificationId != null && !notifications.containsKey(payment.notificationId) -> null
+                else -> {
+                    Transaction(
+                        confirmed = true,
+                        sum = payment.sum!!,
+                        merchant = payment.merchant ?: "",
+                        comment = payment.comment ?: "",
+                        category = payment.category,
+                        notificationId = null,
+                        paymentId = payment.time,
+                        time = payment.time!!
+                    )
+                }
             }
         }
 

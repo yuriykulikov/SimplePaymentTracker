@@ -1,5 +1,7 @@
 package simple.payment.tracker
 
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.squareup.moshi.Moshi
 import io.reactivex.Observable
 import simple.payment.tracker.stores.FileDataStore
@@ -18,23 +20,42 @@ data class Notification(
 class NotificationsRepository(
     private val logger: Logger,
     private val filer: Filer,
-    private val moshi: Moshi
+    private val moshi: Moshi,
+    private val firebaseDatabase: FirebaseDatabase
 ) {
-    private val notifications: FileDataStore<List<Notification>> = FileDataStore.listDataStore(
+    private val fileStore: FileDataStore<List<Notification>> = FileDataStore.listDataStore(
         filer,
         "notifications.txt",
         "[]",
         moshi
     )
 
+    private val notifications: Observable<List<Notification>>
+
+    private val notificationsReference: DatabaseReference = firebaseDatabase
+        .reference
+        .child("notifications")
+
     init {
-        notifications.dump(logger)
+        notifications = notificationsReference
+            .observe(mapper = { map ->
+                Notification(
+                    time = map["time"] as Long,
+                    text = map["text"] as String
+                )
+            })
+            .map { it.values.toList() }
+            .replay(1)
+            .refCount()
     }
 
-    fun notifications(): Observable<List<Notification>> = notifications.observe()
+    fun notifications(): Observable<List<Notification>> = notifications
 
     fun addNotifications(newNotifications: List<Notification>) {
         logger.debug { "Adding notifications: $newNotifications" }
-        notifications.modify { plus(newNotifications) }
+        fileStore.modify { plus(newNotifications) }
+        newNotifications.forEach { notification ->
+            notificationsReference.child(notification.time.toString()).setValue(notification)
+        }
     }
 }

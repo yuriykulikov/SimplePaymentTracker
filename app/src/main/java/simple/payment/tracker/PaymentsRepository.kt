@@ -1,6 +1,7 @@
 package simple.payment.tracker
 
-import androidx.annotation.Keep
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.squareup.moshi.Moshi
 import io.reactivex.Observable
 import simple.payment.tracker.stores.FileDataStore
@@ -8,23 +9,11 @@ import simple.payment.tracker.stores.Filer
 import simple.payment.tracker.stores.listDataStore
 import simple.payment.tracker.stores.modify
 
-@Keep
-data class Payment(
-    val category: String,
-    val notificationId: Long?,
-    val time: Long?,
-    val comment: String?,
-    val merchant: String?,
-    val sum: Int?,
-    val id: Long = notificationId ?: time!!
-) {
-    companion object // functions below
-}
-
 class PaymentsRepository(
     private val logger: Logger,
     private val filer: Filer,
-    private val moshi: Moshi
+    private val moshi: Moshi,
+    private val firebaseDatabase: FirebaseDatabase
 ) {
     private val payments: FileDataStore<List<Payment>> = FileDataStore.listDataStore(
         filer,
@@ -33,11 +22,20 @@ class PaymentsRepository(
         moshi
     )
 
+    private val firePayments: DatabaseReference = firebaseDatabase
+        .reference
+        .child("payments")
+
+    private val fireSubject: Observable<List<Payment>>
+
     init {
-        payments.dump(logger)
+        fireSubject = firePayments.observe { Payment.fromMap(it) }
+            .map { it.values.toList() }
+            .replay(1)
+            .refCount()
     }
 
-    fun payments(): Observable<List<Payment>> = payments.observe()
+    fun payments(): Observable<List<Payment>> = fireSubject
 
     fun addPayment(payment: Payment) {
         logger.debug { "Adding payment: $payment" }
@@ -46,6 +44,8 @@ class PaymentsRepository(
             filterNot { it.id == payment.id }
                 .plus(payment)
         }
+
+        firePayments.child(payment.id.toString()).setValue(payment)
     }
 
     fun changePayment(transaction: Transaction, category: String, comment: String?) {
@@ -66,37 +66,4 @@ class PaymentsRepository(
         }
         addPayment(newPayment)
     }
-}
-
-fun Payment.Companion.fromNotification(
-    category: String,
-    notificationId: Long,
-    sum: Int? = null,
-    comment: String? = null
-): Payment {
-    return Payment(
-        category = category,
-        notificationId = notificationId,
-        time = null,
-        comment = comment,
-        merchant = null,
-        sum = sum
-    )
-}
-
-fun Payment.Companion.manual(
-    category: String,
-    sum: Int,
-    comment: String? = null,
-    merchant: String?,
-    time: Long?
-): Payment {
-    return Payment(
-        category = category,
-        notificationId = null,
-        time = time,
-        comment = comment,
-        merchant = merchant,
-        sum = sum
-    )
 }

@@ -1,6 +1,7 @@
 package simple.payment.tracker
 
 import android.app.Application
+import com.google.firebase.database.FirebaseDatabase
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.koin.core.context.startKoin
@@ -17,9 +18,10 @@ class Application : Application() {
                 }
                 single { Logger() }
                 single { Filer(applicationContext) }
-                single { NotificationsRepository(get(), get(), get()) }
-                single { PaymentsRepository(get(), get(), get()) }
+                single { NotificationsRepository(get(), get(), get(), get()) }
+                single { PaymentsRepository(get(), get(), get(), get()) }
                 single { ListAggregator(get(), get(), get()) }
+                single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
             })
         }
     }

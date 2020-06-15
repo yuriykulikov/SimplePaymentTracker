@@ -3,6 +3,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
+
+apply plugin: 'com.google.gms.google-services'
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
@@ -96,4 +99,11 @@ dependencies {
     implementation 'androidx.ui:ui-tooling:0.1.0-dev10'
     implementation 'androidx.ui:ui-layout:0.1.0-dev10'
     implementation 'androidx.ui:ui-material:0.1.0-dev10'
+}
+
+// firebase
+dependencies {
+    // implementation "com.google.firebase:firebase-analytics:17.4.3"
+    implementation "com.google.firebase:firebase-database:19.3.0"
+    // https://firebase.google.com/docs/android/setup#available-libraries
 }
