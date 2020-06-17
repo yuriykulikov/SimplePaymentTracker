@@ -37,33 +37,19 @@ class PaymentsRepository(
 
     fun payments(): Observable<List<Payment>> = fireSubject
 
-    fun addPayment(payment: Payment) {
+    fun changeOrCreatePayment(previousId: Long?, payment: Payment) {
         logger.debug { "Adding payment: $payment" }
 
         payments.modify {
             filterNot { it.id == payment.id }
+            filterNot { it.id == previousId }
                 .plus(payment)
         }
 
         firePayments.child(payment.id.toString()).setValue(payment)
-    }
-
-    fun changePayment(transaction: Transaction, category: String, comment: String?) {
-        val newPayment = if (transaction.notificationId != null) {
-            Payment.fromNotification(
-                category,
-                notificationId = transaction.notificationId,
-                comment = comment
-            )
-        } else {
-            Payment.manual(
-                category = category,
-                sum = transaction.sum,
-                time = transaction.time,
-                merchant = transaction.merchant,
-                comment = comment
-            )
+        if (previousId != null && payment.id != previousId) {
+            logger.debug { "Removing the old one: $previousId" }
+            firePayments.child(previousId.toString()).removeValue()
         }
-        addPayment(newPayment)
     }
 }

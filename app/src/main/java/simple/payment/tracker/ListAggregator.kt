@@ -14,7 +14,8 @@ data class Transaction(
     /** Referenced notification, if available */
     val notificationId: Long?,
     /** Referenced payment, if available */
-    val paymentId: Long?
+    val paymentId: Long?,
+    val cancelled: Boolean
 )
 
 /**
@@ -43,35 +44,17 @@ class ListAggregator(
         notifications: Map<Long, Notification>
     ): List<Transaction> {
         val confirmedTransactions = payments.mapNotNull { payment: Payment ->
-            when {
-                payment.notificationId != null && notifications.containsKey(payment.notificationId) -> {
-                    val notification: Notification = notifications.getValue(payment.notificationId)
-                    Transaction(
-                        confirmed = true,
-                        sum = payment.sum ?: notification.sum(),
-                        merchant = notification.merchant(),
-                        comment = payment.comment ?: "",
-                        category = payment.category,
-                        notificationId = notification.time,
-                        paymentId = null,
-                        time = notification.time
-                    )
-                }
-                // not synced
-                payment.notificationId != null && !notifications.containsKey(payment.notificationId) -> null
-                else -> {
-                    Transaction(
-                        confirmed = true,
-                        sum = payment.sum!!,
-                        merchant = payment.merchant ?: "",
-                        comment = payment.comment ?: "",
-                        category = payment.category,
-                        notificationId = null,
-                        paymentId = payment.time,
-                        time = payment.time!!
-                    )
-                }
-            }
+            Transaction(
+                confirmed = true,
+                sum = payment.sum,
+                merchant = payment.merchant,
+                comment = payment.comment,
+                category = payment.category,
+                notificationId = payment.notificationId,
+                paymentId = payment.id,
+                time = payment.time,
+                cancelled = payment.cancelled
+            )
         }
 
         val confirmedIds = payments.mapNotNull { it.notificationId }.toSet()
@@ -87,35 +70,36 @@ class ListAggregator(
                     category = null,
                     notificationId = notification.time,
                     paymentId = null,
-                    time = notification.time
+                    time = notification.time,
+                    cancelled = false
                 )
             }
         return (confirmedTransactions + unconfirmed).sortedByDescending { it.time }
     }
+}
 
-    // You saved 1,36 EUR on a 34,10 EUR
-    fun Notification.sum(): Int {
-        val sum = text
-            .substringAfter("You paid ")
-            .substringAfter("You sent ")
-            .substringAfter(" on a ")
-            .substringBefore(",")
-        val youSaved: Int = when {
-            "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
-            else -> 0
-        }
-        return when {
-            sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
-            else -> sum.toInt()
-        } - youSaved
+// You saved 1,36 EUR on a 34,10 EUR
+fun Notification.sum(): Int {
+    val sum = text
+        .substringAfter("You paid ")
+        .substringAfter("You sent ")
+        .substringAfter(" on a ")
+        .substringBefore(",")
+    val youSaved: Int = when {
+        "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
+        else -> 0
     }
+    return when {
+        sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
+        else -> sum.toInt()
+    } - youSaved
+}
 
-    fun Notification.merchant(): String {
-        return text
-            .substringAfterLast(" EUR to ")
-            .substringAfterLast(" EUR to ")
-            .substringAfterLast(" USD to ")
-            .substringAfterLast(" USD to ")
-            .substringAfterLast("purchase at ")
-    }
+fun Notification.merchant(): String {
+    return text
+        .substringAfterLast(" EUR to ")
+        .substringAfterLast(" EUR to ")
+        .substringAfterLast(" USD to ")
+        .substringAfterLast(" USD to ")
+        .substringAfterLast("purchase at ")
 }

@@ -12,6 +12,7 @@ import androidx.ui.foundation.Text
 import androidx.ui.layout.*
 import androidx.ui.material.*
 import androidx.ui.material.ripple.ripple
+import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import simple.payment.tracker.Transaction
@@ -85,7 +86,10 @@ fun TransactionTitle(transaction: Transaction) {
         Row(horizontalArrangement = Arrangement.SpaceAround) {
             Text(
                 transaction.merchant,
-                style = MaterialTheme.typography.subtitle1
+                style = when {
+                    transaction.cancelled -> MaterialTheme.typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
+                    else -> MaterialTheme.typography.subtitle1
+                }
             )
             Text(text = "", modifier = Modifier.weight(1F))
             Text(

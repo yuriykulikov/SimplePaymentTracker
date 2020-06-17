@@ -48,9 +48,11 @@ private fun AppContent() {
     Crossfade(State.currentScreen) { screen ->
         Surface(color = MaterialTheme.colors.background) {
             when (screen) {
-                is Screen.List -> ListScreen(showAll)
+                is Screen.List -> {
+                    ListScreen(showAll)
+                }
                 is Screen.Details -> DetailsScreen(screen.transaction)
-                is Screen.New -> NewScreen()
+                is Screen.New -> DetailsScreen(null)
             }
         }
     }

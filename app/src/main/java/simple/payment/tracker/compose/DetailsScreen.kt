@@ -7,22 +7,26 @@ import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
 import androidx.ui.core.drawOpacity
 import androidx.ui.foundation.*
-import androidx.ui.graphics.Color
 import androidx.ui.input.KeyboardType
 import androidx.ui.layout.*
 import androidx.ui.material.*
 import androidx.ui.material.ripple.ripple
+import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Transaction
-import simple.payment.tracker.manual
 import simple.payment.tracker.theme.PaymentsTheme
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.*
+
+private val dateFormat = SimpleDateFormat(
+    "dd-MM-yy HH:mm",
+    Locale.GERMANY
+)
 
 @Preview("DetailsScreen preview")
 @Composable
@@ -38,91 +42,104 @@ fun PreviewDetailsScreen() {
                     notificationId = null,
                     paymentId = 100500L,
                     sum = 101,
-                    time = 0
+                    time = 0,
+                    cancelled = false
                 )
             )
         }
     }
 }
 
-@Composable
-fun DetailsScreen(transaction: Transaction) {
-    val category = state { transaction.category }
-    val comment = state { TextFieldValue(transaction.comment ?: "") }
-    Scaffold(
-        topAppBar = {
-            TopAppBar(
-                title = {
-                    Text(text = "${transaction.sum} to ${transaction.merchant}")
-                },
-                actions = {
-                    IconButton(onClick = {
-                        State.showList()
-                        category.value?.let { changedCategory ->
-                            KoinContextHandler.get().get<PaymentsRepository>()
-                                .changePayment(
-                                    transaction = transaction,
-                                    category = changedCategory,
-                                    comment = comment.value.text
-                                )
-                        }
-                    }) {
-                        Text(text = "Save", style = MaterialTheme.typography.body2)
-                    }
+class DetailsScreenState(
+    val category: MutableState<String?>,
+    val cancelled: MutableState<Boolean>,
+    val comment: MutableState<TextFieldValue>,
+    val sum: MutableState<TextFieldValue>,
+    val merchant: MutableState<TextFieldValue>,
+    val time: MutableState<TextFieldValue>
+) {
+    companion object {
+        @Composable
+        fun create(): DetailsScreenState {
+            return DetailsScreenState(
+                category = state { null },
+                cancelled = state { false },
+                comment = state { TextFieldValue("") },
+                sum = state { TextFieldValue("") },
+                merchant = state { TextFieldValue("") },
+                time = state {
+                    TextFieldValue(dateFormat.format(Date.from(Instant.now())))
                 }
             )
-        },
-        bodyContent = { modifier ->
-            Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
-                Column {
-                    NamedTextFieldInput(header = "Comment", state = comment)
-                    CategorySelector(category)
-                }
-            }
         }
-    )
-}
 
-@Preview("NewScreen preview")
-@Composable
-fun PreviewNewScreen() {
-    PaymentsTheme {
-        Surface {
-            NewScreen()
+        @Composable
+        fun fromTransaction(transaction: Transaction): DetailsScreenState {
+            return DetailsScreenState(
+                category = state { transaction.category },
+                cancelled = state { transaction.cancelled },
+                comment = state { TextFieldValue(transaction.comment ?: "") },
+                sum = state { TextFieldValue(transaction.sum.toString()) },
+                merchant = state { TextFieldValue(transaction.merchant) },
+                time = state {
+                    val initialTime = transaction.time.let { Instant.ofEpochMilli(it) }
+                    TextFieldValue(dateFormat.format(Date.from(initialTime)))
+                }
+            )
         }
     }
 }
 
-val dateFormat = SimpleDateFormat(
-    "dd-MM-yy HH:mm",
-    Locale.GERMANY
-)
-
-/** Create a new payment, input everything */
+/**
+ * Transaction can be with a notification or without
+ */
 @Composable
-fun NewScreen() {
-    val category: MutableState<String?> = state { null }
-    val sum = state { TextFieldValue("") }
-    val comment = state { TextFieldValue("") }
-    val merchant = state { TextFieldValue("") }
-    val time = state { TextFieldValue(dateFormat.format(Date.from(Instant.now()))) }
+fun DetailsScreen(transaction: Transaction?) {
+    val state =
+        if (transaction != null) DetailsScreenState.fromTransaction(transaction) else DetailsScreenState.create()
 
     Scaffold(
         topAppBar = {
             TopAppBar(
                 title = {
-                    Text(text = "New payment")
+                    with(state) {
+                        Text(
+                            text = "${sum.value.text} to ${merchant.value.text}",
+                            style =
+                            MaterialTheme.typography.body1.copy(
+                                textDecoration = if (cancelled.value) TextDecoration.LineThrough else TextDecoration.None
+                            )
+                        )
+                    }
                 },
                 actions = {
-                    Actions(time, sum, merchant, category, comment)
+                    Actions(state, save = {
+                        with(state) {
+                            KoinContextHandler.get().get<PaymentsRepository>()
+                                .changeOrCreatePayment(
+                                    transaction?.paymentId,
+                                    Payment(
+                                        category = category.value!!,
+                                        notificationId = transaction?.notificationId,
+                                        time = transaction?.notificationId ?: requireNotNull(
+                                            dateFormat.parse(time.value.text)
+                                        ).time,
+                                        comment = comment.value.text,
+                                        merchant = merchant.value.text,
+                                        sum = sum.value.text.toInt(),
+                                        cancelled = false
+                                    )
+                                )
+                        }
+                    })
                 }
             )
         },
         bodyContent = { modifier ->
             Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
                 Column {
-                    TextInputs(sum, comment, merchant, time)
-                    CategorySelector(category)
+                    TextInputs(state, transaction?.notificationId != null)
+                    CategorySelector(state.category)
                 }
             }
         }
@@ -131,29 +148,24 @@ fun NewScreen() {
 
 @Composable
 private fun Actions(
-    time: MutableState<TextFieldValue>,
-    sum: MutableState<TextFieldValue>,
-    merchant: MutableState<TextFieldValue>,
-    category: MutableState<String?>,
-    comment: MutableState<TextFieldValue>
+    state: DetailsScreenState,
+    save: () -> Unit
 ) {
-    val canSave = runCatching { dateFormat.parse(time.value.text) }.isSuccess
-            && sum.value.text.toIntOrNull() != null
-            && merchant.value.text.isNotEmpty()
-            && category.value != null
+    IconButton(onClick = { state.cancelled.value = !state.cancelled.value }) {
+        Text(
+            text = if (state.cancelled.value) "X" else "X",
+            style = MaterialTheme.typography.body2
+        )
+    }
+
+    val canSave = runCatching { dateFormat.parse(state.time.value.text) }.isSuccess
+            && state.sum.value.text.toIntOrNull() != null
+            && state.merchant.value.text.isNotEmpty()
+            && state.category.value != null
     IconButton(onClick = {
         if (canSave) {
             State.showList()
-            KoinContextHandler.get().get<PaymentsRepository>()
-                .addPayment(
-                    Payment.manual(
-                        category.value!!,
-                        sum.value.text.toInt(),
-                        comment.value.text,
-                        merchant.value.text,
-                        dateFormat.parse(time.value.text)?.time
-                    )
-                )
+            save()
         }
     }) {
         Text(
@@ -167,27 +179,25 @@ private fun Actions(
 /** Inputs for a new payment */
 @Composable
 private fun TextInputs(
-    sum: MutableState<TextFieldValue>,
-    comment: MutableState<TextFieldValue>,
-    merchant: MutableState<TextFieldValue>,
-    time: MutableState<TextFieldValue>
+    state: DetailsScreenState,
+    fromNotfication: Boolean
 ) {
     NamedTextFieldInput(
         header = "€",
-        state = sum,
+        state = state.sum,
         keyboardType = KeyboardType.Number,
         onValueChange = {
             if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
-                sum.value = it
+                state.sum.value = it
             }
         }
     )
     InputDivider()
-    NamedTextFieldInput(header = "to", state = merchant)
+    NamedTextFieldInput(header = "to", state = state.merchant)
     InputDivider()
-    NamedTextFieldInput(header = "for", state = comment)
+    NamedTextFieldInput(header = "for", state = state.comment)
     InputDivider()
-    NamedTextFieldInput(header = "on", state = time)
+    NamedTextFieldInput(header = "on", state = state.time, enabled = !fromNotfication)
     InputDivider()
 }
 
@@ -204,6 +214,7 @@ private fun NamedTextFieldInput(
     header: String,
     state: MutableState<TextFieldValue>,
     keyboardType: KeyboardType = KeyboardType.Text,
+    enabled: Boolean = true,
     onValueChange: (TextFieldValue) -> Unit = { state.value = it }
 ) {
     Row(modifier = Modifier.padding(16.dp)) {
@@ -214,7 +225,7 @@ private fun NamedTextFieldInput(
         Column(modifier = Modifier.padding(start = 16.dp)) {
             TextField(
                 value = state.value,
-                onValueChange = onValueChange,
+                onValueChange = if (enabled) onValueChange else { _ -> },
                 keyboardType = keyboardType,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -239,7 +250,7 @@ private fun CategorySelector(category: MutableState<String?>) {
                             Column(modifier = Modifier.weight(0.5F)) {
                                 Text(
                                     it,
-                                    color = if (it == category.value) Color.Red else Color.Black,
+                                    color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
                                     style = MaterialTheme.typography.button
                                 )
                             }
@@ -252,29 +263,31 @@ private fun CategorySelector(category: MutableState<String?>) {
 }
 
 private val categories = arrayOf(
-    "Кот",
     "Еда",
+    "Ресторан",
     "Гедонизм",
-    "Столовая",
-    "Снаряга",
-    "Книги и образование",
-    "Ресторан или Takeout",
-    "Подарки",
-    "Путешествия",
-    "Косметика и медикаменты",
-    "Бензин",
-    "Развлечения",
-    "Дурость",
+    "Транспорт",
     "Для дома",
-    "Зубной, парикмахер, врач, физио",
-    "Разное",
-    "Хобби",
-    "Одежда и вещи",
-    "Девайсы",
-    "Бытовая химия",
-    "Доплата",
-    "Помощь родителям",
-    "Почта",
+    "Снаряга",
+    "Развлечения",
     "Baby",
-    "Бюрократия"
+    "Подарки",
+    "Машина",
+    "Косметика",
+    "Кот",
+    "Одежда и вещи",
+    "Разное",
+    "Аптека",
+    "Девайсы",
+    "Хобби",
+    "Путешествия",
+    "Проживание",
+    "Образование",
+    "Бытовая химия",
+    "Дурость",
+    "Парикмахер",
+    "Зубной",
+    "Линзы",
+    "Квартира",
+    "Помощь родителям"
 )
