@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep public class simple.payment.tracker.Payment
+#-keep class simple.payment.tracker.* { *; }
+#-keepclassmembers class simple.payment.tracker.Payment {
+#  !transient <fields>;
+#}

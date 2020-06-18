@@ -49,7 +49,7 @@ class ListAggregator(
                     confirmed = true,
                     sum = payment.sum ?: notification.sum(),
                     merchant = notification.merchant(),
-                    comment = null,
+                    comment = payment.comment ?: "",
                     category = payment.category,
                     notificationId = notification.time,
                     paymentId = null,
