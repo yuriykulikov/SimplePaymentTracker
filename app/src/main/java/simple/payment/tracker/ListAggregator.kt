@@ -69,6 +69,7 @@ fun Notification.sum(): Int {
     }
     return when {
         sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
+        text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
         else -> sum.toInt()
     } - youSaved
 }
@@ -79,5 +80,7 @@ fun Notification.merchant(): String {
         .substringAfterLast(" EUR to ")
         .substringAfterLast(" USD to ")
         .substringAfterLast(" USD to ")
+        .substringAfterLast(" RUB to ")
+        .substringAfterLast(" RUB to ")
         .substringAfterLast("purchase at ")
 }
