@@ -123,7 +123,8 @@ fun DetailsScreen(transaction: Transaction?) {
                                 .changeOrCreatePayment(
                                     transaction?.id,
                                     Payment(
-                                        notificationId = transaction?.notification?.time,
+                                        notificationId = transaction?.payment?.notificationId
+                                            ?: transaction?.notification?.time,
                                         time = transaction?.notification?.time ?: requireNotNull(
                                             dateFormat.parse(time.value.text)
                                         ).time,
