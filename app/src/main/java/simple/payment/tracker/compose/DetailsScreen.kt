@@ -144,8 +144,12 @@ fun DetailsScreen(transaction: Transaction?) {
         bodyContent = { modifier ->
             Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
                 Column {
-                    TextInputs(state, transaction?.notification != null)
-                    CategorySelector(state.category)
+                    VerticalScroller {
+                        Column {
+                            TextInputs(state, transaction?.notification != null)
+                            CategorySelector(state.category)
+                        }
+                    }
                 }
             }
         }
@@ -244,25 +248,21 @@ private fun NamedTextFieldInput(
 /** Category tiles in 2 columns */
 @Composable
 private fun CategorySelector(category: MutableState<String?>) {
-    VerticalScroller {
-        Column {
-            categories.toList().chunked(2).forEach { chunk ->
-                Row(modifier = Modifier.padding(16.dp)) {
-                    chunk.forEach {
-                        Clickable(
-                            onClick = {
-                                category.value = it
-                            },
-                            modifier = Modifier.ripple(radius = 10.dp, bounded = false)
-                        ) {
-                            Column(modifier = Modifier.weight(0.5F)) {
-                                Text(
-                                    it,
-                                    color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
-                                    style = MaterialTheme.typography.button
-                                )
-                            }
-                        }
+    categories.toList().chunked(2).forEach { chunk ->
+        Row(modifier = Modifier.padding(16.dp)) {
+            chunk.forEach {
+                Clickable(
+                    onClick = {
+                        category.value = it
+                    },
+                    modifier = Modifier.ripple(radius = 10.dp, bounded = false)
+                ) {
+                    Column(modifier = Modifier.weight(0.5F)) {
+                        Text(
+                            it,
+                            color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
+                            style = MaterialTheme.typography.button
+                        )
                     }
                 }
             }

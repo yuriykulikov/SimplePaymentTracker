@@ -35,6 +35,10 @@ fun ListScreen(showAll: MutableState<Boolean>) {
             TopAppBar(
                 title = { Text(text = if (showAll.value) "All payments" else "New payments") },
                 actions = {
+                    IconButton(onClick = { State.currentScreen = Screen.Monthly }) {
+                        Text(text = "Stats", style = MaterialTheme.typography.body2)
+                    }
+
                     IconButton(onClick = { showAll.value = !showAll.value }) {
                         Text(text = "View", style = MaterialTheme.typography.body2)
                     }

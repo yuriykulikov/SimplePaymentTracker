@@ -26,6 +26,10 @@ data class Payment(
 ) {
     val id = time
 
+    override fun toString(): String {
+        return "Payment(id=$id, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"
+    }
+
     companion object // functions below
 }
 

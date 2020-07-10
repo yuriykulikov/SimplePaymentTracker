@@ -14,6 +14,7 @@ import simple.payment.tracker.theme.PaymentsTheme
 sealed class Screen {
     object List : Screen()
     object New : Screen()
+    object Monthly : Screen()
     data class Details(val transaction: Transaction) : Screen()
 }
 
@@ -53,6 +54,7 @@ private fun AppContent() {
                 }
                 is Screen.Details -> DetailsScreen(screen.transaction)
                 is Screen.New -> DetailsScreen(null)
+                is Screen.Monthly -> MonthlyScreen()
             }
         }
     }
