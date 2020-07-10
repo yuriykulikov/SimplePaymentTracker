@@ -35,15 +35,16 @@ fun PreviewDetailsScreen() {
         Surface {
             DetailsScreen(
                 Transaction(
-                    confirmed = true,
-                    category = "Baby",
-                    comment = "Comment",
-                    merchant = "Amazon",
-                    notificationId = null,
-                    paymentId = 100500L,
-                    sum = 101,
-                    time = 0,
-                    cancelled = false
+                    Payment(
+                        category = "Baby",
+                        comment = "Comment",
+                        merchant = "Amazon",
+                        notificationId = null,
+                        time = 100500L,
+                        sum = 101,
+                        cancelled = false,
+                        trip = null
+                    )
                 )
             )
         }
@@ -56,6 +57,7 @@ class DetailsScreenState(
     val comment: MutableState<TextFieldValue>,
     val sum: MutableState<TextFieldValue>,
     val merchant: MutableState<TextFieldValue>,
+    val trip: MutableState<TextFieldValue>,
     val time: MutableState<TextFieldValue>
 ) {
     companion object {
@@ -67,6 +69,7 @@ class DetailsScreenState(
                 comment = state { TextFieldValue("") },
                 sum = state { TextFieldValue("") },
                 merchant = state { TextFieldValue("") },
+                trip = state { TextFieldValue("") },
                 time = state {
                     TextFieldValue(dateFormat.format(Date.from(Instant.now())))
                 }
@@ -81,6 +84,7 @@ class DetailsScreenState(
                 comment = state { TextFieldValue(transaction.comment ?: "") },
                 sum = state { TextFieldValue(transaction.sum.toString()) },
                 merchant = state { TextFieldValue(transaction.merchant) },
+                trip = state { TextFieldValue(transaction.trip ?: "") },
                 time = state {
                     val initialTime = transaction.time.let { Instant.ofEpochMilli(it) }
                     TextFieldValue(dateFormat.format(Date.from(initialTime)))
@@ -117,17 +121,18 @@ fun DetailsScreen(transaction: Transaction?) {
                         with(state) {
                             KoinContextHandler.get().get<PaymentsRepository>()
                                 .changeOrCreatePayment(
-                                    transaction?.paymentId,
+                                    transaction?.id,
                                     Payment(
-                                        category = category.value!!,
-                                        notificationId = transaction?.notificationId,
-                                        time = transaction?.notificationId ?: requireNotNull(
+                                        notificationId = transaction?.notification?.time,
+                                        time = transaction?.notification?.time ?: requireNotNull(
                                             dateFormat.parse(time.value.text)
                                         ).time,
+                                        category = category.value!!,
                                         comment = comment.value.text,
                                         merchant = merchant.value.text,
                                         sum = sum.value.text.toInt(),
-                                        cancelled = false
+                                        cancelled = cancelled.value,
+                                        trip = trip.value.text.let { if (it.isEmpty()) null else it }
                                     )
                                 )
                         }
@@ -138,7 +143,7 @@ fun DetailsScreen(transaction: Transaction?) {
         bodyContent = { modifier ->
             Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
                 Column {
-                    TextInputs(state, transaction?.notificationId != null)
+                    TextInputs(state, transaction?.notification != null)
                     CategorySelector(state.category)
                 }
             }
@@ -198,6 +203,8 @@ private fun TextInputs(
     NamedTextFieldInput(header = "for", state = state.comment)
     InputDivider()
     NamedTextFieldInput(header = "on", state = state.time, enabled = !fromNotfication)
+    InputDivider()
+    NamedTextFieldInput(header = "Trip", state = state.trip)
     InputDivider()
 }
 

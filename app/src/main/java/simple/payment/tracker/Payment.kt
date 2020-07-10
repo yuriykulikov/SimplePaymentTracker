@@ -22,14 +22,16 @@ data class Payment(
     val sum: Int,
     val notificationId: Long?,
     val cancelled: Boolean,
-    val trip: String? = null
+    val trip: String?
 ) {
     val id = time
 
     companion object // functions below
 }
 
-
+/**
+ * Used to create payments from Firebase maps
+ */
 fun Payment.Companion.fromMap(map: Map<String, Any>): Payment {
     return Payment(
         category = map["category"] as String,
@@ -47,22 +49,24 @@ fun Payment.Companion.fromMap(map: Map<String, Any>): Payment {
 internal class PaymentAdapter {
     private val dataFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
 
+    /**
+     * Order of properties is important in order to compare with Firebase exports
+     */
     @ToJson
     fun toJson(writer: JsonWriter, payment: Payment) {
         writer.beginObject()
         payment.run {
+            cancelled?.let { writer.name("cancelled").value(it) }
             writer.name("category").value(category)
-            notificationId?.let { writer.name("notificationId").value(it) }
-            time?.let { writer.name("time").value(it) }
+            comment?.let { writer.name("comment").value(it) }
             time?.let {
                 writer.name("date").value(dataFormat.format(Date.from(Instant.ofEpochMilli(it))))
             }
-            comment?.let { writer.name("comment").value(it) }
             merchant?.let { writer.name("merchant").value(it) }
+            notificationId?.let { writer.name("notificationId").value(it) }
             sum?.let { writer.name("sum").value(it) }
-            cancelled?.let { writer.name("cancelled").value(it) }
+            time?.let { writer.name("time").value(it) }
             trip?.let { writer.name("trip").value(it) }
-
         }
         writer.endObject()
     }
@@ -87,7 +91,6 @@ internal class PaymentAdapter {
                 "comment" -> comment = reader.nextString()
                 "merchant" -> merchant = reader.nextString()
                 "sum" -> sum = reader.nextInt()
-                // "id" -> id = reader.nextLong()
                 "cancelled" -> cancelled = reader.nextBoolean()
                 "trip" -> trip = reader.nextString()
                 else -> reader.skipValue()

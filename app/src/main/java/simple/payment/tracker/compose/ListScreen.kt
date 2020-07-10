@@ -56,7 +56,7 @@ private fun TransactionsList(modifier: Modifier, showAll: MutableState<Boolean>)
     Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
         val data = when {
             showAll.value -> State.transactions
-            else -> State.transactions.filter { !it.confirmed }
+            else -> State.transactions.filter { it.payment == null }
         }
         AdapterList(data, itemCallback = { transaction ->
             TransactionListRow(transaction)

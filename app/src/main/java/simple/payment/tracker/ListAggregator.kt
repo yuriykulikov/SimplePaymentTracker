@@ -3,20 +3,19 @@ package simple.payment.tracker
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.Observables
 
-
 data class Transaction(
-    val confirmed: Boolean,
-    val sum: Int,
-    val merchant: String,
-    val comment: String?,
-    val category: String?,
-    val time: Long,
-    /** Referenced notification, if available */
-    val notificationId: Long?,
-    /** Referenced payment, if available */
-    val paymentId: Long?,
-    val cancelled: Boolean
-)
+    val payment: Payment? = null,
+    val notification: Notification? = null
+) {
+    val id: Long = payment?.id ?: requireNotNull(notification).time
+    val merchant: String = payment?.merchant ?: requireNotNull(notification).merchant()
+    val sum: Int = payment?.sum ?: requireNotNull(notification).sum()
+    val comment: String = payment?.comment ?: ""
+    val cancelled: Boolean = payment?.cancelled ?: false
+    val time: Long = payment?.time ?: requireNotNull(notification).time
+    val category: String = payment?.category ?: ""
+    val trip: String? = payment?.trip
+}
 
 /**
  * Aggregates notifications and payments into one flat list ready for presentation.
@@ -43,37 +42,16 @@ class ListAggregator(
         payments: List<Payment>,
         notifications: Map<Long, Notification>
     ): List<Transaction> {
-        val confirmedTransactions = payments.mapNotNull { payment: Payment ->
-            Transaction(
-                confirmed = true,
-                sum = payment.sum,
-                merchant = payment.merchant,
-                comment = payment.comment,
-                category = payment.category,
-                notificationId = payment.notificationId,
-                paymentId = payment.id,
-                time = payment.time,
-                cancelled = payment.cancelled
-            )
-        }
+        val confirmedTransactions = payments.map { Transaction(payment = it) }
 
         val confirmedIds = payments.mapNotNull { it.notificationId }.toSet()
 
         val unconfirmed = notifications.values.filter { it.time !in confirmedIds }
             .filter { notification -> "You received" !in notification.text }
-            .map { notification ->
-                Transaction(
-                    confirmed = false,
-                    sum = notification.sum(),
-                    merchant = notification.merchant(),
-                    comment = null,
-                    category = null,
-                    notificationId = notification.time,
-                    paymentId = null,
-                    time = notification.time,
-                    cancelled = false
-                )
-            }
+            // TODO somehow use it
+            .filter { notification -> "Partial refund" !in notification.text }
+            .map { Transaction(notification = it) }
+
         return (confirmedTransactions + unconfirmed).sortedByDescending { it.time }
     }
 }
