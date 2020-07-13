@@ -229,9 +229,13 @@ private fun NamedTextFieldInput(
     enabled: Boolean = true,
     onValueChange: (TextFieldValue) -> Unit = { state.value = it }
 ) {
-    Row(modifier = Modifier.padding(16.dp)) {
+    Row {
         Column {
-            Text(header, style = MaterialTheme.typography.body1)
+            Text(
+                header,
+                style = MaterialTheme.typography.body1,
+                modifier = Modifier.padding(16.dp)
+            )
         }
 
         Column(modifier = Modifier.padding(start = 16.dp)) {
@@ -239,7 +243,8 @@ private fun NamedTextFieldInput(
                 value = state.value,
                 onValueChange = if (enabled) onValueChange else { _ -> },
                 keyboardType = keyboardType,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                textStyle = MaterialTheme.typography.body1
             )
         }
     }
@@ -249,19 +254,18 @@ private fun NamedTextFieldInput(
 @Composable
 private fun CategorySelector(category: MutableState<String?>) {
     categories.toList().chunked(2).forEach { chunk ->
-        Row(modifier = Modifier.padding(16.dp)) {
+        Row {
             chunk.forEach {
                 Clickable(
-                    onClick = {
-                        category.value = it
-                    },
+                    onClick = { category.value = it },
                     modifier = Modifier.ripple(radius = 10.dp, bounded = false)
                 ) {
                     Column(modifier = Modifier.weight(0.5F)) {
                         Text(
                             it,
                             color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
-                            style = MaterialTheme.typography.button
+                            style = MaterialTheme.typography.button,
+                            modifier = Modifier.padding(16.dp)
                         )
                     }
                 }
