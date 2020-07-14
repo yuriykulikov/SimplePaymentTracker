@@ -1,7 +1,9 @@
 package simple.payment.tracker
 
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
+import java.util.concurrent.TimeUnit
 
 data class Transaction(
     val payment: Payment? = null,
@@ -25,17 +27,23 @@ class ListAggregator(
     private val notificationsRepository: NotificationsRepository,
     private val logger: Logger
 ) {
-    fun transactions(): Observable<List<Transaction>> {
+    private val transactions: Observable<List<Transaction>> by lazy {
         val notificationsById = notificationsRepository.notifications()
             .map { it.associateBy(Notification::time) }
             .distinctUntilChanged()
 
-        return Observables.combineLatest(
+        Observables.combineLatest(
             paymentsRepository.payments(),
             notificationsById
         ) { payments: List<Payment>, notifications: Map<Long, Notification> ->
             aggregate(payments, notifications)
         }
+            .replay(1)
+            .refCount(15, TimeUnit.SECONDS, AndroidSchedulers.mainThread())
+    }
+
+    fun transactions(): Observable<List<Transaction>> {
+        return transactions
     }
 
     private fun aggregate(
