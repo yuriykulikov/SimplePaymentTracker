@@ -2,13 +2,11 @@ package simple.payment.tracker.compose
 
 import androidx.compose.Composable
 import androidx.compose.MutableState
-import androidx.compose.onCommit
-import androidx.compose.state
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
-import androidx.ui.foundation.AdapterList
 import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
+import androidx.ui.foundation.lazy.LazyColumnItems
 import androidx.ui.layout.Column
 import androidx.ui.layout.Row
 import androidx.ui.layout.fillMaxSize
@@ -45,19 +43,12 @@ fun MonthlyScreen(currentScreen: MutableState<Screen>) {
 @Composable
 private fun MonthList(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-        val list = state { emptyList<MonthlyReport>() }
+        val list = KoinContextHandler.get().get<MonthlyStatistics>()
+            .reports()
+            .map { reports -> reports.sortedByDescending { it.month } }
+            .toMutableState(initial = emptyList<MonthlyReport>())
 
-        onCommit {
-            val subscription = KoinContextHandler.get().get<MonthlyStatistics>()
-                .reports()
-                .map { reports -> reports.sortedByDescending { it.month } }
-                .subscribe { list.value = it }
-            onDispose {
-                subscription.dispose()
-            }
-        }
-
-        AdapterList(list.value, itemCallback = { stats ->
+        LazyColumnItems(list.value, itemContent = { stats ->
             Row {
                 Column(Modifier.weight(2F)) {
                     Text(stats.month, style = MaterialTheme.typography.h4)
@@ -70,7 +61,7 @@ private fun MonthList(modifier: Modifier = Modifier) {
                 }
             }
             stats.categorySums
-                .sortedByDescending { (cat, sum) -> sum }
+                .sortedByDescending { (_, sum) -> sum }
                 .forEach { (cat, sum) ->
                     Row {
                         Column(Modifier.weight(2F)) {

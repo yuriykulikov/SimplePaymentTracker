@@ -7,14 +7,13 @@ import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
 import androidx.ui.core.drawOpacity
 import androidx.ui.foundation.Box
-import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Text
 import androidx.ui.foundation.VerticalScroller
+import androidx.ui.foundation.clickable
 import androidx.ui.input.KeyboardType
 import androidx.ui.input.TextFieldValue
 import androidx.ui.layout.*
 import androidx.ui.material.*
-import androidx.ui.material.ripple.ripple
 import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
@@ -87,7 +86,7 @@ class DetailsScreenState(
             return DetailsScreenState(
                 category = state { transaction.category },
                 cancelled = state { transaction.cancelled },
-                comment = state { TextFieldValue(transaction.comment ?: "") },
+                comment = state { TextFieldValue(transaction.comment) },
                 sum = state { TextFieldValue(transaction.sum.toString()) },
                 merchant = state { TextFieldValue(transaction.merchant) },
                 trip = state { TextFieldValue(transaction.trip ?: "") },
@@ -264,20 +263,17 @@ private fun CategorySelector(category: MutableState<String?>) {
     categories.toList().chunked(2).forEach { chunk ->
         Row {
             chunk.forEach {
-                Clickable(
-                    onClick = { category.value = it },
-                    modifier = Modifier.ripple(radius = 10.dp, bounded = false)
+                Column(
+                    modifier = Modifier
+                        .weight(0.5F)
+                        .clickable(onClick = { category.value = it })
                 ) {
-                    Column(
-                        modifier = Modifier.weight(0.5F)
-                    ) {
-                        Text(
-                            it,
-                            color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
-                            style = MaterialTheme.typography.button,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                    Text(
+                        it,
+                        color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
+                        style = MaterialTheme.typography.button,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }

@@ -5,13 +5,12 @@ import androidx.compose.MutableState
 import androidx.compose.state
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
-import androidx.ui.foundation.AdapterList
 import androidx.ui.foundation.Box
-import androidx.ui.foundation.Clickable
 import androidx.ui.foundation.Text
+import androidx.ui.foundation.clickable
+import androidx.ui.foundation.lazy.LazyColumnItems
 import androidx.ui.layout.*
 import androidx.ui.material.*
-import androidx.ui.material.ripple.ripple
 import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
@@ -82,7 +81,7 @@ private fun TransactionsList(
                 }
                 .toMutableState(initial = emptyList())
 
-        AdapterList(data.value, itemCallback = { transaction ->
+        LazyColumnItems(data.value, itemContent = { transaction ->
             TransactionListRow(transaction, currentScreen)
             ListDivider()
         })
@@ -91,17 +90,14 @@ private fun TransactionsList(
 
 @Composable
 fun TransactionListRow(transaction: Transaction, currentScreen: MutableState<Screen>) {
-    Clickable(
-        modifier = Modifier.ripple(),
-        onClick = {
-            currentScreen.value = Screen.Details(transaction)
-        }
+    Row(
+        modifier = Modifier
+            .clickable(onClick = { currentScreen.value = Screen.Details(transaction) })
+            .padding(16.dp)
     ) {
-        Row(modifier = Modifier.padding(16.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                TransactionTitle(transaction)
-                TransactionSubtitle(transaction)
-            }
+        Column(modifier = Modifier.weight(1f)) {
+            TransactionTitle(transaction)
+            TransactionSubtitle(transaction)
         }
     }
 }
@@ -134,12 +130,12 @@ fun TransactionSubtitle(
     Row(modifier) {
         ProvideEmphasis(EmphasisAmbient.current.medium) {
             Text(
-                text = transaction.category ?: "",
+                text = transaction.category,
                 style = MaterialTheme.typography.body2
             )
             Text(
                 modifier = Modifier.padding(start = 16.dp),
-                text = transaction.comment ?: "",
+                text = transaction.comment,
                 style = MaterialTheme.typography.body2
             )
         }
