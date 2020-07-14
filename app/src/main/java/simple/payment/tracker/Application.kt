@@ -7,6 +7,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.reactivex.rxkotlin.Observables
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.stores.Filer
 
 class Application : Application() {
@@ -37,6 +38,7 @@ class Application : Application() {
                         )
                     )
                 }
+                single { Backs() }
             })
         }
     }

@@ -15,6 +15,8 @@ import androidx.ui.material.ripple.ripple
 import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
+import org.koin.core.context.KoinContextHandler
+import simple.payment.tracker.ListAggregator
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.theme.PaymentsTheme
 
@@ -23,19 +25,24 @@ import simple.payment.tracker.theme.PaymentsTheme
 fun PreviewListScreen() {
     PaymentsTheme {
         Surface {
-            ListScreen(state { true })
+            ListScreen(state { true }, state { Screen.List })
         }
     }
 }
 
 @Composable
-fun ListScreen(showAll: MutableState<Boolean>) {
+fun ListScreen(
+    showAll: MutableState<Boolean>,
+    currentScreen: MutableState<Screen>
+) {
     Scaffold(
-        topAppBar = {
+        topBar = {
             TopAppBar(
                 title = { Text(text = if (showAll.value) "All payments" else "New payments") },
                 actions = {
-                    IconButton(onClick = { State.currentScreen = Screen.Monthly }) {
+                    IconButton(onClick = {
+                        currentScreen.value = Screen.Monthly
+                    }) {
                         Text(text = "Stats", style = MaterialTheme.typography.body2)
                     }
 
@@ -43,37 +50,52 @@ fun ListScreen(showAll: MutableState<Boolean>) {
                         Text(text = "View", style = MaterialTheme.typography.body2)
                     }
 
-                    IconButton(onClick = { State.showNewPayment() }) {
+                    IconButton(onClick = {
+                        currentScreen.value = Screen.New
+                    }) {
                         Text(text = "Add", style = MaterialTheme.typography.body2)
                     }
                 }
             )
         },
-        bodyContent = { modifier ->
-            TransactionsList(modifier, showAll)
+        bodyContent = {
+            TransactionsList(showAll = showAll, currentScreen = currentScreen)
         }
     )
 }
 
 @Composable
-private fun TransactionsList(modifier: Modifier, showAll: MutableState<Boolean>) {
+private fun TransactionsList(
+    modifier: Modifier = Modifier,
+    showAll: MutableState<Boolean>,
+    currentScreen: MutableState<Screen>
+) {
     Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-        val data = when {
-            showAll.value -> State.transactions
-            else -> State.transactions.filter { it.payment == null }
-        }
-        AdapterList(data, itemCallback = { transaction ->
-            TransactionListRow(transaction)
+        val data =
+            KoinContextHandler.get().get<ListAggregator>()
+                .transactions()
+                .map { transactions ->
+                    when {
+                        showAll.value -> transactions
+                        else -> transactions.filter { it.payment == null }
+                    }
+                }
+                .toMutableState(initial = emptyList())
+
+        AdapterList(data.value, itemCallback = { transaction ->
+            TransactionListRow(transaction, currentScreen)
             ListDivider()
         })
     }
 }
 
 @Composable
-fun TransactionListRow(transaction: Transaction) {
+fun TransactionListRow(transaction: Transaction, currentScreen: MutableState<Screen>) {
     Clickable(
         modifier = Modifier.ripple(),
-        onClick = { State.showDetails(transaction) }
+        onClick = {
+            currentScreen.value = Screen.Details(transaction)
+        }
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
             Column(modifier = Modifier.weight(1f)) {

@@ -6,8 +6,12 @@ import androidx.compose.state
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
 import androidx.ui.core.drawOpacity
-import androidx.ui.foundation.*
+import androidx.ui.foundation.Box
+import androidx.ui.foundation.Clickable
+import androidx.ui.foundation.Text
+import androidx.ui.foundation.VerticalScroller
 import androidx.ui.input.KeyboardType
+import androidx.ui.input.TextFieldValue
 import androidx.ui.layout.*
 import androidx.ui.material.*
 import androidx.ui.material.ripple.ripple
@@ -33,19 +37,21 @@ private val dateFormat = SimpleDateFormat(
 fun PreviewDetailsScreen() {
     PaymentsTheme {
         Surface {
-            DetailsScreen(
-                Transaction(
-                    Payment(
-                        category = "Baby",
-                        comment = "Comment",
-                        merchant = "Amazon",
-                        notificationId = null,
-                        time = 100500L,
-                        sum = 101,
-                        cancelled = false,
-                        trip = null
-                    )
+            val transaction = Transaction(
+                Payment(
+                    category = "Baby",
+                    comment = "Comment",
+                    merchant = "Amazon",
+                    notificationId = null,
+                    time = 100500L,
+                    sum = 101,
+                    cancelled = false,
+                    trip = null
                 )
+            )
+            DetailsScreen(
+                transaction,
+                state { Screen.Details(transaction) }
             )
         }
     }
@@ -98,12 +104,15 @@ class DetailsScreenState(
  * Transaction can be with a notification or without
  */
 @Composable
-fun DetailsScreen(transaction: Transaction?) {
+fun DetailsScreen(
+    transaction: Transaction?,
+    currentScreen: MutableState<Screen>
+) {
     val state =
         if (transaction != null) DetailsScreenState.fromTransaction(transaction) else DetailsScreenState.create()
 
     Scaffold(
-        topAppBar = {
+        topBar = {
             TopAppBar(
                 title = {
                     with(state) {
@@ -117,32 +126,36 @@ fun DetailsScreen(transaction: Transaction?) {
                     }
                 },
                 actions = {
-                    Actions(state, save = {
-                        with(state) {
-                            KoinContextHandler.get().get<PaymentsRepository>()
-                                .changeOrCreatePayment(
-                                    transaction?.id,
-                                    Payment(
-                                        notificationId = transaction?.payment?.notificationId
-                                            ?: transaction?.notification?.time,
-                                        time = transaction?.notification?.time ?: requireNotNull(
-                                            dateFormat.parse(time.value.text)
-                                        ).time,
-                                        category = category.value!!,
-                                        comment = comment.value.text,
-                                        merchant = merchant.value.text,
-                                        sum = sum.value.text.toInt(),
-                                        cancelled = cancelled.value,
-                                        trip = trip.value.text.let { if (it.isEmpty()) null else it }
+                    Actions(
+                        state, save = {
+                            with(state) {
+                                KoinContextHandler.get().get<PaymentsRepository>()
+                                    .changeOrCreatePayment(
+                                        transaction?.id,
+                                        Payment(
+                                            notificationId = transaction?.payment?.notificationId
+                                                ?: transaction?.notification?.time,
+                                            time = transaction?.notification?.time
+                                                ?: requireNotNull(
+                                                    dateFormat.parse(time.value.text)
+                                                ).time,
+                                            category = category.value!!,
+                                            comment = comment.value.text,
+                                            merchant = merchant.value.text,
+                                            sum = sum.value.text.toInt(),
+                                            cancelled = cancelled.value,
+                                            trip = trip.value.text.let { if (it.isEmpty()) null else it }
+                                        )
                                     )
-                                )
-                        }
-                    })
+                            }
+                        },
+                        currentScreen = currentScreen
+                    )
                 }
             )
         },
-        bodyContent = { modifier ->
-            Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
+        bodyContent = {
+            Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
                 Column {
                     VerticalScroller {
                         Column {
@@ -159,6 +172,7 @@ fun DetailsScreen(transaction: Transaction?) {
 @Composable
 private fun Actions(
     state: DetailsScreenState,
+    currentScreen: MutableState<Screen>,
     save: () -> Unit
 ) {
     IconButton(onClick = { state.cancelled.value = !state.cancelled.value }) {
@@ -174,7 +188,7 @@ private fun Actions(
             && state.category.value != null
     IconButton(onClick = {
         if (canSave) {
-            State.showList()
+            currentScreen.value = Screen.List
             save()
         }
     }) {
@@ -202,13 +216,9 @@ private fun TextInputs(
             }
         }
     )
-    InputDivider()
     NamedTextFieldInput(header = "to", state = state.merchant)
-    InputDivider()
     NamedTextFieldInput(header = "for", state = state.comment)
-    InputDivider()
     NamedTextFieldInput(header = "on", state = state.time, enabled = !fromNotfication)
-    InputDivider()
     NamedTextFieldInput(header = "Trip", state = state.trip)
     InputDivider()
 }
@@ -231,19 +241,17 @@ private fun NamedTextFieldInput(
 ) {
     Row {
         Column {
-            Text(
-                header,
-                style = MaterialTheme.typography.body1,
-                modifier = Modifier.padding(16.dp)
-            )
-        }
-
-        Column(modifier = Modifier.padding(start = 16.dp)) {
-            TextField(
+            OutlinedTextField(
+                label = {
+                    Text(
+                        header,
+                        style = MaterialTheme.typography.body1
+                    )
+                },
                 value = state.value,
                 onValueChange = if (enabled) onValueChange else { _ -> },
                 keyboardType = keyboardType,
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 textStyle = MaterialTheme.typography.body1
             )
         }
@@ -260,7 +268,9 @@ private fun CategorySelector(category: MutableState<String?>) {
                     onClick = { category.value = it },
                     modifier = Modifier.ripple(radius = 10.dp, bounded = false)
                 ) {
-                    Column(modifier = Modifier.weight(0.5F)) {
+                    Column(
+                        modifier = Modifier.weight(0.5F)
+                    ) {
                         Text(
                             it,
                             color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,

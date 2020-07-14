@@ -1,13 +1,14 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.Composable
-import androidx.compose.Model
 import androidx.compose.MutableState
-import androidx.compose.frames.ModelList
+import androidx.compose.onCommit
 import androidx.compose.state
 import androidx.ui.animation.Crossfade
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.Surface
+import io.reactivex.Observable
+import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.theme.PaymentsTheme
 
@@ -16,24 +17,6 @@ sealed class Screen {
     object New : Screen()
     object Monthly : Screen()
     data class Details(val transaction: Transaction) : Screen()
-}
-
-@Model
-object State {
-    var currentScreen: Screen = Screen.List
-    val transactions = ModelList<Transaction>()
-
-    fun showDetails(transaction: Transaction) {
-        currentScreen = Screen.Details(transaction)
-    }
-
-    fun showList() {
-        currentScreen = Screen.List
-    }
-
-    fun showNewPayment() {
-        currentScreen = Screen.New
-    }
 }
 
 @Composable
@@ -46,20 +29,47 @@ fun PaymentsApp() {
 @Composable
 private fun AppContent() {
     val showAll: MutableState<Boolean> = state { false }
-    Crossfade(State.currentScreen) { screen ->
+    val currentScreen: MutableState<Screen> = state<Screen> { Screen.List }
+    KoinContextHandler.get().get<Backs>()
+        .backPressed
+        .commitSubscribe {
+            currentScreen.value = Screen.List
+        }
+
+    Crossfade(currentScreen) { screen ->
         Surface(color = MaterialTheme.colors.background) {
-            when (screen) {
+            when (val scr = screen.value) {
                 is Screen.List -> {
-                    ListScreen(showAll)
+                    ListScreen(showAll, currentScreen)
                 }
-                is Screen.Details -> DetailsScreen(screen.transaction)
-                is Screen.New -> DetailsScreen(null)
-                is Screen.Monthly -> MonthlyScreen()
+                is Screen.Details -> DetailsScreen(scr.transaction, currentScreen)
+                is Screen.New -> DetailsScreen(null, currentScreen)
+                is Screen.Monthly -> MonthlyScreen(currentScreen)
             }
         }
     }
 }
 
+@Composable
+fun <T> Observable<T>.commitSubscribe(onNext: (T) -> Unit) {
+    onCommit {
+        val subscription = subscribe { onNext(it) }
+        onDispose {
+            subscription.dispose()
+        }
+    }
+}
 
-
-
+@Composable
+fun <T> Observable<T>.toMutableState(initial: T): MutableState<T> {
+    val state = state { initial }
+    onCommit {
+        val subscription = subscribe {
+            state.value = it
+        }
+        onDispose {
+            subscription.dispose()
+        }
+    }
+    return state
+}

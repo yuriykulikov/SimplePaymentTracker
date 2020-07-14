@@ -1,6 +1,7 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.Composable
+import androidx.compose.MutableState
 import androidx.compose.onCommit
 import androidx.compose.state
 import androidx.ui.core.Alignment
@@ -21,26 +22,28 @@ import simple.payment.tracker.MonthlyReport
 import simple.payment.tracker.MonthlyStatistics
 
 @Composable
-fun MonthlyScreen() {
+fun MonthlyScreen(currentScreen: MutableState<Screen>) {
     Scaffold(
-        topAppBar = {
+        topBar = {
             TopAppBar(
                 title = { Text(text = "Monthly statistics") },
                 actions = {
-                    IconButton(onClick = { State.currentScreen = Screen.List }) {
+                    IconButton(onClick = {
+                        currentScreen.value = Screen.List
+                    }) {
                         Text(text = "Back", style = MaterialTheme.typography.body2)
                     }
                 }
             )
         },
-        bodyContent = { modifier ->
-            MonthList(modifier)
+        bodyContent = {
+            MonthList()
         }
     )
 }
 
 @Composable
-private fun MonthList(modifier: Modifier) {
+private fun MonthList(modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
         val list = state { emptyList<MonthlyReport>() }
 
