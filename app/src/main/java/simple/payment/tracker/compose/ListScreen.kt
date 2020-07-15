@@ -22,123 +22,123 @@ import simple.payment.tracker.theme.PaymentsTheme
 @Preview("ListScreen preview")
 @Composable
 fun PreviewListScreen() {
-    PaymentsTheme {
-        Surface {
-            ListScreen(state { true }, state { Screen.List })
-        }
+  PaymentsTheme {
+    Surface {
+      ListScreen(state { true }, state { Screen.List })
     }
+  }
 }
 
 @Composable
 fun ListScreen(
-    showAll: MutableState<Boolean>,
-    currentScreen: MutableState<Screen>
+  showAll: MutableState<Boolean>,
+  currentScreen: MutableState<Screen>
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = if (showAll.value) "All payments" else "New payments") },
-                actions = {
-                    IconButton(onClick = { currentScreen.value = Screen.Monthly }) {
-                        Text(text = "Stats", style = MaterialTheme.typography.body2)
-                    }
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text(text = if (showAll.value) "All payments" else "New payments") },
+        actions = {
+          IconButton(onClick = { currentScreen.value = Screen.Monthly }) {
+            Text(text = "Stats", style = MaterialTheme.typography.body2)
+          }
 
-                    IconButton(onClick = { showAll.value = !showAll.value }) {
-                        Text(text = "View", style = MaterialTheme.typography.body2)
-                    }
+          IconButton(onClick = { showAll.value = !showAll.value }) {
+            Text(text = "View", style = MaterialTheme.typography.body2)
+          }
 
-                    IconButton(onClick = { currentScreen.value = Screen.New }) {
-                        Text(text = "Add", style = MaterialTheme.typography.body2)
-                    }
-                }
-            )
-        },
-        bodyContent = {
-            TransactionsList(showAll = showAll, currentScreen = currentScreen)
+          IconButton(onClick = { currentScreen.value = Screen.New }) {
+            Text(text = "Add", style = MaterialTheme.typography.body2)
+          }
         }
-    )
+      )
+    },
+    bodyContent = {
+      TransactionsList(showAll = showAll, currentScreen = currentScreen)
+    }
+  )
 }
 
 @Composable
 private fun TransactionsList(
-    modifier: Modifier = Modifier,
-    showAll: MutableState<Boolean>,
-    currentScreen: MutableState<Screen>
+  modifier: Modifier = Modifier,
+  showAll: MutableState<Boolean>,
+  currentScreen: MutableState<Screen>
 ) {
-    Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-        val data =
-            KoinContextHandler.get().get<ListAggregator>()
-                .transactions()
-                .toMutableState(initial = emptyList())
+  Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
+    val data =
+      KoinContextHandler.get().get<ListAggregator>()
+        .transactions()
+        .toMutableState(initial = emptyList())
 
-        val items = when {
-            showAll.value -> data.value
-            else -> data.value.filter { it.payment == null }
-        }
-        LazyColumnItems(items, itemContent = { transaction ->
-            TransactionListRow(transaction, currentScreen)
-            ListDivider()
-        })
+    val items = when {
+      showAll.value -> data.value
+      else -> data.value.filter { it.payment == null }
     }
+    LazyColumnItems(items, itemContent = { transaction ->
+      TransactionListRow(transaction, currentScreen)
+      ListDivider()
+    })
+  }
 }
 
 @Composable
 fun TransactionListRow(transaction: Transaction, currentScreen: MutableState<Screen>) {
-    Row(
-        modifier = Modifier
-            .clickable(onClick = { currentScreen.value = Screen.Details(transaction) })
-            .padding(16.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            TransactionTitle(transaction)
-            TransactionSubtitle(transaction)
-        }
+  Row(
+    modifier = Modifier
+      .clickable(onClick = { currentScreen.value = Screen.Details(transaction) })
+      .padding(16.dp)
+  ) {
+    Column(modifier = Modifier.weight(1f)) {
+      TransactionTitle(transaction)
+      TransactionSubtitle(transaction)
     }
+  }
 }
 
 @Composable
 fun TransactionTitle(transaction: Transaction) {
-    ProvideEmphasis(EmphasisAmbient.current.high) {
-        Row(horizontalArrangement = Arrangement.SpaceAround) {
-            Text(
-                transaction.merchant,
-                style = when {
-                    transaction.cancelled -> MaterialTheme.typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
-                    else -> MaterialTheme.typography.subtitle1
-                }
-            )
-            Text(text = "", modifier = Modifier.weight(1F))
-            Text(
-                "${transaction.sum}",
-                style = MaterialTheme.typography.subtitle1
-            )
+  ProvideEmphasis(EmphasisAmbient.current.high) {
+    Row(horizontalArrangement = Arrangement.SpaceAround) {
+      Text(
+        transaction.merchant,
+        style = when {
+          transaction.cancelled -> MaterialTheme.typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
+          else -> MaterialTheme.typography.subtitle1
         }
+      )
+      Text(text = "", modifier = Modifier.weight(1F))
+      Text(
+        "${transaction.sum}",
+        style = MaterialTheme.typography.subtitle1
+      )
     }
+  }
 }
 
 @Composable
 fun TransactionSubtitle(
-    transaction: Transaction,
-    modifier: Modifier = Modifier
+  transaction: Transaction,
+  modifier: Modifier = Modifier
 ) {
-    Row(modifier) {
-        ProvideEmphasis(EmphasisAmbient.current.medium) {
-            Text(
-                text = transaction.category,
-                style = MaterialTheme.typography.body2
-            )
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = transaction.comment,
-                style = MaterialTheme.typography.body2
-            )
-        }
+  Row(modifier) {
+    ProvideEmphasis(EmphasisAmbient.current.medium) {
+      Text(
+        text = transaction.category,
+        style = MaterialTheme.typography.body2
+      )
+      Text(
+        modifier = Modifier.padding(start = 16.dp),
+        text = transaction.comment,
+        style = MaterialTheme.typography.body2
+      )
     }
+  }
 }
 
 @Composable
 fun ListDivider() {
-    Divider(
-        color = MaterialTheme.colors.onSurface.copy(alpha = 0.08f)
-    )
+  Divider(
+    color = MaterialTheme.colors.onSurface.copy(alpha = 0.08f)
+  )
 }

@@ -9,16 +9,16 @@ import simple.payment.tracker.compose.PaymentsApp
 
 
 class MainActivity : AppCompatActivity() {
-    private val backs: Backs by inject()
+  private val backs: Backs by inject()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            PaymentsApp()
-        }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContent {
+      PaymentsApp()
     }
+  }
 
-    override fun onBackPressed() {
-        backs.backPressed.onNext("MainActivity")
-    }
+  override fun onBackPressed() {
+    backs.backPressed.onNext("MainActivity")
+  }
 }

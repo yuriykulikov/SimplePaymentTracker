@@ -7,14 +7,14 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 
 fun <T : Any> BehaviorSubject<T>.modify(func: T.(T) -> T) {
-    value?.let { onNext(func(it, it)) }
+  value?.let { onNext(func(it, it)) }
 }
 
 fun Disposable.disposeWhenDestroyed(lifecycle: Lifecycle) {
-    lifecycle.addObserver(object : LifecycleObserver {
-        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        fun onDestroy() {
-            dispose()
-        }
-    })
+  lifecycle.addObserver(object : LifecycleObserver {
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy() {
+      dispose()
+    }
+  })
 }
