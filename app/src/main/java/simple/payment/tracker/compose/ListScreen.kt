@@ -39,9 +39,7 @@ fun ListScreen(
             TopAppBar(
                 title = { Text(text = if (showAll.value) "All payments" else "New payments") },
                 actions = {
-                    IconButton(onClick = {
-                        currentScreen.value = Screen.Monthly
-                    }) {
+                    IconButton(onClick = { currentScreen.value = Screen.Monthly }) {
                         Text(text = "Stats", style = MaterialTheme.typography.body2)
                     }
 
@@ -49,9 +47,7 @@ fun ListScreen(
                         Text(text = "View", style = MaterialTheme.typography.body2)
                     }
 
-                    IconButton(onClick = {
-                        currentScreen.value = Screen.New
-                    }) {
+                    IconButton(onClick = { currentScreen.value = Screen.New }) {
                         Text(text = "Add", style = MaterialTheme.typography.body2)
                     }
                 }
@@ -73,15 +69,13 @@ private fun TransactionsList(
         val data =
             KoinContextHandler.get().get<ListAggregator>()
                 .transactions()
-                .map { transactions ->
-                    when {
-                        showAll.value -> transactions
-                        else -> transactions.filter { it.payment == null }
-                    }
-                }
                 .toMutableState(initial = emptyList())
 
-        LazyColumnItems(data.value, itemContent = { transaction ->
+        val items = when {
+            showAll.value -> data.value
+            else -> data.value.filter { it.payment == null }
+        }
+        LazyColumnItems(items, itemContent = { transaction ->
             TransactionListRow(transaction, currentScreen)
             ListDivider()
         })
