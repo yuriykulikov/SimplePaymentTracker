@@ -24,6 +24,7 @@ class Application : Application() {
         single { PaymentsRepository(get(), get(), get(), get()) }
         single { ListAggregator(get(), get(), get()) }
         single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
+        single { Firebase(get(), get()) }
         single { AmazonPaymentsRepository(get()) }
         single { RecurrentPaymentsRepository(get()) }
         single {

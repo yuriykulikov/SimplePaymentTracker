@@ -1,6 +1,5 @@
 package simple.payment.tracker
 
-import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
 
 data class AmazonPayment(
@@ -24,12 +23,11 @@ data class AmazonPayment(
 }
 
 class AmazonPaymentsRepository(
-  private val firebaseDatabase: FirebaseDatabase
+  private val firebaseDatabase: Firebase
 ) {
   private val amazonPayments: Observable<List<AmazonPayment>> = firebaseDatabase
-    .reference
-    .child("amazonpayments")
-    .observe { map -> AmazonPayment.fromMap(map) }
+    .child("amazonpayments") { map -> AmazonPayment.fromMap(map) }
+    .observe()
     .map { it.values.toList() }
     .replay(1)
     .refCount()

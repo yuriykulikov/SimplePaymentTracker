@@ -26,9 +26,7 @@ fun MonthlyScreen(currentScreen: MutableState<Screen>) {
       TopAppBar(
         title = { Text(text = "Monthly statistics") },
         actions = {
-          IconButton(onClick = {
-            currentScreen.value = Screen.List
-          }) {
+          IconButton(onClick = { currentScreen.value = Screen.List }) {
             Text(text = "Back", style = MaterialTheme.typography.body2)
           }
         }

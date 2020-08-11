@@ -2,7 +2,9 @@ package simple.payment.tracker
 
 import io.reactivex.Observable
 import java.time.Instant
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 data class MonthlyReport(
   val month: String,
@@ -26,8 +28,12 @@ data class MonthlyReport(
 class MonthlyStatistics(
   private val payments: Observable<List<Payment>>
 ) {
+  private val reports = payments.map { monthly(it) }
+    .replay(1)
+    .refCount(1, TimeUnit.SECONDS)
+
   fun reports(): Observable<List<MonthlyReport>> {
-    return payments.map { monthly(it) }
+    return reports
   }
 
   companion object {
@@ -45,7 +51,6 @@ class MonthlyStatistics(
         }
     }
   }
-
 }
 
 private fun Payment.calendar(): Calendar {

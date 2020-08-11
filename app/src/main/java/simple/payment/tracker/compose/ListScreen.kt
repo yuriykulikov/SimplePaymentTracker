@@ -9,8 +9,20 @@ import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
 import androidx.ui.foundation.clickable
 import androidx.ui.foundation.lazy.LazyColumnItems
-import androidx.ui.layout.*
-import androidx.ui.material.*
+import androidx.ui.layout.Arrangement
+import androidx.ui.layout.Column
+import androidx.ui.layout.Row
+import androidx.ui.layout.fillMaxSize
+import androidx.ui.layout.padding
+import androidx.ui.layout.wrapContentSize
+import androidx.ui.material.Divider
+import androidx.ui.material.EmphasisAmbient
+import androidx.ui.material.IconButton
+import androidx.ui.material.MaterialTheme
+import androidx.ui.material.ProvideEmphasis
+import androidx.ui.material.Scaffold
+import androidx.ui.material.Surface
+import androidx.ui.material.TopAppBar
 import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
@@ -66,10 +78,10 @@ private fun TransactionsList(
   currentScreen: MutableState<Screen>
 ) {
   Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-    val data =
-      KoinContextHandler.get().get<ListAggregator>()
-        .transactions()
-        .toMutableState(initial = emptyList())
+    val data = KoinContextHandler.get()
+      .get<ListAggregator>()
+      .transactions()
+      .toMutableState(initial = emptyList())
 
     val items = when {
       showAll.value -> data.value

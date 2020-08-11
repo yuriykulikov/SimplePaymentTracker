@@ -8,7 +8,7 @@ import com.squareup.moshi.JsonWriter
 import com.squareup.moshi.ToJson
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.*
+import java.util.Date
 
 // TODO id und sum non null, better domain model
 

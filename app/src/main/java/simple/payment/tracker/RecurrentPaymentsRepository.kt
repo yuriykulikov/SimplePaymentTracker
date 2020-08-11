@@ -1,10 +1,11 @@
 package simple.payment.tracker
 
-import com.google.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 val dateFormat = SimpleDateFormat(
   "yyyy-MM-dd",
@@ -32,12 +33,11 @@ data class RecurrringPayment(
 }
 
 class RecurrentPaymentsRepository(
-  private val firebaseDatabase: FirebaseDatabase
+  private val firebaseDatabase: Firebase
 ) {
   private val recurring: Observable<List<RecurrringPayment>> = firebaseDatabase
-    .reference
-    .child("recurringpayments")
-    .observe { map -> RecurrringPayment.fromMap(map) }
+    .child("recurringpayments") { map -> RecurrringPayment.fromMap(map) }
+    .observe()
     .map { it.values.toList() }
     .replay(1)
     .refCount()

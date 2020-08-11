@@ -12,8 +12,19 @@ import androidx.ui.foundation.VerticalScroller
 import androidx.ui.foundation.clickable
 import androidx.ui.input.KeyboardType
 import androidx.ui.input.TextFieldValue
-import androidx.ui.layout.*
-import androidx.ui.material.*
+import androidx.ui.layout.Column
+import androidx.ui.layout.Row
+import androidx.ui.layout.fillMaxSize
+import androidx.ui.layout.fillMaxWidth
+import androidx.ui.layout.padding
+import androidx.ui.layout.wrapContentSize
+import androidx.ui.material.Divider
+import androidx.ui.material.IconButton
+import androidx.ui.material.MaterialTheme
+import androidx.ui.material.OutlinedTextField
+import androidx.ui.material.Scaffold
+import androidx.ui.material.Surface
+import androidx.ui.material.TopAppBar
 import androidx.ui.text.style.TextDecoration
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
@@ -24,7 +35,8 @@ import simple.payment.tracker.Transaction
 import simple.payment.tracker.theme.PaymentsTheme
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 private val dateFormat = SimpleDateFormat(
   "dd-MM-yy HH:mm",
