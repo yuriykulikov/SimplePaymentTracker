@@ -52,7 +52,9 @@ class FileDataStore<T : Any> private constructor(
 
       val initial: List<T> = filer.source(name)
         ?.use {
-          adapter.fromJson(it)
+          runCatching {
+            adapter.fromJson(it)
+          }.getOrDefault(adapter.fromJson(defaultValue))
         }
         ?: requireNotNull(adapter.fromJson(defaultValue))
 
