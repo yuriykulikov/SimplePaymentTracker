@@ -1,33 +1,33 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.Composable
-import androidx.compose.MutableState
-import androidx.compose.state
-import androidx.ui.core.Alignment
-import androidx.ui.core.Modifier
-import androidx.ui.core.drawOpacity
-import androidx.ui.foundation.Box
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.VerticalScroller
-import androidx.ui.foundation.clickable
-import androidx.ui.input.KeyboardType
-import androidx.ui.input.TextFieldValue
-import androidx.ui.layout.Column
-import androidx.ui.layout.Row
-import androidx.ui.layout.fillMaxSize
-import androidx.ui.layout.fillMaxWidth
-import androidx.ui.layout.padding
-import androidx.ui.layout.wrapContentSize
-import androidx.ui.material.Divider
-import androidx.ui.material.IconButton
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.OutlinedTextField
-import androidx.ui.material.Scaffold
-import androidx.ui.material.Surface
-import androidx.ui.material.TopAppBar
-import androidx.ui.text.style.TextDecoration
-import androidx.ui.tooling.preview.Preview
-import androidx.ui.unit.dp
+import androidx.compose.foundation.Box
+import androidx.compose.foundation.ScrollableColumn
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.Divider
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.state
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawOpacity
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
@@ -43,8 +43,8 @@ private val dateFormat = SimpleDateFormat(
   Locale.GERMANY
 )
 
-@Preview("DetailsScreen preview")
 @Composable
+// @Preview("DetailsScreen preview")
 fun PreviewDetailsScreen() {
   PaymentsTheme {
     Surface {
@@ -62,7 +62,7 @@ fun PreviewDetailsScreen() {
       )
       DetailsScreen(
         transaction,
-        state { Screen.Details(transaction) }
+        mutableStateOf(Screen.Details(transaction))
       )
     }
   }
@@ -168,7 +168,7 @@ fun DetailsScreen(
     bodyContent = {
       Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
         Column {
-          VerticalScroller {
+          ScrollableColumn {
             Column {
               TextInputs(state, transaction?.notification != null)
               CategorySelector(state.category)
@@ -250,23 +250,20 @@ private fun NamedTextFieldInput(
   enabled: Boolean = true,
   onValueChange: (TextFieldValue) -> Unit = { state.value = it }
 ) {
-  Row {
-    Column {
-      OutlinedTextField(
-        label = {
-          Text(
-            header,
-            style = MaterialTheme.typography.body1
-          )
-        },
-        value = state.value,
-        onValueChange = if (enabled) onValueChange else { _ -> },
-        keyboardType = keyboardType,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        textStyle = MaterialTheme.typography.body1
+  OutlinedTextField(
+    label = {
+      Text(
+        header,
+        style = MaterialTheme.typography.body1
       )
-    }
-  }
+    },
+    value = state.value,
+    onValueChange = if (enabled) onValueChange else { _ -> },
+    keyboardType = keyboardType,
+    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+    textStyle = MaterialTheme.typography.body1
+    //, backgroundColor = Color.Transparent
+  )
 }
 
 /** Category tiles in 2 columns */

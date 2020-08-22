@@ -1,16 +1,16 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.Composable
-import androidx.ui.core.Alignment
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Box
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.lazy.LazyColumnItems
-import androidx.ui.layout.Column
-import androidx.ui.layout.Row
-import androidx.ui.layout.fillMaxSize
-import androidx.ui.layout.wrapContentSize
-import androidx.ui.material.MaterialTheme
+import androidx.compose.foundation.Box
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.MonthlyReport
 import simple.payment.tracker.MonthlyStatistics
@@ -23,7 +23,7 @@ fun MonthlyScreen() {
       .map { reports -> reports.sortedByDescending { it.month } }
       .toMutableState(initial = emptyList<MonthlyReport>())
 
-    LazyColumnItems(list.value, itemContent = { stats ->
+    LazyColumnFor(list.value, itemContent = { stats ->
       Row {
         Column(Modifier.weight(2F)) {
           Text(stats.month, style = MaterialTheme.typography.h4)

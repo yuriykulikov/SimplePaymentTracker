@@ -1,27 +1,28 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.Composable
-import androidx.compose.MutableState
-import androidx.compose.state
-import androidx.ui.animation.Crossfade
-import androidx.ui.core.Modifier
-import androidx.ui.foundation.Box
-import androidx.ui.foundation.Text
-import androidx.ui.foundation.drawBackground
-import androidx.ui.foundation.drawBorder
-import androidx.ui.foundation.shape.corner.RoundedCornerShape
-import androidx.ui.graphics.Color
-import androidx.ui.input.TextFieldValue
-import androidx.ui.layout.fillMaxWidth
-import androidx.ui.layout.padding
-import androidx.ui.material.BottomAppBar
-import androidx.ui.material.FilledTextField
-import androidx.ui.material.IconButton
-import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Scaffold
-import androidx.ui.material.Surface
-import androidx.ui.material.TopAppBar
-import androidx.ui.unit.dp
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Box
+import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.drawBorder
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.state
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.theme.PaymentsTheme
@@ -112,7 +113,7 @@ val borderColors = listOf(
 @Composable
 fun Modifier.debugBorder(): Modifier {
   return this
-  return drawBorder(size = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
+  return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)] )
 }
 
 @Composable
@@ -123,7 +124,7 @@ private fun NavigationTopBar(
   TopAppBar(
     content = {
       if (currentScreen.value is Screen.ListAll) {
-        FilledTextField(
+        TextField(
           value = search.value,
           onValueChange = { search.value = it },
           label = { Text("Search") },
@@ -185,7 +186,7 @@ private fun Modifier.highlightIf(
 ): Modifier {
   return when (currentScreen.value) {
     target -> {
-      drawBackground(
+      background(
         color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
         shape = RoundedCornerShape(20.dp)
       )
