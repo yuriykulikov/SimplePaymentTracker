@@ -2,13 +2,13 @@ package simple.payment.tracker.compose
 
 import androidx.compose.Composable
 import androidx.compose.MutableState
-import androidx.compose.state
 import androidx.ui.core.Alignment
 import androidx.ui.core.Modifier
 import androidx.ui.foundation.Box
 import androidx.ui.foundation.Text
 import androidx.ui.foundation.clickable
 import androidx.ui.foundation.lazy.LazyColumnItems
+import androidx.ui.input.TextFieldValue
 import androidx.ui.layout.Arrangement
 import androidx.ui.layout.Column
 import androidx.ui.layout.Row
@@ -17,65 +17,29 @@ import androidx.ui.layout.padding
 import androidx.ui.layout.wrapContentSize
 import androidx.ui.material.Divider
 import androidx.ui.material.EmphasisAmbient
-import androidx.ui.material.IconButton
 import androidx.ui.material.MaterialTheme
 import androidx.ui.material.ProvideEmphasis
-import androidx.ui.material.Scaffold
-import androidx.ui.material.Surface
-import androidx.ui.material.TopAppBar
 import androidx.ui.text.style.TextDecoration
-import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.ListAggregator
 import simple.payment.tracker.Transaction
-import simple.payment.tracker.theme.PaymentsTheme
-
-@Preview("ListScreen preview")
-@Composable
-fun PreviewListScreen() {
-  PaymentsTheme {
-    Surface {
-      ListScreen(state { true }, state { Screen.List })
-    }
-  }
-}
 
 @Composable
 fun ListScreen(
-  showAll: MutableState<Boolean>,
-  currentScreen: MutableState<Screen>
+  showAll: Boolean,
+  currentScreen: MutableState<Screen>,
+  search: MutableState<TextFieldValue>
 ) {
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text(text = if (showAll.value) "All payments" else "New payments") },
-        actions = {
-          IconButton(onClick = { currentScreen.value = Screen.Monthly }) {
-            Text(text = "Stats", style = MaterialTheme.typography.body2)
-          }
-
-          IconButton(onClick = { showAll.value = !showAll.value }) {
-            Text(text = "View", style = MaterialTheme.typography.body2)
-          }
-
-          IconButton(onClick = { currentScreen.value = Screen.New }) {
-            Text(text = "Add", style = MaterialTheme.typography.body2)
-          }
-        }
-      )
-    },
-    bodyContent = {
-      TransactionsList(showAll = showAll, currentScreen = currentScreen)
-    }
-  )
+  TransactionsList(showAll = showAll, currentScreen = currentScreen, search = search)
 }
 
 @Composable
 private fun TransactionsList(
   modifier: Modifier = Modifier,
-  showAll: MutableState<Boolean>,
-  currentScreen: MutableState<Screen>
+  showAll: Boolean,
+  currentScreen: MutableState<Screen>,
+  search: MutableState<TextFieldValue>
 ) {
   Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
     val data = KoinContextHandler.get()
@@ -83,10 +47,20 @@ private fun TransactionsList(
       .transactions()
       .toMutableState(initial = emptyList())
 
-    val items = when {
-      showAll.value -> data.value
-      else -> data.value.filter { it.payment == null }
-    }
+    val items = data.value
+      .let { values -> if (showAll) values else values.filter { it.payment == null } }
+      .let { values ->
+        when {
+          search.value.text.isEmpty() -> values
+          else -> {
+            val searchLowercase = search.value.text.toLowerCase()
+            values.filter { transaction ->
+              searchLowercase in transaction.toString().toLowerCase()
+            }
+          }
+        }
+      }
+
     LazyColumnItems(items, itemContent = { transaction ->
       TransactionListRow(transaction, currentScreen)
       ListDivider()
