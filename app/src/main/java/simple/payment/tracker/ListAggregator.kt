@@ -66,20 +66,25 @@ class ListAggregator(
 
 // You saved 1,36 EUR on a 34,10 EUR
 fun Notification.sum(): Int {
-  val sum = text
-    .substringAfter("You paid ")
-    .substringAfter("You sent ")
-    .substringAfter(" on a ")
-    .substringBefore(",")
-  val youSaved: Int = when {
-    "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
-    else -> 0
+  return runCatching {
+    val sum = text
+      .substringAfter("You paid ")
+      .substringAfter("You sent ")
+      .substringAfter(" on a ")
+      .substringBefore(",")
+      .substringBefore(".")
+    val youSaved: Int = when {
+      "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
+      else -> 0
+    }
+    when {
+      sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
+      text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
+      else -> sum.toInt()
+    } - youSaved
+  }.getOrElse {
+    throw IllegalArgumentException("Failed to parse sum of $this, caused by $it", it)
   }
-  return when {
-    sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
-    text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
-    else -> sum.toInt()
-  } - youSaved
 }
 
 fun Notification.merchant(): String {
