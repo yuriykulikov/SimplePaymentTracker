@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumnItems
+import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.Divider
 import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
@@ -61,10 +61,13 @@ private fun TransactionsList(
         }
       }
 
-    LazyColumnItems(items, itemContent = { transaction ->
-      TransactionListRow(transaction, currentScreen)
-      ListDivider()
-    })
+    LazyColumnFor(
+      items = items,
+      modifier = Modifier.debugBorder().fillMaxSize(),
+      itemContent = { transaction ->
+        TransactionListRow(transaction, currentScreen)
+        ListDivider()
+      })
   }
 }
 
