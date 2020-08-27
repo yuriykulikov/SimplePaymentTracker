@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    kotlin("android")
+    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
 }
 
@@ -28,34 +28,27 @@ android {
 
     kotlinOptions {
         jvmTarget = "1.8"
+        useIR = true
     }
 
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerVersion = extra["kotlin"] as String
         kotlinCompilerExtensionVersion = extra["compose"] as String
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions>>()
-    .configureEach {
-        kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xallow-jvm-ir-dependencies", "-Xskip-prerelease-check")
-        }
-    }
-
 repositories {
     google()
+    maven { url = uri("https://plugins.gradle.org/m2/") }
     maven { url = uri("https://oss.jfrog.org/libs-snapshot") }
 }
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${project.extra["kotlin"]}")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
-    implementation("io.reactivex.rxjava2:rxjava:2.2.16")
+    implementation("io.reactivex.rxjava2:rxjava:2.2.19")
     implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
     implementation("com.squareup.moshi:moshi:1.9.2")
     implementation("com.squareup.moshi:moshi-kotlin:1.9.2")

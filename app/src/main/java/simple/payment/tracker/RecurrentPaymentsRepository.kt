@@ -48,8 +48,8 @@ class RecurrentPaymentsRepository(
 fun List<RecurrringPayment>.toPayments(
   now: Calendar = Calendar.getInstance()
 ): List<Payment> {
-  return this.flatMap { rec: RecurrringPayment ->
-    val sequence = generateSequence(dateFormat.parse(rec.start)) {
+  return flatMap { rec ->
+    generateSequence(dateFormat.parse(rec.start)) {
       now.apply {
         time = it
         add(Calendar.MONTH, 1)
@@ -72,6 +72,5 @@ fun List<RecurrringPayment>.toPayments(
           comment = rec.comment
         )
       }
-    sequence.toList()
   }
 }
