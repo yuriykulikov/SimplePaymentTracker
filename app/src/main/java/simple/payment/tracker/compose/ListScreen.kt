@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope.weight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -63,7 +64,7 @@ private fun TransactionsList(
 
     LazyColumnFor(
       items = items,
-      modifier = Modifier.debugBorder().fillMaxSize(),
+      modifier = Modifier.debugBorder().weight(1f),
       itemContent = { transaction ->
         TransactionListRow(transaction, currentScreen)
         ListDivider()
