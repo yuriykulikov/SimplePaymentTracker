@@ -17,6 +17,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -30,7 +31,7 @@ import simple.payment.tracker.Transaction
 fun ListScreen(
   showAll: Boolean,
   currentScreen: MutableState<Screen>,
-  search: MutableState<TextFieldValue>
+  search: State<TextFieldValue>
 ) {
   TransactionsList(showAll = showAll, currentScreen = currentScreen, search = search)
 }
@@ -40,13 +41,13 @@ private fun TransactionsList(
   modifier: Modifier = Modifier,
   showAll: Boolean,
   currentScreen: MutableState<Screen>,
-  search: MutableState<TextFieldValue>
+  search: State<TextFieldValue>
 ) {
   Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
     val data = KoinContextHandler.get()
       .get<ListAggregator>()
       .transactions()
-      .toMutableState(initial = emptyList())
+      .toState(initial = emptyList())
 
     val items = data.value
       .let { values -> if (showAll) values else values.filter { it.payment == null } }

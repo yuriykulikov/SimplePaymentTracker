@@ -21,7 +21,7 @@ fun MonthlyScreen() {
     val list = KoinContextHandler.get().get<MonthlyStatistics>()
       .reports()
       .map { reports -> reports.sortedByDescending { it.month } }
-      .toMutableState(initial = emptyList<MonthlyReport>())
+      .toState(initial = emptyList<MonthlyReport>())
 
     LazyColumnFor(list.value, itemContent = { stats ->
       Row {

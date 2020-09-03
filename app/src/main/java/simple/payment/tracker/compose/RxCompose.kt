@@ -2,7 +2,7 @@ package simple.payment.tracker.compose
 
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.onCommit
 import androidx.compose.runtime.remember
@@ -19,7 +19,7 @@ fun <T> Observable<T>.commitSubscribe(onNext: (T) -> Unit) {
 }
 
 @Composable
-fun <T> Observable<T>.toMutableState(initial: T): MutableState<T> {
+fun <T> Observable<T>.toState(initial: T): State<T> {
   val state = remember { mutableStateOf(initial) }
   onCommit {
     val subscription = subscribe {

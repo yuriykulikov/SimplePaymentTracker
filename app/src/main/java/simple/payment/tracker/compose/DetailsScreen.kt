@@ -28,6 +28,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.ui.tooling.preview.Preview
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
@@ -44,7 +45,7 @@ private val dateFormat = SimpleDateFormat(
 )
 
 @Composable
-// @Preview("DetailsScreen preview")
+@Preview("DetailsScreen preview")
 fun PreviewDetailsScreen() {
   PaymentsTheme {
     Surface {

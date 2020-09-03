@@ -5,7 +5,6 @@ import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.drawBorder
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +17,8 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.state
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
@@ -56,14 +56,14 @@ fun MutableState<Screen>.showNavigation(): Boolean {
 
 @Composable
 private fun AppContent() {
-  val currentScreen: MutableState<Screen> = state<Screen> { Screen.List }
+  val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
   KoinContextHandler.get().get<Backs>()
     .backPressed
     .commitSubscribe {
       currentScreen.value = Screen.List
     }
 
-  val search = state { TextFieldValue("") }
+  val search = remember { mutableStateOf(TextFieldValue("")) }
   Scaffold(
     topBar = {
       if (currentScreen.showNavigation()) {
@@ -113,7 +113,7 @@ val borderColors = listOf(
 @Composable
 fun Modifier.debugBorder(): Modifier {
   return this
-  return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)] )
+  return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
 }
 
 @Composable
