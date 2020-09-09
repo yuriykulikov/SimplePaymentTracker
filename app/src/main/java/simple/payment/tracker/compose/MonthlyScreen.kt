@@ -11,14 +11,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.MonthlyReport
 import simple.payment.tracker.MonthlyStatistics
 
 @Composable
-fun MonthlyScreen() {
+fun MonthlyScreen(monthlyStatistics: MonthlyStatistics) {
   Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-    val list = KoinContextHandler.get().get<MonthlyStatistics>()
+    val list = monthlyStatistics
       .reports()
       .map { reports -> reports.sortedByDescending { it.month } }
       .toState(initial = emptyList<MonthlyReport>())

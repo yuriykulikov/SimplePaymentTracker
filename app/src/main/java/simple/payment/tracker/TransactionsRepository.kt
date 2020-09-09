@@ -22,7 +22,7 @@ data class Transaction(
 /**
  * Aggregates notifications and payments into one flat list ready for presentation.
  */
-class ListAggregator(
+class TransactionsRepository(
   private val paymentsRepository: PaymentsRepository,
   private val notificationsRepository: NotificationsRepository,
   private val logger: Logger

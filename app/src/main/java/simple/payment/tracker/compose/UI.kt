@@ -23,8 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import org.koin.core.context.KoinContextHandler
+import simple.payment.tracker.MonthlyStatistics
+import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.theme.PaymentsTheme
 import kotlin.random.Random.Default.nextInt
 
@@ -37,9 +39,19 @@ sealed class Screen {
 }
 
 @Composable
-fun PaymentsApp() {
+fun PaymentsApp(
+  backs: Backs,
+  transactions: TransactionsRepository,
+  paymentsRepository: PaymentsRepository,
+  monthlyStatistics: MonthlyStatistics,
+) {
   PaymentsTheme {
-    AppContent()
+    AppContent(
+      backs,
+      transactions,
+      paymentsRepository,
+      monthlyStatistics,
+    )
   }
 }
 
@@ -55,9 +67,14 @@ fun MutableState<Screen>.showNavigation(): Boolean {
 }
 
 @Composable
-private fun AppContent() {
+private fun AppContent(
+  backs: Backs,
+  transactions: TransactionsRepository,
+  paymentsRepository: PaymentsRepository,
+  monthlyStatistics: MonthlyStatistics,
+) {
   val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
-  KoinContextHandler.get().get<Backs>()
+  backs
     .backPressed
     .commitSubscribe {
       currentScreen.value = Screen.List
@@ -83,11 +100,11 @@ private fun AppContent() {
       Crossfade(currentScreen) { screen ->
         Surface(color = MaterialTheme.colors.background) {
           when (val scr = screen.value) {
-            is Screen.List -> ListScreen(false, currentScreen, search)
-            is Screen.ListAll -> ListScreen(true, currentScreen, search)
-            is Screen.Details -> DetailsScreen(scr.transaction, currentScreen)
-            is Screen.New -> DetailsScreen(null, currentScreen)
-            is Screen.Monthly -> MonthlyScreen()
+            is Screen.List -> ListScreen(false, transactions, currentScreen, search)
+            is Screen.ListAll -> ListScreen(true, transactions, currentScreen, search)
+            is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, currentScreen)
+            is Screen.New -> DetailsScreen(paymentsRepository, null, currentScreen)
+            is Screen.Monthly -> MonthlyScreen(monthlyStatistics)
           }
         }
       }

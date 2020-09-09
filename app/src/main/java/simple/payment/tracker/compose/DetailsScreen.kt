@@ -28,7 +28,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Transaction
@@ -47,6 +46,7 @@ private val dateFormat = SimpleDateFormat(
  */
 @Composable
 fun DetailsScreen(
+  paymentsRepository: PaymentsRepository,
   transaction: Transaction?,
   currentScreen: MutableState<Screen>
 ) {
@@ -88,7 +88,7 @@ fun DetailsScreen(
             && category.value != null)
           IconButton(onClick = {
             if (canSave) ({
-              KoinContextHandler.get().get<PaymentsRepository>()
+              paymentsRepository
                 .changeOrCreatePayment(
                   transaction?.id,
                   Payment(

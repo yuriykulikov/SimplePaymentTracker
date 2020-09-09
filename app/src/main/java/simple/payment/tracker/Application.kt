@@ -22,7 +22,7 @@ class Application : Application() {
         single { Filer(applicationContext) }
         single { NotificationsRepository(get(), get(), get(), get()) }
         single { PaymentsRepository(get(), get(), get(), get()) }
-        single { ListAggregator(get(), get(), get()) }
+        single { TransactionsRepository(get(), get(), get()) }
         single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
         single { Firebase(get(), get()) }
         single { AmazonPaymentsRepository(get()) }
