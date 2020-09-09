@@ -97,9 +97,9 @@ private fun AppContent(
       }
     },
     bodyContent = {
-      Crossfade(currentScreen) { screen ->
+      Crossfade(currentScreen.value) { scr ->
         Surface(color = MaterialTheme.colors.background) {
-          when (val scr = screen.value) {
+          when (scr) {
             is Screen.List -> ListScreen(false, transactions, currentScreen, search)
             is Screen.ListAll -> ListScreen(true, transactions, currentScreen, search)
             is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, currentScreen)
