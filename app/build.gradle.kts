@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId = "simple.payment.tracker"
         minSdkVersion(28)
-        targetSdkVersion(29)
+        targetSdkVersion(30)
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -29,13 +29,15 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
         useIR = true
+        freeCompilerArgs =
+            freeCompilerArgs + "-Xallow-jvm-ir-dependencies" + "-Xskip-prerelease-check"
     }
 
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = extra["compose"] as String
+        kotlinCompilerExtensionVersion = "1.0.0-alpha06"
     }
 }
 
@@ -62,10 +64,13 @@ dependencies {
 
 // compose
 dependencies {
-    implementation("androidx.compose.ui:ui:${project.extra["compose"]}")
-    implementation("androidx.compose.foundation:foundation-layout:${project.extra["compose"]}")
-    implementation("androidx.compose.material:material:${project.extra["compose"]}")
-    implementation("androidx.ui:ui-tooling:${project.extra["compose"]}")
+    val compose = "1.0.0-alpha06"
+
+    // implementation("androidx.compose.compiler:compiler:$compose")
+    implementation("androidx.compose.ui:ui:$compose")
+    implementation("androidx.compose.foundation:foundation-layout:$compose")
+    implementation("androidx.compose.material:material:$compose")
+    implementation("androidx.ui:ui-tooling:$compose")
 }
 
 // test
@@ -74,6 +79,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
     testImplementation("org.assertj:assertj-core:3.16.1")
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.2")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.3.0")
 }

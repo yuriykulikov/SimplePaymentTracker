@@ -1,18 +1,17 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope.weight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumnFor
+import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.Divider
-import androidx.compose.material.EmphasisAmbient
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.runtime.Composable
@@ -70,7 +69,7 @@ private fun TransactionsList(
 
     LazyColumnFor(
       items = items,
-      modifier = Modifier.debugBorder().weight(1f),
+      modifier = Modifier.debugBorder(),
       itemContent = { transaction ->
         TransactionListRow(transaction, currentScreen)
         ListDivider()
@@ -94,7 +93,7 @@ fun TransactionListRow(transaction: Transaction, currentScreen: MutableState<Scr
 
 @Composable
 fun TransactionTitle(transaction: Transaction) {
-  ProvideEmphasis(EmphasisAmbient.current.high) {
+  ProvideEmphasis(AmbientEmphasisLevels.current.high) {
     Row(horizontalArrangement = Arrangement.SpaceAround) {
       Text(
         transaction.merchant,
@@ -118,7 +117,7 @@ fun TransactionSubtitle(
   modifier: Modifier = Modifier
 ) {
   Row(modifier) {
-    ProvideEmphasis(EmphasisAmbient.current.medium) {
+    ProvideEmphasis(AmbientEmphasisLevels.current.medium) {
       Text(
         text = transaction.category,
         style = MaterialTheme.typography.body2
