@@ -9,7 +9,8 @@ import simple.payment.tracker.stores.modify
 
 data class Notification(
   val time: Long,
-  val text: String
+  val text: String,
+  val device: String?,
 )
 
 /**
@@ -32,7 +33,8 @@ class NotificationsRepository(
     .child("notifications", mapper = { map ->
       Notification(
         time = map["time"] as Long,
-        text = map["text"] as String
+        text = map["text"] as String,
+        device = map["device"] as String?,
       )
     })
   private val notifications: Observable<List<Notification>> = notificationsRef

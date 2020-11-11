@@ -1,5 +1,6 @@
 package simple.payment.tracker
 
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import org.koin.android.ext.android.inject
@@ -25,7 +26,11 @@ class NotificationListener : NotificationListenerService() {
       .mapNotNull { notification ->
         val text = notification.notification?.extras?.getCharSequence("android.text")?.toString()
         when {
-          text != null -> Notification(time = notification.postTime, text = text)
+          text != null -> Notification(
+            time = notification.postTime,
+            text = text,
+            device = Build.MODEL
+          )
           else -> null
         }
       }
