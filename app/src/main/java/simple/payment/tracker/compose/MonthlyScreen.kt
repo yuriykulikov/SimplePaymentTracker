@@ -1,13 +1,16 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,7 +18,25 @@ import simple.payment.tracker.MonthlyReport
 import simple.payment.tracker.MonthlyStatistics
 
 @Composable
-fun MonthlyScreen(monthlyStatistics: MonthlyStatistics) {
+fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable() () -> Unit) {
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        title = {
+          Text(text = "Statistics", style = MaterialTheme.typography.body1)
+        },
+      )
+    },
+    bottomBar = bottomBar,
+    bodyContent = {
+      StatisticsContent(monthlyStatistics)
+    },
+  )
+}
+
+@Composable
+private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
   Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
     val list = monthlyStatistics
       .reports()

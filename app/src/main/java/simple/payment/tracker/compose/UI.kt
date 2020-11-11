@@ -1,27 +1,21 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
-import androidx.compose.material.TextField
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.PaymentsRepository
@@ -56,60 +50,43 @@ fun PaymentsApp(
 }
 
 @Composable
-fun MutableState<Screen>.showNavigation(): Boolean {
-  return when (value) {
-    Screen.List, Screen.ListAll, Screen.Monthly -> {
-      true
-    }
-    Screen.New -> false
-    is Screen.Details -> false
-  }
-}
-
-@Composable
 private fun AppContent(
   backs: Backs,
   transactions: TransactionsRepository,
   paymentsRepository: PaymentsRepository,
   monthlyStatistics: MonthlyStatistics,
 ) {
-  val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
+  val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
+  val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
+  val hideDetails = { detailsToShow.value = null }
+  val showDetails: (Transaction?) -> Unit =
+    { detailsToShow.value = if (it == null) Screen.New else Screen.Details(it) }
+
+  val bottomBar = @Composable { NavigationBottomBar(selectedScreen) }
+
   backs
     .backPressed
     .commitSubscribe {
-      currentScreen.value = Screen.List
+      if (detailsToShow.value != null) {
+        hideDetails()
+      } else {
+        selectedScreen.value = Screen.List
+      }
     }
 
-  val search = remember { mutableStateOf(TextFieldValue("")) }
-  Scaffold(
-    topBar = {
-      if (currentScreen.showNavigation()) {
-        NavigationTopBar(search, currentScreen)
-      }
-    },
-    bottomBar = {
-      when (currentScreen.value) {
-        Screen.List, Screen.ListAll, Screen.Monthly -> {
-          NavigationBottomBar(currentScreen)
-        }
-        Screen.New -> Unit
-        is Screen.Details -> Unit
-      }
-    },
-    bodyContent = {
-      Crossfade(currentScreen.value) { scr ->
-        Surface(color = MaterialTheme.colors.background) {
-          when (scr) {
-            is Screen.List -> ListScreen(false, transactions, currentScreen, search)
-            is Screen.ListAll -> ListScreen(true, transactions, currentScreen, search)
-            is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, currentScreen)
-            is Screen.New -> DetailsScreen(paymentsRepository, null, currentScreen)
-            is Screen.Monthly -> MonthlyScreen(monthlyStatistics)
-          }
-        }
+  val screen: Screen = detailsToShow.value ?: selectedScreen.value
+
+  Crossfade(screen) { scr ->
+    Surface(color = MaterialTheme.colors.background) {
+      when (scr) {
+        is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar)
+        is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar)
+        is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, hideDetails)
+        is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails)
+        is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar)
       }
     }
-  )
+  }
 }
 
 val borderColors = listOf(
@@ -131,36 +108,6 @@ val borderColors = listOf(
 fun Modifier.debugBorder(): Modifier {
   return this
   return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
-}
-
-@Composable
-private fun NavigationTopBar(
-  search: MutableState<TextFieldValue>,
-  currentScreen: MutableState<Screen>
-) {
-  TopAppBar(
-    content = {
-      if (currentScreen.value is Screen.ListAll) {
-        TextField(
-          value = search.value,
-          onValueChange = { search.value = it },
-          label = { Text("Search") },
-          textStyle = MaterialTheme.typography.body1,
-          backgroundColor = Color.Transparent,
-          activeColor = MaterialTheme.colors.onSurface,
-          modifier = Modifier.padding(2.dp)
-        )
-      } else {
-        Box(Modifier.debugBorder())
-      }
-
-      IconButton(
-        onClick = { currentScreen.value = Screen.New }, modifier = Modifier.debugBorder()
-      ) {
-        Text(text = "Add", style = MaterialTheme.typography.body2)
-      }
-    }
-  )
 }
 
 @Composable

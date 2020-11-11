@@ -48,7 +48,7 @@ private val dateFormat = SimpleDateFormat(
 fun DetailsScreen(
   paymentsRepository: PaymentsRepository,
   transaction: Transaction?,
-  currentScreen: MutableState<Screen>
+  onSave: () -> Unit
 ) {
   val category: MutableState<String?> = remember {
     mutableStateOf(transaction?.category)
@@ -106,7 +106,7 @@ fun DetailsScreen(
                     trip = trip.value.text.let { if (it.isEmpty()) null else it }
                   )
                 )
-              currentScreen.value = Screen.List
+              onSave()
             })()
           }) {
             Text(
