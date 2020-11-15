@@ -92,6 +92,7 @@ fun aggregate(
 // You saved 1,36 EUR on a 34,10 EUR
 fun Notification.sum(): Int {
   return runCatching {
+    // You payed 1,34 EUR to Some Guy"
     val sum = text
       .substringAfter("You paid ")
       .substringAfter("You sent ")
@@ -105,7 +106,7 @@ fun Notification.sum(): Int {
     when {
       sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
       text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
-      else -> sum.toInt()
+      else -> sum.toIntOrNull() ?: 0
     } - youSaved
   }.getOrElse {
     throw IllegalArgumentException("Failed to parse sum of $this, caused by $it", it)
