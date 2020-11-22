@@ -22,7 +22,8 @@ data class Payment(
   val sum: Int,
   val notificationId: Long?,
   val cancelled: Boolean,
-  val trip: String?
+  val trip: String?,
+  val auto: Boolean = false,
 ) {
   val id = time
 

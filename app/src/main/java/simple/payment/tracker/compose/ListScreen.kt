@@ -211,11 +211,20 @@ fun TransactionSubtitle(
         text = transaction.category,
         style = MaterialTheme.typography.body2
       )
-      Text(
-        modifier = Modifier.padding(start = 16.dp),
-        text = transaction.comment,
-        style = MaterialTheme.typography.body2
-      )
+      if (transaction.payment?.auto == true) {
+        Text(
+          modifier = Modifier.padding(start = 16.dp),
+          text = "auto",
+          style = MaterialTheme.typography.body2,
+          color = MaterialTheme.colors.secondary,
+        )
+      } else {
+        Text(
+          modifier = Modifier.padding(start = 16.dp),
+          text = transaction.comment,
+          style = MaterialTheme.typography.body2
+        )
+      }
     }
   }
 }

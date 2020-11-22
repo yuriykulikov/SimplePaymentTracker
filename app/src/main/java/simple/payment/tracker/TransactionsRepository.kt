@@ -26,6 +26,7 @@ data class Transaction(
 class TransactionsRepository(
   private val paymentsRepository: PaymentsRepository,
   private val notificationsRepository: NotificationsRepository,
+  private val automaticPaymentsRepository: AutomaticPaymentsRepository,
   private val logger: Logger
 ) {
   private val transactions: Observable<List<Transaction>> by lazy {
@@ -35,9 +36,14 @@ class TransactionsRepository(
 
     Observables.combineLatest(
       paymentsRepository.payments(),
-      notificationsById
-    ) { payments: List<Payment>, notifications: Map<Long, Notification> ->
-      aggregate(payments, notifications)
+      notificationsById,
+      automaticPaymentsRepository.matchers(),
+    ) {
+        payments: List<Payment>,
+        notifications: Map<Long, Notification>,
+        matchers: List<PaymentMatcher>,
+      ->
+      aggregate(payments, notifications, matchers)
     }
       .replay(1)
       .refCount(45, TimeUnit.SECONDS, AndroidSchedulers.mainThread())
@@ -50,13 +56,45 @@ class TransactionsRepository(
 
 fun aggregate(
   payments: List<Payment>,
-  notifications: Map<Long, Notification>
+  notifications: Map<Long, Notification>,
+  matchers: List<PaymentMatcher> = emptyList(),
 ): List<Transaction> {
   val start = System.nanoTime()
   // 1. link notifications
   // 2. filter unconfirmed notifications
   // 3. show notifications without duplicates
 
+  val notificationsWithoutPayment: List<Notification> =
+    notificationsWithoutExplicitPayment(
+      notifications,
+      payments.mapNotNull { it.notificationId }
+    )
+
+  val automaticPayments = findAutomatic(notificationsWithoutPayment, matchers)
+
+  val inbox = notificationsWithoutPayment
+    .minus(automaticPayments.mapNotNull { it.notification })
+    .map { Transaction(notification = it) }
+
+  return listOf(
+    confirmedTransactions(payments),
+    inbox,
+    automaticPayments,
+  )
+    .flatten()
+    .sortedByDescending { it.time }
+    .also {
+      println("aggregate took ${(System.nanoTime() - start) / 1000000}ms")
+    }
+}
+
+/**
+ * Finds notifications without explicit payments and removes duplicates
+ */
+private fun notificationsWithoutExplicitPayment(
+  notifications: Map<Long, Notification>,
+  idsFromPayments: List<Long>
+): List<Notification> {
   val validNotifications: Map<Long, Notification> = notifications
     .filterValues { notification -> "You received" !in notification.text }
     .filterValues { notification -> "Partial refund" !in notification.text }
@@ -72,20 +110,31 @@ fun aggregate(
   }
     .toMap()
 
-  val confirmedIds = payments.mapNotNull { it.notificationId }
-  val duplicates = confirmedIds.mapNotNull { idToGroup[it] }.flatten()
-  val allConfirmed = (confirmedIds + duplicates).toSet()
+  val duplicates = idsFromPayments.mapNotNull { idToGroup[it] }.flatten()
 
-  val unconfirmed = idToGroup.minus(allConfirmed)
+  return idToGroup
+    .minus(idsFromPayments)
+    .minus(duplicates)
     .values
     .distinct()
     .map { notifications.getValue(it.first()) }
-    .map { Transaction(notification = it) }
+}
 
-  val confirmedTransactions = payments.map { Transaction(payment = it) }
-  return (confirmedTransactions + unconfirmed).sortedByDescending { it.time }
-    .also {
-      println("aggregate took ${(System.nanoTime() - start) / 1000000}ms")
+private fun confirmedTransactions(payments: List<Payment>): List<Transaction> {
+  return payments.map { Transaction(payment = it) }
+}
+
+/**
+ * Run all [PaymentMatcher]s against notifications to find all automatically detectable
+ */
+fun findAutomatic(
+  validNotifications: List<Notification>,
+  matchers: List<PaymentMatcher>
+): List<Transaction> {
+  return validNotifications
+    .mapNotNull { notification ->
+      matchers.firstOrNull { it.matches(notification) }
+        ?.convert(notification)
     }
 }
 
