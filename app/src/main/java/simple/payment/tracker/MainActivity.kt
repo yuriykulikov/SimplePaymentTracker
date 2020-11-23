@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.setContent
 import org.koin.android.ext.android.inject
 import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
+import simple.payment.tracker.stores.DataStore
 
 
 class MainActivity : AppCompatActivity() {
@@ -13,6 +14,7 @@ class MainActivity : AppCompatActivity() {
   private val paymentsRepository: PaymentsRepository by inject()
   private val transactionsRepository: TransactionsRepository by inject()
   private val monthlyStatistics: MonthlyStatistics by inject()
+  private val settings: DataStore<Settings> by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -22,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         transactionsRepository,
         paymentsRepository,
         monthlyStatistics,
+        settings,
       )
     }
   }

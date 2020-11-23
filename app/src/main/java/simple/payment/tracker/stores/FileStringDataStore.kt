@@ -66,6 +66,28 @@ class FileDataStore<T : Any> private constructor(
 
       return FileDataStore(name, filer, adapter, initial)
     }
+
+    fun <T: Any> dataStore(
+      filer: Filer,
+      name: String,
+      clazz: Class<T>,
+      defaultValue: T,
+      moshi: Moshi
+    ): FileDataStore<T> {
+      val adapter: JsonAdapter<T> = moshi
+        .adapter(clazz)
+        .indent("  ")
+
+      val initial: T = filer.source(name)
+        ?.use {
+          runCatching {
+            adapter.fromJson(it)
+          }.getOrDefault(defaultValue)
+        }
+        ?: defaultValue
+
+      return FileDataStore(name, filer, adapter, initial)
+    }
   }
 }
 

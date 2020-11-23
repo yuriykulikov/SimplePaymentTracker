@@ -7,21 +7,31 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Colors
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import simple.payment.tracker.LoadingVectorImage
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.PaymentsRepository
+import simple.payment.tracker.R
+import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
+import simple.payment.tracker.stores.DataStore
+import simple.payment.tracker.theme.DarkThemeColors
+import simple.payment.tracker.theme.DeusExThemeColors
+import simple.payment.tracker.theme.LightThemeColors
 import simple.payment.tracker.theme.PaymentsTheme
+import simple.payment.tracker.theme.SynthwaveThemeColors
 import kotlin.random.Random.Default.nextInt
 
 sealed class Screen {
@@ -29,6 +39,8 @@ sealed class Screen {
   object ListAll : Screen()
   object New : Screen()
   object Monthly : Screen()
+  object Settings : Screen()
+
   data class Details(val transaction: Transaction) : Screen()
 }
 
@@ -38,14 +50,30 @@ fun PaymentsApp(
   transactions: TransactionsRepository,
   paymentsRepository: PaymentsRepository,
   monthlyStatistics: MonthlyStatistics,
+  settings: DataStore<Settings>
 ) {
-  PaymentsTheme {
+  val colors: State<Colors> = settings
+    .observe()
+    .map { it.theme.toColors() }
+    .toState(settings.value.theme.toColors())
+  PaymentsTheme(colors.value) {
     AppContent(
       backs,
       transactions,
       paymentsRepository,
       monthlyStatistics,
+      settings,
     )
+  }
+}
+
+private fun String.toColors(): Colors {
+  return when (this) {
+    "DeusExThemeColors" -> DeusExThemeColors
+    "SynthwaveThemeColors" -> SynthwaveThemeColors
+    "LightThemeColors" -> LightThemeColors
+    "DarkThemeColors" -> DarkThemeColors
+    else -> SynthwaveThemeColors
   }
 }
 
@@ -55,6 +83,7 @@ private fun AppContent(
   transactions: TransactionsRepository,
   paymentsRepository: PaymentsRepository,
   monthlyStatistics: MonthlyStatistics,
+  settings: DataStore<Settings>,
 ) {
   val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
   val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
@@ -84,6 +113,7 @@ private fun AppContent(
         is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, hideDetails)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails)
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar)
+        is Screen.Settings -> SettingsScreen(settings)
       }
     }
   }
@@ -139,6 +169,16 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
         .highlightIf(currentScreen, Screen.Monthly)
     ) {
       Text(text = "Stats", style = MaterialTheme.typography.body2)
+    }
+
+    IconButton(
+      onClick = { currentScreen.value = Screen.Settings },
+      modifier = Modifier.highlightIf(currentScreen, Screen.Settings)
+    ) {
+      LoadingVectorImage(
+        id = R.drawable.ic_baseline_more_vert_24,
+        tint = MaterialTheme.colors.onSurface
+      )
     }
   }
 }

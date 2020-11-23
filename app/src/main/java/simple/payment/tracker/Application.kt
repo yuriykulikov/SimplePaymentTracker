@@ -8,6 +8,8 @@ import io.reactivex.rxkotlin.Observables
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import simple.payment.tracker.compose.Backs
+import simple.payment.tracker.stores.DataStore
+import simple.payment.tracker.stores.FileDataStore
 import simple.payment.tracker.stores.Filer
 
 class Application : Application() {
@@ -41,6 +43,15 @@ class Application : Application() {
           )
         }
         single { Backs() }
+        single<DataStore<Settings>> {
+          FileDataStore.dataStore(
+            get(),
+            "settings.txt",
+            Settings::class.java,
+            Settings(theme = "SynthwaveThemeColors"),
+            get()
+          )
+        }
       })
     }
   }
