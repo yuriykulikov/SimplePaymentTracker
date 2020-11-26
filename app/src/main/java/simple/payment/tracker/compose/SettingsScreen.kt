@@ -8,11 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.preferredHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Colors
 import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,40 +19,24 @@ import androidx.compose.ui.unit.dp
 import simple.payment.tracker.Settings
 import simple.payment.tracker.stores.DataStore
 import simple.payment.tracker.stores.modify
-import simple.payment.tracker.theme.DarkThemeColors
-import simple.payment.tracker.theme.DeusExThemeColors
-import simple.payment.tracker.theme.LightThemeColors
-import simple.payment.tracker.theme.SynthwaveThemeColors
+import simple.payment.tracker.theme.themeColors
 import simple.payment.tracker.theme.themeTypography
 
 @Composable
 fun SettingsScreen(settings: DataStore<Settings>) {
   Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-    Text(text = "Theme", style = MaterialTheme.typography.h5)
+    Text(text = "Theme", style = typography.h6)
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-      ) {
-      ThemeSelector(
-        { settings.modify { it.copy(theme = "LightThemeColors") } },
-        "Light",
-        LightThemeColors
-      )
-      ThemeSelector(
-        { settings.modify { it.copy(theme = "DarkThemeColors") } },
-        "Dark",
-        DarkThemeColors
-      )
-      ThemeSelector(
-        { settings.modify { it.copy(theme = "DeusExThemeColors") } },
-        "Deus Ex",
-        DeusExThemeColors
-      )
-      ThemeSelector(
-        { settings.modify { it.copy(theme = "SynthwaveThemeColors") } },
-        "Synth",
-        SynthwaveThemeColors
-      )
+    ) {
+      themeColors().forEach { (name, colors) ->
+        ThemeSelector(
+          { settings.modify { it.copy(theme = name) } },
+          name,
+          colors
+        )
+      }
     }
     Divider()
   }

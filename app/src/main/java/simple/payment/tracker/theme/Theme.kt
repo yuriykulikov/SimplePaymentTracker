@@ -1,38 +1,63 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package simple.payment.tracker.theme
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Shapes
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
-val LightThemeColors = lightColors()
-val DarkThemeColors = darkColors()
+@Composable
+fun ColoredTheme(
+  colors: Colors,
+  content: @Composable() () -> Unit
+) {
+  MaterialTheme(
+    colors = colors,
+    typography = themeTypography,
+    shapes = shapes,
+    content = content
+  )
+}
 
-val Gold0 = Color(0xfffff69f)
-val Gold1 = Color(0xfffdd870)
-val Gold2 = Color(0xffd0902f)
-val Gold3 = Color(0xffa15501)
-val Gold4 = Color(0xff351409)
+fun themeColors() = listOf(
+  "Light" to LightColors,
+  "Dark" to DarkColors,
+  "DeusEx" to DeusExColors,
+  "Synth" to SynthwaveColors,
+  "G" to Gulasch,
+)
 
-val DeusExThemeColors = darkColors(
+fun String.toColors(): Colors {
+  return when (this) {
+    "Light" -> LightColors
+    "Dark" -> DarkColors
+    "DeusEx" -> DeusExColors
+    "Synth" -> SynthwaveColors
+    "G" -> Gulasch
+    else -> SynthwaveColors
+  }
+}
+
+private val shapes = Shapes(
+  small = RoundedCornerShape(4.dp),
+  medium = RoundedCornerShape(4.dp),
+  large = RoundedCornerShape(8.dp)
+)
+
+private val LightColors = lightColors()
+private val DarkColors = darkColors()
+
+private val Gold0 = Color(0xfffff69f)
+private val Gold1 = Color(0xfffdd870)
+private val Gold2 = Color(0xffd0902f)
+private val Gold3 = Color(0xffa15501)
+private val Gold4 = Color(0xff351409)
+
+private val DeusExColors = darkColors(
   primary = Gold2,
   primaryVariant = Gold3,
   secondary = Gold3,
@@ -46,23 +71,35 @@ val DeusExThemeColors = darkColors(
   onError = Color.Black,
 )
 
-val SynthPurpleWithDarkOverlay = Color(0xff332940)
-val SynthPurpleWithDarkOverlayOriginal = Color(0xff5D4B70)
-val SynthPurple = Color(0xffBB86FC)
-val SynthwaveThemeColors = darkColors(
-  background = SynthPurpleWithDarkOverlay,
+private val SynthPink = Color(0xffef9af2)
+private val SynthDarkPink = Color(0xff831187)
+private val SynthVibrantPurple = Color(0xff8a04ed)
+private val SynthPurple = Color(0xffBB86FC)
+private val SynthDarkPurple = Color(0xff240c76)
+private val SynthDarkerPurple = Color(0xff332940)
+private val SynthDarkestPurple = Color(0xff0c0c0c)
+
+private val MaterialCyan = Color(0xFF03DAC6)
+
+private val SynthwaveColors = darkColors(
+  background = SynthDarkerPurple,
+  surface = SynthDarkestPurple,
   onBackground = SynthPurple,
+  onSurface = SynthPurple,
+  primary = SynthPink,
+  primaryVariant = SynthPink,
+  secondary = MaterialCyan,
+  error = Color(0xFFCF6679),
 )
 
-@Composable
-fun PaymentsTheme(
-  colors: Colors,
-  content: @Composable() () -> Unit
-) {
-  MaterialTheme(
-    colors = colors,
-    typography = themeTypography,
-    shapes = shapes,
-    content = content
-  )
-}
+private val GYellow = Color(red = 255, green = 242, blue = 0)
+private val GGreen = Color(red = 76, green = 177, blue = 34)
+private val Gulasch = lightColors(
+  background = GYellow,
+  onBackground = GGreen,
+  surface = GGreen,
+  onSurface = GYellow,
+  primary = GGreen,
+  onPrimary = GYellow,
+  secondary = GGreen,
+)

@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.Colors
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -27,11 +27,8 @@ import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.stores.DataStore
-import simple.payment.tracker.theme.DarkThemeColors
-import simple.payment.tracker.theme.DeusExThemeColors
-import simple.payment.tracker.theme.LightThemeColors
-import simple.payment.tracker.theme.PaymentsTheme
-import simple.payment.tracker.theme.SynthwaveThemeColors
+import simple.payment.tracker.theme.ColoredTheme
+import simple.payment.tracker.theme.toColors
 import kotlin.random.Random.Default.nextInt
 
 sealed class Screen {
@@ -56,7 +53,7 @@ fun PaymentsApp(
     .observe()
     .map { it.theme.toColors() }
     .toState(settings.value.theme.toColors())
-  PaymentsTheme(colors.value) {
+  ColoredTheme(colors.value) {
     AppContent(
       backs,
       transactions,
@@ -64,16 +61,6 @@ fun PaymentsApp(
       monthlyStatistics,
       settings,
     )
-  }
-}
-
-private fun String.toColors(): Colors {
-  return when (this) {
-    "DeusExThemeColors" -> DeusExThemeColors
-    "SynthwaveThemeColors" -> SynthwaveThemeColors
-    "LightThemeColors" -> LightThemeColors
-    "DarkThemeColors" -> DarkThemeColors
-    else -> SynthwaveThemeColors
   }
 }
 
@@ -106,7 +93,7 @@ private fun AppContent(
   val screen: Screen = detailsToShow.value ?: selectedScreen.value
 
   Crossfade(screen) { scr ->
-    Surface(color = MaterialTheme.colors.background) {
+    Surface(color = colors.background) {
       when (scr) {
         is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar)
         is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar)
@@ -150,9 +137,7 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
       modifier = Modifier.weight(1f)
         .highlightIf(currentScreen, Screen.List)
     ) {
-      Text(
-        text = "Inbox", style = MaterialTheme.typography.body2
-      )
+      Text(text = "Inbox")
     }
 
     IconButton(
@@ -160,7 +145,7 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
       modifier = Modifier.weight(1f)
         .highlightIf(currentScreen, Screen.ListAll)
     ) {
-      Text(text = "All", style = MaterialTheme.typography.body2)
+      Text(text = "All")
     }
 
     IconButton(
@@ -168,7 +153,7 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
       modifier = Modifier.weight(1f)
         .highlightIf(currentScreen, Screen.Monthly)
     ) {
-      Text(text = "Stats", style = MaterialTheme.typography.body2)
+      Text(text = "Stats")
     }
 
     IconButton(
@@ -177,7 +162,7 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
     ) {
       LoadingVectorImage(
         id = R.drawable.ic_baseline_more_vert_24,
-        tint = MaterialTheme.colors.onSurface
+        tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
       )
     }
   }
@@ -191,7 +176,7 @@ private fun Modifier.highlightIf(
   return when (currentScreen.value) {
     target -> {
       background(
-        color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
+        color = colors.onSurface.copy(alpha = 0.1f),
         shape = RoundedCornerShape(20.dp)
       )
     }

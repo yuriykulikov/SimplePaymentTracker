@@ -1,6 +1,5 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -8,14 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.material.AmbientEmphasisLevels
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TextField
@@ -27,10 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.loadVectorResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import simple.payment.tracker.LoadingVectorImage
 import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
@@ -130,10 +129,10 @@ private fun InboxList(
     floatingActionButton = {
       FloatingActionButton(
         icon = {
-          loadVectorResource(id = R.drawable.ic_baseline_add_24)
-            .resource.resource?.let {
-              Image(asset = it)
-            }
+          LoadingVectorImage(
+            id = R.drawable.ic_baseline_add_24,
+            tint = colors.onPrimary
+          )
         },
         onClick = { showDetails(null) },
       )
@@ -145,13 +144,14 @@ private fun InboxList(
 fun SearchBar(search: MutableState<TextFieldValue>) {
   TopAppBar(
     content = {
+      val color = if (colors.isLight) colors.onPrimary else colors.onSurface
       TextField(
         value = search.value,
         onValueChange = { search.value = it },
         label = { Text("Search") },
-        textStyle = MaterialTheme.typography.body1,
         backgroundColor = Color.Transparent,
-        activeColor = MaterialTheme.colors.onSurface,
+        activeColor = color.copy(0.5f),
+        inactiveColor = color,
         modifier = Modifier.padding(2.dp)
       )
     }
@@ -160,10 +160,7 @@ fun SearchBar(search: MutableState<TextFieldValue>) {
 
 @Composable
 fun InboxTopBar() {
-  TopAppBar(
-    modifier = Modifier.fillMaxWidth(),
-    title = { Text(text = "Inbox", style = MaterialTheme.typography.body1) },
-  )
+  TopAppBar(title = { Text(text = "Inbox") })
 }
 
 @Composable
@@ -187,14 +184,14 @@ fun TransactionTitle(transaction: Transaction) {
       Text(
         transaction.merchant,
         style = when {
-          transaction.cancelled -> MaterialTheme.typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
-          else -> MaterialTheme.typography.subtitle1
+          transaction.cancelled -> typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
+          else -> typography.subtitle1
         }
       )
       Text(text = "", modifier = Modifier.weight(1F))
       Text(
         "${transaction.sum}",
-        style = MaterialTheme.typography.subtitle1
+        style = typography.subtitle1
       )
     }
   }
@@ -209,20 +206,22 @@ fun TransactionSubtitle(
     ProvideEmphasis(AmbientEmphasisLevels.current.medium) {
       Text(
         text = transaction.category,
-        style = MaterialTheme.typography.body2
+        style = typography.subtitle2,
+        color = colors.primaryVariant,
       )
       if (transaction.payment?.auto == true) {
         Text(
           modifier = Modifier.padding(start = 16.dp),
           text = "auto",
-          style = MaterialTheme.typography.body2,
-          color = MaterialTheme.colors.secondary,
+          style = typography.subtitle2,
+          color = colors.secondary,
         )
       } else {
         Text(
           modifier = Modifier.padding(start = 16.dp),
           text = transaction.comment,
-          style = MaterialTheme.typography.body2
+          style = typography.subtitle2,
+          color = colors.secondaryVariant,
         )
       }
     }
@@ -232,6 +231,6 @@ fun TransactionSubtitle(
 @Composable
 fun ListDivider() {
   Divider(
-    color = MaterialTheme.colors.onSurface.copy(alpha = 0.08f)
+    color = colors.onSurface.copy(alpha = 0.08f)
   )
 }

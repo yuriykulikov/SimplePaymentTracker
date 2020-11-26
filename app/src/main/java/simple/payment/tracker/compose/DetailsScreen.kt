@@ -1,21 +1,25 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.Box
 import androidx.compose.foundation.ScrollableColumn
 import androidx.compose.foundation.Text
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.Checkbox
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
+import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -26,10 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawOpacity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import simple.payment.tracker.LoadingVectorImage
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
+import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -70,22 +75,16 @@ fun DetailsScreen(
   val comment = remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
   val trip = remember { mutableStateOf(TextFieldValue(transaction?.trip ?: "")) }
 
-  val strike = MaterialTheme.typography.body1.copy(textDecoration = TextDecoration.LineThrough)
 
   Scaffold(
     topBar = {
       TopAppBar(
-        title = {
-          Text(
-            text = "${sum.value.text} to ${merchant.value.text} ${if (cancelled.value) " (cancelled)" else ""}",
-            style = if (cancelled.value) strike else MaterialTheme.typography.body1
-          )
-        },
+        title = { Text(text = "Payment") },
         actions = {
           val canSave = (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess
             && sum.value.text.toIntOrNull() != null
             && merchant.value.text.isNotEmpty()
-            && category.value != null)
+            && !category.value.isNullOrEmpty())
           IconButton(onClick = {
             if (canSave) ({
               paymentsRepository
@@ -109,10 +108,10 @@ fun DetailsScreen(
               onSave()
             })()
           }) {
-            Text(
-              text = "Save",
-              style = MaterialTheme.typography.body2,
-              modifier = Modifier.drawOpacity(if (canSave) 1f else 0.2f)
+            LoadingVectorImage(
+              id = R.drawable.ic_baseline_done_24,
+              tint = colors.primary,
+              modifier = Modifier.drawOpacity(if (canSave) 1f else 0.2f),
             )
           }
         }
@@ -122,43 +121,52 @@ fun DetailsScreen(
       Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
         Column {
           ScrollableColumn {
-            Column {
+            Column(
+              modifier = Modifier.padding(horizontal = 16.dp)
+            ) {
               Row {
                 NamedTextFieldInput(
-                  header = "€",
-                  state = sum,
-                  keyboardType = KeyboardType.Number,
-                  modifier = Modifier.fillMaxWidth(0.8f).padding(horizontal = 16.dp),
-                  onValueChange = {
-                    if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
-                      sum.value = it
-                    }
-                  }
-                )
-
-                Checkbox(
-                  modifier = Modifier.debugBorder().padding(16.dp),
-                  checked = !cancelled.value,
-                  onCheckedChange = { cancelled.value = !cancelled.value }
-                )
-              }
-            }
-            Column {
-              NamedTextFieldInput(header = "to", state = merchant)
-              NamedTextFieldInput(header = "for", state = comment)
-              Row {
-                NamedTextFieldInput(
-                  header = "on",
+                  leadingIcon = {
+                    LoadingVectorImage(
+                      id = R.drawable.ic_baseline_today_24,
+                      tint = colors.onSurface
+                    )
+                  },
                   state = time,
                   enabled = transaction?.notification == null,
-                  modifier = Modifier.weight(0.5f).padding(start = 16.dp),
+                  modifier = Modifier.weight(0.5f),
                 )
                 NamedTextFieldInput(
                   header = "Trip",
+                  leadingIcon = {
+                    LoadingVectorImage(
+                      id = R.drawable.ic_baseline_map_24,
+                      tint = colors.onSurface
+                    )
+                  },
                   state = trip,
-                  modifier = Modifier.weight(0.5f).padding(end = 16.dp).padding(start = 8.dp),
+                  modifier = Modifier.weight(0.5f).padding(start = 8.dp),
                 )
               }
+              NamedTextFieldInput(
+                header = "€",
+                state = sum,
+                keyboardType = KeyboardType.Number,
+                onValueChange = {
+                  if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
+                    sum.value = it
+                  }
+                },
+              )
+              NamedTextFieldInput(header = "to", state = merchant)
+
+              OutlinedTextField(
+                label = { Text(text = "for", style = typography.body1) },
+                value = comment.value,
+                onValueChange = { comment.value = it },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = typography.body1,
+              )
               InputDivider()
               CategorySelector(category)
             }
@@ -172,52 +180,57 @@ fun DetailsScreen(
 @Composable
 fun InputDivider() {
   Divider(
-    color = MaterialTheme.colors.onSurface.copy(alpha = 0.08f)
+    color = colors.onSurface.copy(alpha = 0.08f)
   )
 }
 
 /** Header and TextField to input text */
 @Composable
 private fun NamedTextFieldInput(
-  header: String,
+  header: String? = null,
   state: MutableState<TextFieldValue>,
   keyboardType: KeyboardType = KeyboardType.Text,
   enabled: Boolean = true,
-  modifier: Modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-  onValueChange: (TextFieldValue) -> Unit = { state.value = it }
+  modifier: Modifier = Modifier.fillMaxWidth(),
+  onValueChange: (TextFieldValue) -> Unit = { state.value = it },
+  leadingIcon: @Composable (() -> Unit)? = null,
 ) {
-  OutlinedTextField(
-    label = {
-      Text(
-        header,
-        style = MaterialTheme.typography.body1
-      )
-    },
+  TextField(
+    label = header?.let { { Text(header, style = typography.overline) } },
+    leadingIcon = leadingIcon,
     value = state.value,
     onValueChange = if (enabled) onValueChange else { _ -> },
     keyboardType = keyboardType,
     modifier = modifier,
-    textStyle = MaterialTheme.typography.body1,
-    //backgroundColor = Color.Transparent,
+    textStyle = typography.body1,
+//backgroundColor = Color.Transparent,
   )
 }
 
 /** Category tiles in 2 columns */
 @Composable
-private fun CategorySelector(category: MutableState<String?>) {
+private fun CategorySelector(selected: MutableState<String?>) {
   categories.toList().chunked(2).forEach { chunk ->
     Row {
-      chunk.forEach {
+      chunk.forEach { category ->
         Column(
           modifier = Modifier
             .weight(0.5F)
-            .clickable(onClick = { category.value = it })
+            .clickable(onClick = { selected.value = category })
         ) {
           Text(
-            it,
-            color = if (it == category.value) MaterialTheme.colors.primary else MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.button,
-            modifier = Modifier.padding(16.dp)
+            category,
+            color = if (category == selected.value) colors.onSecondary else colors.onBackground,
+            style = typography.button,
+            modifier = Modifier
+              .padding(8.dp)
+              .then(
+                if (category == selected.value) Modifier.background(
+                  colors.secondary,
+                  CircleShape
+                ) else Modifier
+              )
+              .padding(8.dp),
           )
         }
       }

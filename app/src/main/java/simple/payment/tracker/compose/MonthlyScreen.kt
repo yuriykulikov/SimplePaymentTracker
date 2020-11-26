@@ -1,33 +1,25 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumnFor
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import simple.payment.tracker.MonthlyReport
 import simple.payment.tracker.MonthlyStatistics
 
 @Composable
 fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable() () -> Unit) {
   Scaffold(
-    topBar = {
-      TopAppBar(
-        modifier = Modifier.fillMaxWidth(),
-        title = {
-          Text(text = "Statistics", style = MaterialTheme.typography.body1)
-        },
-      )
-    },
+    topBar = { TopAppBar(title = { Text(text = "Stats") }) },
     bottomBar = bottomBar,
     bodyContent = {
       StatisticsContent(monthlyStatistics)
@@ -37,45 +29,53 @@ fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable()
 
 @Composable
 private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
-  Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-    val list = monthlyStatistics
-      .reports()
-      .map { reports -> reports.sortedByDescending { it.month } }
-      .toState(initial = emptyList<MonthlyReport>())
+  val list = monthlyStatistics
+    .reports()
+    .map { reports -> reports.sortedByDescending { it.month } }
+    .toState(initial = emptyList<MonthlyReport>())
 
-    LazyColumnFor(list.value, itemContent = { stats ->
+  LazyColumnFor(
+    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+    items = list.value,
+    itemContent = { stats ->
+      MonthEntry(stats)
+      ListDivider()
+    }
+  )
+}
+
+@Composable
+private fun MonthEntry(stats: MonthlyReport) {
+  Row(modifier = Modifier.padding(top = 8.dp)) {
+    Column(Modifier.weight(2F)) {
+      Text(stats.month, style = typography.h6)
+    }
+    Column(Modifier.weight(1F)) {
+      Text(
+        stats.payments.sumBy { it.sum }.toString(),
+        style = typography.h6,
+        color = colors.secondary,
+      )
+    }
+  }
+  stats.categorySums
+    .sortedByDescending { (_, sum) -> sum }
+    .forEach { (cat, sum) ->
       Row {
         Column(Modifier.weight(2F)) {
-          Text(stats.month, style = MaterialTheme.typography.h4)
+          Text(
+            cat,
+            style = typography.body1
+          )
         }
         Column(Modifier.weight(1F)) {
           Text(
-            stats.payments.sumBy { it.sum }.toString(),
-            style = MaterialTheme.typography.h5
+            sum.toString(),
+            style = typography.body1
           )
         }
       }
-      stats.categorySums
-        .sortedByDescending { (_, sum) -> sum }
-        .forEach { (cat, sum) ->
-          Row {
-            Column(Modifier.weight(2F)) {
-              Text(
-                cat,
-                style = MaterialTheme.typography.body1
-              )
-            }
-            Column(Modifier.weight(1F)) {
-              Text(
-                sum.toString(),
-                style = MaterialTheme.typography.body1
-              )
-            }
-          }
-        }
-      ListDivider()
-    })
-  }
+    }
 }
 
 

@@ -36,13 +36,6 @@ private val appFontFamily = fontFamily(
   )
 )
 
-private val bodyFontFamily = fontFamily(
-  fonts = listOf(
-    font(R.font.domine_regular),
-    font(R.font.domine_bold, FontWeight.Bold)
-  )
-)
-
 val themeTypography = Typography(
   h4 = TextStyle(
     fontFamily = appFontFamily,
@@ -70,7 +63,7 @@ val themeTypography = Typography(
     fontSize = 14.sp
   ),
   body1 = TextStyle(
-    fontFamily = bodyFontFamily,
+    fontFamily = appFontFamily,
     fontWeight = FontWeight.Normal,
     fontSize = 16.sp
   ),
