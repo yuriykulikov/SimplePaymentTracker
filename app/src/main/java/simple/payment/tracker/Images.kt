@@ -8,9 +8,10 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.loadVectorResource
 
 @Composable
-fun LoadingVectorImage(id: Int, modifier: Modifier = Modifier, tint: Color?) {
+fun LoadingVectorImage(id: Int, modifier: Modifier = Modifier, tint: Color? = null) {
   loadVectorResource(id = id)
-    .resource.resource?.let {
-      Image(asset = it, modifier = modifier, colorFilter = tint?.let { ColorFilter.tint(it) })
+    .resource.resource?.let { vector ->
+      val colorFilter = tint?.let { ColorFilter.tint(it) }
+      Image(imageVector = vector, modifier = modifier, colorFilter = colorFilter)
     }
 }

@@ -1,7 +1,7 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Text
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +11,7 @@ import androidx.compose.material.Colors
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -49,10 +50,12 @@ fun PaymentsApp(
   monthlyStatistics: MonthlyStatistics,
   settings: DataStore<Settings>
 ) {
-  val colors: State<Colors> = settings
-    .observe()
-    .map { it.theme.toColors() }
-    .toState(settings.value.theme.toColors())
+  val colors: State<Colors> = rememberRxState(initial = settings.value.theme.toColors()) {
+    settings
+      .observe()
+      .map { it.theme.toColors() }
+  }
+
   ColoredTheme(colors.value) {
     AppContent(
       backs,
@@ -82,7 +85,7 @@ private fun AppContent(
 
   backs
     .backPressed
-    .commitSubscribe {
+    .CommitSubscribe {
       if (detailsToShow.value != null) {
         hideDetails()
       } else {
@@ -134,7 +137,8 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
   ) {
     IconButton(
       onClick = { currentScreen.value = Screen.List },
-      modifier = Modifier.weight(1f)
+      modifier = Modifier
+        .weight(1f)
         .highlightIf(currentScreen, Screen.List)
     ) {
       Text(text = "Inbox")
@@ -142,7 +146,8 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
 
     IconButton(
       onClick = { currentScreen.value = Screen.ListAll },
-      modifier = Modifier.weight(1f)
+      modifier = Modifier
+        .weight(1f)
         .highlightIf(currentScreen, Screen.ListAll)
     ) {
       Text(text = "All")
@@ -150,7 +155,8 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
 
     IconButton(
       onClick = { currentScreen.value = Screen.Monthly },
-      modifier = Modifier.weight(1f)
+      modifier = Modifier
+        .weight(1f)
         .highlightIf(currentScreen, Screen.Monthly)
     ) {
       Text(text = "Stats")

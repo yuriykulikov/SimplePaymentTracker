@@ -1,7 +1,7 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.foundation.ScrollableColumn
-import androidx.compose.foundation.Text
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -12,13 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -118,7 +119,11 @@ fun DetailsScreen(
       )
     },
     bodyContent = {
-      Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .wrapContentSize(Alignment.TopCenter)
+      ) {
         Column {
           ScrollableColumn {
             Column(
@@ -145,7 +150,9 @@ fun DetailsScreen(
                     )
                   },
                   state = trip,
-                  modifier = Modifier.weight(0.5f).padding(start = 8.dp),
+                  modifier = Modifier
+                    .weight(0.5f)
+                    .padding(start = 8.dp),
                 )
               }
               NamedTextFieldInput(
@@ -187,21 +194,21 @@ fun InputDivider() {
 /** Header and TextField to input text */
 @Composable
 private fun NamedTextFieldInput(
+  modifier: Modifier = Modifier,
   header: String? = null,
   state: MutableState<TextFieldValue>,
   keyboardType: KeyboardType = KeyboardType.Text,
   enabled: Boolean = true,
-  modifier: Modifier = Modifier.fillMaxWidth(),
   onValueChange: (TextFieldValue) -> Unit = { state.value = it },
   leadingIcon: @Composable (() -> Unit)? = null,
 ) {
   TextField(
-    label = header?.let { { Text(header, style = typography.overline) } },
-    leadingIcon = leadingIcon,
+    label = header?.let { { Text(it, style = typography.overline) } },
     value = state.value,
     onValueChange = if (enabled) onValueChange else { _ -> },
-    keyboardType = keyboardType,
-    modifier = modifier,
+    leadingIcon = leadingIcon,
+    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+    modifier = modifier.fillMaxWidth(),
     textStyle = typography.body1,
 //backgroundColor = Color.Transparent,
   )

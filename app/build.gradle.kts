@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("de.mannodermaus.android-junit5")
 }
 
 android {
@@ -37,7 +38,8 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.0.0-alpha06"
+        kotlinCompilerExtensionVersion = "1.0.0-alpha09"
+        kotlinCompilerVersion = "1.4.21"
     }
 }
 
@@ -59,18 +61,16 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.2.0")
 
-    implementation("com.google.firebase:firebase-database:19.3.1")
+    implementation("com.google.firebase:firebase-database:19.6.0")
 }
 
 // compose
 dependencies {
-    val compose = "1.0.0-alpha06"
-
-    // implementation("androidx.compose.compiler:compiler:$compose")
+    val compose = "1.0.0-alpha10"
     implementation("androidx.compose.ui:ui:$compose")
     implementation("androidx.compose.foundation:foundation-layout:$compose")
     implementation("androidx.compose.material:material:$compose")
-    implementation("androidx.ui:ui-tooling:$compose")
+    implementation("androidx.compose.ui:ui-tooling:$compose")
 }
 
 // test

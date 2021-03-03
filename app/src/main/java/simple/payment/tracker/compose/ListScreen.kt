@@ -1,6 +1,6 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.Text
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +17,7 @@ import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.ProvideEmphasis
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -71,10 +72,12 @@ private fun TransactionsList(
     },
     bottomBar = bottomBar,
     bodyContent = {
-      Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-        val data = transactionsRepository
-          .transactions()
-          .toState(initial = emptyList())
+      Box(
+        modifier = modifier
+          .fillMaxSize()
+          .wrapContentSize(Alignment.Center)
+      ) {
+        val data = rememberRxState(initial = emptyList()) { transactionsRepository.transactions() }
 
         val items = when {
           search.value.text.isEmpty() -> data.value
@@ -112,10 +115,12 @@ private fun InboxList(
     bottomBar = bottomBar,
     bodyContent = {
       Column(modifier = modifier.fillMaxSize()) {
-        val data = transactionsRepository
-          .transactions()
-          .map { list -> list.filter { it.payment == null } }
-          .toState(initial = emptyList())
+        val data =
+          rememberRxState(initial = emptyList()) {
+            transactionsRepository
+              .transactions()
+              .map { list -> list.filter { it.payment == null } }
+          }
 
         LazyColumnFor(
           items = data.value,
@@ -128,14 +133,13 @@ private fun InboxList(
     },
     floatingActionButton = {
       FloatingActionButton(
-        icon = {
-          LoadingVectorImage(
-            id = R.drawable.ic_baseline_add_24,
-            tint = colors.onPrimary
-          )
-        },
         onClick = { showDetails(null) },
-      )
+      ) {
+        LoadingVectorImage(
+          id = R.drawable.ic_baseline_add_24,
+          tint = colors.onPrimary
+        )
+      }
     },
   )
 }
