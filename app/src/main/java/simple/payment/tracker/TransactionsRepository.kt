@@ -98,6 +98,8 @@ private fun notificationsWithoutExplicitPayment(
   val validNotifications: Map<Long, Notification> = notifications
     .filterValues { notification -> "You received" !in notification.text }
     .filterValues { notification -> "Partial refund" !in notification.text }
+    .filterValues { notification -> !notification.text.startsWith("Are you trying") }
+    .filterValues { notification -> notification.sum() != 0 }
 
   // N^2
   val idToGroup: Map<Long, Set<Long>> = validNotifications.values.map { notification ->
