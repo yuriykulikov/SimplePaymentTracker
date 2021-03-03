@@ -9,16 +9,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumnFor
-import androidx.compose.material.AmbientEmphasisLevels
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
-import androidx.compose.material.ProvideEmphasis
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import simple.payment.tracker.LoadingVectorImage
+import simple.payment.tracker.Icon
 import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
@@ -71,7 +71,7 @@ private fun TransactionsList(
       SearchBar(search)
     },
     bottomBar = bottomBar,
-    bodyContent = {
+    content = {
       Box(
         modifier = modifier
           .fillMaxSize()
@@ -89,13 +89,14 @@ private fun TransactionsList(
           }
         }
 
-        LazyColumnFor(
-          items = items,
-          modifier = Modifier.debugBorder(),
-          itemContent = { transaction ->
+        LazyColumn(
+          modifier = Modifier.debugBorder()
+        ) {
+          items(items) { transaction ->
             TransactionListRow(transaction, showDetails)
             ListDivider()
-          })
+          }
+        }
       }
     }
   )
@@ -113,7 +114,7 @@ private fun InboxList(
       InboxTopBar()
     },
     bottomBar = bottomBar,
-    bodyContent = {
+    content = {
       Column(modifier = modifier.fillMaxSize()) {
         val data =
           rememberRxState(initial = emptyList()) {
@@ -122,20 +123,21 @@ private fun InboxList(
               .map { list -> list.filter { it.payment == null } }
           }
 
-        LazyColumnFor(
-          items = data.value,
-          modifier = Modifier.debugBorder(),
-          itemContent = { transaction ->
+        LazyColumn(
+          modifier = Modifier.debugBorder()
+        ) {
+          items(data.value) { transaction ->
             TransactionListRow(transaction, showDetails)
             ListDivider()
-          })
+          }
+        }
       }
     },
     floatingActionButton = {
       FloatingActionButton(
         onClick = { showDetails(null) },
       ) {
-        LoadingVectorImage(
+        Icon(
           id = R.drawable.ic_baseline_add_24,
           tint = colors.onPrimary
         )
@@ -153,10 +155,12 @@ fun SearchBar(search: MutableState<TextFieldValue>) {
         value = search.value,
         onValueChange = { search.value = it },
         label = { Text("Search") },
-        backgroundColor = Color.Transparent,
-        activeColor = color.copy(0.5f),
-        inactiveColor = color,
-        modifier = Modifier.padding(2.dp)
+        colors = TextFieldDefaults.textFieldColors(
+          backgroundColor = Color.Transparent,
+          focusedIndicatorColor = color.copy(0.5f),
+          unfocusedIndicatorColor = color,
+        ),
+        modifier = Modifier.padding(2.dp),
       )
     }
   )
@@ -183,21 +187,19 @@ fun TransactionListRow(transaction: Transaction, showDetails: (Transaction?) -> 
 
 @Composable
 fun TransactionTitle(transaction: Transaction) {
-  ProvideEmphasis(AmbientEmphasisLevels.current.high) {
-    Row(horizontalArrangement = Arrangement.SpaceAround) {
-      Text(
-        transaction.merchant,
-        style = when {
-          transaction.cancelled -> typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
-          else -> typography.subtitle1
-        }
-      )
-      Text(text = "", modifier = Modifier.weight(1F))
-      Text(
-        "${transaction.sum}",
-        style = typography.subtitle1
-      )
-    }
+  Row(horizontalArrangement = Arrangement.SpaceAround) {
+    Text(
+      transaction.merchant,
+      style = when {
+        transaction.cancelled -> typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
+        else -> typography.subtitle1
+      }
+    )
+    Text(text = "", modifier = Modifier.weight(1F))
+    Text(
+      "${transaction.sum}",
+      style = typography.subtitle1
+    )
   }
 }
 
@@ -207,27 +209,25 @@ fun TransactionSubtitle(
   modifier: Modifier = Modifier
 ) {
   Row(modifier) {
-    ProvideEmphasis(AmbientEmphasisLevels.current.medium) {
+    Text(
+      text = transaction.category,
+      style = typography.subtitle2,
+      color = colors.primaryVariant,
+    )
+    if (transaction.payment?.auto == true) {
       Text(
-        text = transaction.category,
+        modifier = Modifier.padding(start = 16.dp),
+        text = "auto",
         style = typography.subtitle2,
-        color = colors.primaryVariant,
+        color = colors.secondary,
       )
-      if (transaction.payment?.auto == true) {
-        Text(
-          modifier = Modifier.padding(start = 16.dp),
-          text = "auto",
-          style = typography.subtitle2,
-          color = colors.secondary,
-        )
-      } else {
-        Text(
-          modifier = Modifier.padding(start = 16.dp),
-          text = transaction.comment,
-          style = typography.subtitle2,
-          color = colors.secondaryVariant,
-        )
-      }
+    } else {
+      Text(
+        modifier = Modifier.padding(start = 16.dp),
+        text = transaction.comment,
+        style = typography.subtitle2,
+        color = colors.secondaryVariant,
+      )
     }
   }
 }

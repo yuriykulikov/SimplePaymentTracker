@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
@@ -23,7 +24,7 @@ fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable()
   Scaffold(
     topBar = { TopAppBar(title = { Text(text = "Stats") }) },
     bottomBar = bottomBar,
-    bodyContent = {
+    content = {
       StatisticsContent(monthlyStatistics)
     },
   )
@@ -42,10 +43,10 @@ private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
       .fillMaxSize()
       .padding(horizontal = 16.dp)
   ) {
-    items(list.value, itemContent = { stats ->
+    items(list.value) { stats ->
       MonthEntry(stats)
       ListDivider()
-    })
+    }
   }
 }
 

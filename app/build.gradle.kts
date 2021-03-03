@@ -38,8 +38,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.0.0-alpha09"
-        kotlinCompilerVersion = "1.4.21"
+        kotlinCompilerExtensionVersion = "1.0.0-beta01"
     }
 }
 
@@ -66,11 +65,18 @@ dependencies {
 
 // compose
 dependencies {
-    val compose = "1.0.0-alpha10"
-    implementation("androidx.compose.ui:ui:$compose")
-    implementation("androidx.compose.foundation:foundation-layout:$compose")
-    implementation("androidx.compose.material:material:$compose")
-    implementation("androidx.compose.ui:ui-tooling:$compose")
+    val compose = "1.0.0-beta01"
+
+    implementation ("androidx.compose.runtime:runtime:$compose")
+    implementation ("androidx.compose.ui:ui:$compose")
+    implementation ("androidx.compose.foundation:foundation-layout:$compose")
+    implementation ("androidx.compose.material:material:$compose")
+    implementation ("androidx.compose.material:material-icons-extended:$compose")
+    implementation ("androidx.compose.foundation:foundation:$compose")
+    implementation ("androidx.compose.animation:animation:$compose")
+    implementation ("androidx.compose.ui:ui-tooling:$compose")
+
+    implementation ("androidx.activity:activity-compose:1.3.0-alpha03")
 }
 
 // test

@@ -1,7 +1,7 @@
 package simple.payment.tracker.compose
 
-import androidx.compose.foundation.ScrollableColumn
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
@@ -28,11 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawOpacity
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import simple.payment.tracker.LoadingVectorImage
+import simple.payment.tracker.Icon
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
@@ -87,7 +90,7 @@ fun DetailsScreen(
             && merchant.value.text.isNotEmpty()
             && !category.value.isNullOrEmpty())
           IconButton(onClick = {
-            if (canSave) ({
+            if (canSave) {
               paymentsRepository
                 .changeOrCreatePayment(
                   transaction?.id,
@@ -107,32 +110,33 @@ fun DetailsScreen(
                   )
                 )
               onSave()
-            })()
+            }
           }) {
-            LoadingVectorImage(
-              id = R.drawable.ic_baseline_done_24,
+            Icon(
+              modifier = Modifier.alpha(if (canSave) 1f else 0.2f),
+              painter = painterResource(id = R.drawable.ic_baseline_done_24),
+              contentDescription = null,
               tint = colors.primary,
-              modifier = Modifier.drawOpacity(if (canSave) 1f else 0.2f),
             )
           }
         }
       )
     },
-    bodyContent = {
+    content = {
       Box(
         modifier = Modifier
           .fillMaxSize()
           .wrapContentSize(Alignment.TopCenter)
       ) {
         Column {
-          ScrollableColumn {
+          Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
             Column(
               modifier = Modifier.padding(horizontal = 16.dp)
             ) {
               Row {
                 NamedTextFieldInput(
                   leadingIcon = {
-                    LoadingVectorImage(
+                    Icon(
                       id = R.drawable.ic_baseline_today_24,
                       tint = colors.onSurface
                     )
@@ -144,7 +148,7 @@ fun DetailsScreen(
                 NamedTextFieldInput(
                   header = "Trip",
                   leadingIcon = {
-                    LoadingVectorImage(
+                    Icon(
                       id = R.drawable.ic_baseline_map_24,
                       tint = colors.onSurface
                     )

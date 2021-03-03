@@ -18,17 +18,17 @@ package simple.payment.tracker.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.font
-import androidx.compose.ui.text.font.fontFamily
 import androidx.compose.ui.unit.sp
 import simple.payment.tracker.R
 
-private val regular = font(R.font.montserrat_regular)
-private val medium = font(R.font.montserrat_medium, FontWeight.W500)
-private val semibold = font(R.font.montserrat_semibold, FontWeight.W600)
+private val regular = Font(R.font.montserrat_regular)
+private val medium = Font(R.font.montserrat_medium, FontWeight.W500)
+private val semibold = Font(R.font.montserrat_semibold, FontWeight.W600)
 
-private val appFontFamily = fontFamily(
+private val appFontFamily = FontFamily(
   fonts = listOf(
     regular,
     medium,

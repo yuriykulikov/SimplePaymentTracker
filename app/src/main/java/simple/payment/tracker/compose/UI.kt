@@ -18,9 +18,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import simple.payment.tracker.LoadingVectorImage
+import simple.payment.tracker.Icon
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
@@ -124,10 +125,11 @@ val borderColors = listOf(
   Color.Transparent
 )
 
-@Composable
-fun Modifier.debugBorder(): Modifier {
-  return this
-  return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
+fun Modifier.debugBorder(): Modifier = composed {
+  if (false) {
+    border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
+  }
+  this
 }
 
 @Composable
@@ -166,7 +168,7 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
       onClick = { currentScreen.value = Screen.Settings },
       modifier = Modifier.highlightIf(currentScreen, Screen.Settings)
     ) {
-      LoadingVectorImage(
+      Icon(
         id = R.drawable.ic_baseline_more_vert_24,
         tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
       )
@@ -174,12 +176,11 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
   }
 }
 
-@Composable
 private fun Modifier.highlightIf(
   currentScreen: MutableState<Screen>,
   target: Screen
-): Modifier {
-  return when (currentScreen.value) {
+): Modifier = composed {
+  when (currentScreen.value) {
     target -> {
       background(
         color = colors.onSurface.copy(alpha = 0.1f),
