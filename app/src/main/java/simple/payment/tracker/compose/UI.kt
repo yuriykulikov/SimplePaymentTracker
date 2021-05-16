@@ -101,8 +101,8 @@ private fun AppContent(
       when (scr) {
         is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar)
         is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar)
-        is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, hideDetails)
-        is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails)
+        is Screen.Details -> DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
+        is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails,settings)
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar)
         is Screen.Settings -> SettingsScreen(settings)
       }

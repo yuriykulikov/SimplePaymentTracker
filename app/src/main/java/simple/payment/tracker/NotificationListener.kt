@@ -4,12 +4,14 @@ import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import org.koin.android.ext.android.inject
+import simple.payment.tracker.stores.DataStore
 
 /**
  * Listens for incoming PayPal notificationsStore. Skips all other notificationsStore as well as grouped notificationsStore.
  */
 class NotificationListener : NotificationListenerService() {
   private val notificationsRepository: NotificationsRepository by inject()
+  private val settings: DataStore<Settings> by inject()
   override fun onListenerConnected() {
     super.onListenerConnected()
     scan()
@@ -29,7 +31,7 @@ class NotificationListener : NotificationListenerService() {
           text != null -> Notification(
             time = notification.postTime,
             text = text,
-            device = Build.MODEL
+            device = settings.value.deviceName,
           )
           else -> null
         }

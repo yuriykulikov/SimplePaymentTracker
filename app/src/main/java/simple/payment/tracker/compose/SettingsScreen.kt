@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Colors
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme.typography
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -25,11 +26,17 @@ import simple.payment.tracker.theme.themeTypography
 
 @Composable
 fun SettingsScreen(settings: DataStore<Settings>) {
-  Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+  Column(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(16.dp)
+  ) {
     Text(text = "Theme", style = typography.h6)
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
-      modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 16.dp),
     ) {
       themeColors().forEach { (name, colors) ->
         ThemeSelector(
@@ -40,6 +47,22 @@ fun SettingsScreen(settings: DataStore<Settings>) {
       }
     }
     Divider()
+    val device = rememberRxState("") { settings.observe().map { it.deviceName } }
+    OutlinedTextField(
+      label = { Text(text = "Device", style = typography.body1) },
+      value = device.value,
+      onValueChange = { settings.modify { prev -> prev.copy(deviceName = it) } },
+      modifier = Modifier.fillMaxWidth(),
+      textStyle = typography.body1,
+    )
+    val trip = rememberRxState("") { settings.observe().map { it.trip } }
+    OutlinedTextField(
+      label = { Text(text = "Trip", style = typography.body1) },
+      value = trip.value,
+      onValueChange = { settings.modify { prev -> prev.copy(trip = it) } },
+      modifier = Modifier.fillMaxWidth(),
+      textStyle = typography.body1,
+    )
   }
 }
 

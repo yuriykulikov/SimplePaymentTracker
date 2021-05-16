@@ -39,7 +39,9 @@ import simple.payment.tracker.Icon
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
+import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.stores.DataStore
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -57,7 +59,8 @@ private val dateFormat = SimpleDateFormat(
 fun DetailsScreen(
   paymentsRepository: PaymentsRepository,
   transaction: Transaction?,
-  onSave: () -> Unit
+  onSave: () -> Unit,
+  settings: DataStore<Settings>
 ) {
   val category: MutableState<String?> = remember {
     mutableStateOf(transaction?.category)
@@ -77,8 +80,17 @@ fun DetailsScreen(
 
   val cancelled = remember { mutableStateOf(transaction?.cancelled ?: false) }
   val comment = remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
-  val trip = remember { mutableStateOf(TextFieldValue(transaction?.trip ?: "")) }
-
+  val trip = remember {
+    mutableStateOf(
+      TextFieldValue(
+        when {
+          transaction?.payment == null -> settings.value.trip
+          transaction.payment.trip != null -> transaction.payment.trip
+          else -> ""
+        }
+      )
+    )
+  }
 
   Scaffold(
     topBar = {
