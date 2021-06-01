@@ -214,21 +214,18 @@ fun TransactionSubtitle(
       style = typography.subtitle2,
       color = colors.primaryVariant,
     )
-    if (transaction.payment?.auto == true) {
-      Text(
-        modifier = Modifier.padding(start = 16.dp),
-        text = "auto",
-        style = typography.subtitle2,
-        color = colors.secondary,
-      )
-    } else {
-      Text(
-        modifier = Modifier.padding(start = 16.dp),
-        text = transaction.comment,
-        style = typography.subtitle2,
-        color = colors.secondaryVariant,
-      )
+
+    val subtitleComment = when {
+      transaction.payment?.auto == true -> "auto"
+      transaction.trip != null -> transaction.trip
+      else -> transaction.comment
     }
+    Text(
+      modifier = Modifier.padding(start = 16.dp),
+      text = subtitleComment,
+      style = typography.subtitle2,
+      color = colors.secondary,
+    )
   }
 }
 
