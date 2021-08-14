@@ -8,7 +8,6 @@ import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
 import simple.payment.tracker.stores.DataStore
 
-
 class MainActivity : AppCompatActivity() {
   private val backs: Backs by inject()
   private val paymentsRepository: PaymentsRepository by inject()
