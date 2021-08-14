@@ -1,6 +1,5 @@
 package simple.payment.tracker.compose
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,42 +25,32 @@ import simple.payment.tracker.theme.themeTypography
 
 @Composable
 fun SettingsScreen(settings: DataStore<Settings>) {
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(16.dp)
-  ) {
+  Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
     Text(text = "Theme", style = typography.h6)
     Row(
-      horizontalArrangement = Arrangement.SpaceBetween,
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
     ) {
       themeColors().forEach { (name, colors) ->
-        ThemeSelector(
-          { settings.modify { it.copy(theme = name) } },
-          name,
-          colors
-        )
+        ThemeSelector({ settings.modify { it.copy(theme = name) } }, name, colors)
       }
     }
     Divider()
     val device = rememberRxState("") { settings.observe().map { it.deviceName } }
     OutlinedTextField(
-      label = { Text(text = "Device", style = typography.body1) },
-      value = device.value,
-      onValueChange = { settings.modify { prev -> prev.copy(deviceName = it) } },
-      modifier = Modifier.fillMaxWidth(),
-      textStyle = typography.body1,
+        label = { Text(text = "Device", style = typography.body1) },
+        value = device.value,
+        onValueChange = { settings.modify { prev -> prev.copy(deviceName = it) } },
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = typography.body1,
     )
     val trip = rememberRxState("") { settings.observe().map { it.trip } }
     OutlinedTextField(
-      label = { Text(text = "Trip", style = typography.body1) },
-      value = trip.value,
-      onValueChange = { settings.modify { prev -> prev.copy(trip = it) } },
-      modifier = Modifier.fillMaxWidth(),
-      textStyle = typography.body1,
+        label = { Text(text = "Trip", style = typography.body1) },
+        value = trip.value,
+        onValueChange = { settings.modify { prev -> prev.copy(trip = it) } },
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = typography.body1,
     )
   }
 }
@@ -69,17 +58,17 @@ fun SettingsScreen(settings: DataStore<Settings>) {
 @Composable
 private fun ThemeSelector(onClick: () -> Unit, text: String, colors: Colors) {
   TextButton(
-    onClick, modifier = Modifier
-      .padding(4.dp)
-      .background(
-        color = colors.background,
-        shape = CircleShape,
-      )
-  ) {
+      onClick,
+      modifier =
+          Modifier.padding(4.dp)
+              .background(
+                  color = colors.background,
+                  shape = CircleShape,
+              )) {
     Text(
-      text,
-      style = themeTypography.button,
-      color = colors.onBackground,
+        text,
+        style = themeTypography.button,
+        color = colors.onBackground,
     )
   }
 }

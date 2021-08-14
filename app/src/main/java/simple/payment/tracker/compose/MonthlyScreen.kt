@@ -1,6 +1,5 @@
 package simple.payment.tracker.compose
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,27 +21,20 @@ import simple.payment.tracker.MonthlyStatistics
 @Composable
 fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable() () -> Unit) {
   Scaffold(
-    topBar = { TopAppBar(title = { Text(text = "Stats") }) },
-    bottomBar = bottomBar,
-    content = {
-      StatisticsContent(monthlyStatistics)
-    },
+      topBar = { TopAppBar(title = { Text(text = "Stats") }) },
+      bottomBar = bottomBar,
+      content = { StatisticsContent(monthlyStatistics) },
   )
 }
 
 @Composable
 private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
-  val list: State<List<MonthlyReport>> = rememberRxState(initial = emptyList()) {
-    monthlyStatistics
-      .reports()
-      .map { reports -> reports.sortedByDescending { it.month } }
-  }
+  val list: State<List<MonthlyReport>> =
+      rememberRxState(initial = emptyList()) {
+        monthlyStatistics.reports().map { reports -> reports.sortedByDescending { it.month } }
+      }
 
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(horizontal = 16.dp)
-  ) {
+  LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
     items(list.value) { stats ->
       MonthEntry(stats)
       ListDivider()
@@ -53,35 +45,19 @@ private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
 @Composable
 private fun MonthEntry(stats: MonthlyReport) {
   Row(modifier = Modifier.padding(top = 8.dp)) {
-    Column(Modifier.weight(2F)) {
-      Text(stats.month, style = typography.h6)
-    }
+    Column(Modifier.weight(2F)) { Text(stats.month, style = typography.h6) }
     Column(Modifier.weight(1F)) {
       Text(
-        stats.payments.sumBy { it.sum }.toString(),
-        style = typography.h6,
-        color = colors.secondary,
+          stats.payments.sumBy { it.sum }.toString(),
+          style = typography.h6,
+          color = colors.secondary,
       )
     }
   }
-  stats.categorySums
-    .sortedByDescending { (_, sum) -> sum }
-    .forEach { (cat, sum) ->
-      Row {
-        Column(Modifier.weight(2F)) {
-          Text(
-            cat,
-            style = typography.body1
-          )
-        }
-        Column(Modifier.weight(1F)) {
-          Text(
-            sum.toString(),
-            style = typography.body1
-          )
-        }
-      }
+  stats.categorySums.sortedByDescending { (_, sum) -> sum }.forEach { (cat, sum) ->
+    Row {
+      Column(Modifier.weight(2F)) { Text(cat, style = typography.body1) }
+      Column(Modifier.weight(1F)) { Text(sum.toString(), style = typography.body1) }
     }
+  }
 }
-
-

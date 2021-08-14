@@ -9,8 +9,8 @@ import androidx.compose.ui.res.painterResource
 @Composable
 fun Icon(id: Int, modifier: Modifier = Modifier, tint: Color) {
   Icon(
-    modifier = modifier,
-    painter = painterResource(id),
-    contentDescription = null,
+      modifier = modifier,
+      painter = painterResource(id),
+      contentDescription = null,
   )
 }

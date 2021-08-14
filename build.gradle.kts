@@ -22,13 +22,26 @@ buildscript {
     }
 }
 
-allprojects {
+plugins {
+    id("com.diffplug.spotless") version "5.14.2"
+}
+
+subprojects {
     repositories {
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
     }
-}
-
-tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    apply(plugin = "com.diffplug.spotless")
+    spotless {
+        kotlin {
+            target("**/*.kt")
+            targetExclude("$buildDir/**/*.kt")
+            targetExclude("bin/**/*.kt")
+            // ktlint("0.41.0")
+            ktfmt()
+            // indentWithSpaces(2)
+            lineEndings = com.diffplug.spotless.LineEnding.UNIX
+            // licenseHeaderFile rootProject.file('spotless/copyright.kt')
+        }
+    }
 }

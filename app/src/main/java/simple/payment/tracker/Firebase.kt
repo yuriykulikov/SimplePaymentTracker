@@ -14,10 +14,7 @@ interface FireChild<T> {
   fun remove(id: String)
 }
 
-class Firebase(
-  private val logger: Logger,
-  dataBase: FirebaseDatabase
-) {
+class Firebase(private val logger: Logger, dataBase: FirebaseDatabase) {
   private val reference: DatabaseReference = dataBase.reference
 
   fun <T> child(pathString: String, mapper: (Map<String, Any>) -> T): FireChild<T> {
@@ -26,22 +23,18 @@ class Firebase(
     class IrHack : FireChild<T> {
       override fun observe(): Observable<Map<String, T>> {
         return Observable.create<Map<String, Map<String, Any>>> { emitter ->
-          logger.debug { "Subscribing with $mapper" }
+              logger.debug { "Subscribing with $mapper" }
 
-          val listener = childRef.addValueEventListener(EmitterValueEventListener(emitter))
+              val listener = childRef.addValueEventListener(EmitterValueEventListener(emitter))
 
-          emitter.setCancellable {
-            logger.debug { "Unsubscribing with $mapper" }
-            childRef.removeEventListener(listener)
-          }
-        }
-          .map { hashMap ->
-            hashMap.mapValues { (_, value) ->
-              mapper(value)
+              emitter.setCancellable {
+                logger.debug { "Unsubscribing with $mapper" }
+                childRef.removeEventListener(listener)
+              }
             }
-          }
-          .replay(1)
-          .refCount()
+            .map { hashMap -> hashMap.mapValues { (_, value) -> mapper(value) } }
+            .replay(1)
+            .refCount()
       }
 
       override fun put(id: String, value: T) {
@@ -57,9 +50,8 @@ class Firebase(
   }
 }
 
-class EmitterValueEventListener(
-  private val emitter: Emitter<Map<String, Map<String, Any>>>
-) : ValueEventListener {
+class EmitterValueEventListener(private val emitter: Emitter<Map<String, Map<String, Any>>>) :
+    ValueEventListener {
   override fun onCancelled(databaseError: DatabaseError) {
     emitter.onError(RuntimeException("onCancelled: $databaseError"))
   }

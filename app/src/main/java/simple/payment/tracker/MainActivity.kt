@@ -19,11 +19,11 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContent {
       PaymentsApp(
-        backs,
-        transactionsRepository,
-        paymentsRepository,
-        monthlyStatistics,
-        settings,
+          backs,
+          transactionsRepository,
+          paymentsRepository,
+          monthlyStatistics,
+          settings,
       )
     }
   }

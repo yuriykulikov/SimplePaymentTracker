@@ -8,25 +8,17 @@ import simple.payment.tracker.stores.listDataStore
 import simple.payment.tracker.stores.modify
 
 class PaymentsRepository(
-  private val logger: Logger,
-  private val filer: Filer,
-  private val moshi: Moshi,
-  private val firebaseDatabase: Firebase
+    private val logger: Logger,
+    private val filer: Filer,
+    private val moshi: Moshi,
+    private val firebaseDatabase: Firebase
 ) {
-  private val paymentsStore: FileDataStore<List<Payment>> = FileDataStore.listDataStore(
-    filer,
-    "payments.txt",
-    "[]",
-    moshi
-  )
+  private val paymentsStore: FileDataStore<List<Payment>> =
+      FileDataStore.listDataStore(filer, "payments.txt", "[]", moshi)
 
-  private val paymentsRef = firebaseDatabase
-    .child("payments") { Payment.fromMap(it) }
-  private val payments: Observable<List<Payment>> = paymentsRef
-    .observe()
-    .map { it.values.toList() }
-    .replay(1)
-    .refCount()
+  private val paymentsRef = firebaseDatabase.child("payments") { Payment.fromMap(it) }
+  private val payments: Observable<List<Payment>> =
+      paymentsRef.observe().map { it.values.toList() }.replay(1).refCount()
 
   fun payments(): Observable<List<Payment>> = this.payments
 
@@ -35,8 +27,7 @@ class PaymentsRepository(
 
     this.paymentsStore.modify {
       filterNot { it.id == payment.id }
-      filterNot { it.id == previousId }
-        .plus(payment)
+      filterNot { it.id == previousId }.plus(payment)
     }
 
     paymentsRef.put(payment.id.toString(), payment)

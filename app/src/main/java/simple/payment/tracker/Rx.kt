@@ -11,10 +11,11 @@ fun <T : Any> BehaviorSubject<T>.modify(func: T.(T) -> T) {
 }
 
 fun Disposable.disposeWhenDestroyed(lifecycle: Lifecycle) {
-  lifecycle.addObserver(object : LifecycleObserver {
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    fun onDestroy() {
-      dispose()
-    }
-  })
+  lifecycle.addObserver(
+      object : LifecycleObserver {
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        fun onDestroy() {
+          dispose()
+        }
+      })
 }

@@ -16,43 +16,39 @@ class Application : Application() {
   override fun onCreate() {
     super.onCreate()
     startKoin {
-      modules(module {
-        single {
-          Moshi.Builder().add(PaymentAdapter()).add(KotlinJsonAdapterFactory()).build()
-        }
-        single { Logger() }
-        single { Filer(applicationContext) }
-        single { NotificationsRepository(get(), get(), get(), get()) }
-        single { PaymentsRepository(get(), get(), get(), get()) }
-        single { TransactionsRepository(get(), get(), get(), get()) }
-        single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
-        single { Firebase(get(), get()) }
-        single { AmazonPaymentsRepository(get()) }
-        single { RecurrentPaymentsRepository(get()) }
-        single { AutomaticPaymentsRepository() }
-        single {
-          MonthlyStatistics(
-            Observables.combineLatest(
-              get<PaymentsRepository>().payments(),
-              get<AmazonPaymentsRepository>().payments,
-              get<RecurrentPaymentsRepository>().payments,
-              combineFunction = { l1, l2, l3 ->
-                (l1 + l2 + l3).filterNot { it.category == "Помощь родителям" }
-              }
-            )
-          )
-        }
-        single { Backs() }
-        single<DataStore<Settings>> {
-          FileDataStore.dataStore(
-            get(),
-            "settings.txt",
-            Settings::class.java,
-            Settings(theme = "SynthwaveThemeColors"),
-            get()
-          )
-        }
-      })
+      modules(
+          module {
+            single { Moshi.Builder().add(PaymentAdapter()).add(KotlinJsonAdapterFactory()).build() }
+            single { Logger() }
+            single { Filer(applicationContext) }
+            single { NotificationsRepository(get(), get(), get(), get()) }
+            single { PaymentsRepository(get(), get(), get(), get()) }
+            single { TransactionsRepository(get(), get(), get(), get()) }
+            single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
+            single { Firebase(get(), get()) }
+            single { AmazonPaymentsRepository(get()) }
+            single { RecurrentPaymentsRepository(get()) }
+            single { AutomaticPaymentsRepository() }
+            single {
+              MonthlyStatistics(
+                  Observables.combineLatest(
+                      get<PaymentsRepository>().payments(),
+                      get<AmazonPaymentsRepository>().payments,
+                      get<RecurrentPaymentsRepository>().payments,
+                      combineFunction = { l1, l2, l3 ->
+                        (l1 + l2 + l3).filterNot { it.category == "Помощь родителям" }
+                      }))
+            }
+            single { Backs() }
+            single<DataStore<Settings>> {
+              FileDataStore.dataStore(
+                  get(),
+                  "settings.txt",
+                  Settings::class.java,
+                  Settings(theme = "SynthwaveThemeColors"),
+                  get())
+            }
+          })
     }
   }
 }

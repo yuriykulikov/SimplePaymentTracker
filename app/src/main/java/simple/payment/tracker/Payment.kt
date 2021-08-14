@@ -15,15 +15,15 @@ import java.util.Date
 @Keep
 @IgnoreExtraProperties
 data class Payment(
-  val category: String,
-  val time: Long,
-  val comment: String,
-  val merchant: String,
-  val sum: Int,
-  val notificationId: Long?,
-  val cancelled: Boolean,
-  val trip: String?,
-  val auto: Boolean = false,
+    val category: String,
+    val time: Long,
+    val comment: String,
+    val merchant: String,
+    val sum: Int,
+    val notificationId: Long?,
+    val cancelled: Boolean,
+    val trip: String?,
+    val auto: Boolean = false,
 ) {
   val id = time
 
@@ -34,29 +34,24 @@ data class Payment(
   companion object // functions below
 }
 
-/**
- * Used to create payments from Firebase maps
- */
+/** Used to create payments from Firebase maps */
 fun Payment.Companion.fromMap(map: Map<String, Any>): Payment {
   return Payment(
-    category = map["category"] as String,
-    notificationId = map["notificationId"] as Long?,
-    time = map["time"] as Long? ?: map["notificationId"] as Long,
-    comment = map["comment"] as String? ?: "",
-    merchant = map["merchant"] as String? ?: "",
-    sum = (map["sum"] as Long? ?: 0L).toInt(),
-    cancelled = map["cancelled"] as Boolean? ?: false,
-    trip = map["trip"] as String?
-  )
+      category = map["category"] as String,
+      notificationId = map["notificationId"] as Long?,
+      time = map["time"] as Long? ?: map["notificationId"] as Long,
+      comment = map["comment"] as String? ?: "",
+      merchant = map["merchant"] as String? ?: "",
+      sum = (map["sum"] as Long? ?: 0L).toInt(),
+      cancelled = map["cancelled"] as Boolean? ?: false,
+      trip = map["trip"] as String?)
 }
 
 @Deprecated("Fix R8 and get rid of it")
 internal class PaymentAdapter {
   private val dataFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss")
 
-  /**
-   * Order of properties is important in order to compare with Firebase exports
-   */
+  /** Order of properties is important in order to compare with Firebase exports */
   @ToJson
   fun toJson(writer: JsonWriter, payment: Payment) {
     writer.beginObject()
@@ -103,14 +98,13 @@ internal class PaymentAdapter {
     }
     reader.endObject()
     return Payment(
-      category = category,
-      notificationId = notificationId,
-      time = time,
-      comment = comment,
-      merchant = merchant,
-      sum = sum,
-      cancelled = cancelled,
-      trip = trip
-    )
+        category = category,
+        notificationId = notificationId,
+        time = time,
+        comment = comment,
+        merchant = merchant,
+        sum = sum,
+        cancelled = cancelled,
+        trip = trip)
   }
 }

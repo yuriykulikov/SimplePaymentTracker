@@ -1,6 +1,5 @@
 package simple.payment.tracker.compose
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,140 +29,126 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 import simple.payment.tracker.Icon
 import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
-import java.util.Locale
 
 @Composable
 fun ListScreen(
-  showAll: Boolean,
-  transactionsRepository: TransactionsRepository,
-  showDetails: (Transaction?) -> Unit,
-  bottomBar: @Composable() () -> Unit
+    showAll: Boolean,
+    transactionsRepository: TransactionsRepository,
+    showDetails: (Transaction?) -> Unit,
+    bottomBar: @Composable() () -> Unit
 ) {
   when {
-    showAll -> TransactionsList(
-      transactionsRepository = transactionsRepository,
-      showDetails = showDetails,
-      bottomBar = bottomBar,
-    )
-    else -> InboxList(
-      transactionsRepository = transactionsRepository,
-      showDetails = showDetails,
-      bottomBar = bottomBar,
-    )
+    showAll ->
+        TransactionsList(
+            transactionsRepository = transactionsRepository,
+            showDetails = showDetails,
+            bottomBar = bottomBar,
+        )
+    else ->
+        InboxList(
+            transactionsRepository = transactionsRepository,
+            showDetails = showDetails,
+            bottomBar = bottomBar,
+        )
   }
 }
 
 @Composable
 private fun TransactionsList(
-  modifier: Modifier = Modifier,
-  transactionsRepository: TransactionsRepository,
-  showDetails: (Transaction?) -> Unit,
-  bottomBar: @Composable() () -> Unit
+    modifier: Modifier = Modifier,
+    transactionsRepository: TransactionsRepository,
+    showDetails: (Transaction?) -> Unit,
+    bottomBar: @Composable() () -> Unit
 ) {
   val search = remember { mutableStateOf(TextFieldValue("")) }
 
   Scaffold(
-    topBar = {
-      SearchBar(search)
-    },
-    bottomBar = bottomBar,
-    content = {
-      Box(
-        modifier = modifier
-          .fillMaxSize()
-          .wrapContentSize(Alignment.Center)
-      ) {
-        val data = rememberRxState(initial = emptyList()) { transactionsRepository.transactions() }
+      topBar = { SearchBar(search) },
+      bottomBar = bottomBar,
+      content = {
+        Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
+          val data =
+              rememberRxState(initial = emptyList()) { transactionsRepository.transactions() }
 
-        val items = when {
-          search.value.text.isEmpty() -> data.value
-          else -> {
-            val searchLowercase = search.value.text.toLowerCase(Locale.getDefault())
-            data.value.filter { transaction ->
-              searchLowercase in transaction.toString().toLowerCase(Locale.getDefault())
+          val items =
+              when {
+                search.value.text.isEmpty() -> data.value
+                else -> {
+                  val searchLowercase = search.value.text.toLowerCase(Locale.getDefault())
+                  data.value.filter { transaction ->
+                    searchLowercase in transaction.toString().toLowerCase(Locale.getDefault())
+                  }
+                }
+              }
+
+          LazyColumn(modifier = Modifier.debugBorder()) {
+            items(items) { transaction ->
+              TransactionListRow(transaction, showDetails)
+              ListDivider()
             }
           }
         }
-
-        LazyColumn(
-          modifier = Modifier.debugBorder()
-        ) {
-          items(items) { transaction ->
-            TransactionListRow(transaction, showDetails)
-            ListDivider()
-          }
-        }
-      }
-    }
-  )
+      })
 }
 
 @Composable
 private fun InboxList(
-  modifier: Modifier = Modifier,
-  transactionsRepository: TransactionsRepository,
-  showDetails: (Transaction?) -> Unit,
-  bottomBar: @Composable() () -> Unit
+    modifier: Modifier = Modifier,
+    transactionsRepository: TransactionsRepository,
+    showDetails: (Transaction?) -> Unit,
+    bottomBar: @Composable() () -> Unit
 ) {
   Scaffold(
-    topBar = {
-      InboxTopBar()
-    },
-    bottomBar = bottomBar,
-    content = {
-      Column(modifier = modifier.fillMaxSize()) {
-        val data =
-          rememberRxState(initial = emptyList()) {
-            transactionsRepository
-              .transactions()
-              .map { list -> list.filter { it.payment == null } }
-          }
+      topBar = { InboxTopBar() },
+      bottomBar = bottomBar,
+      content = {
+        Column(modifier = modifier.fillMaxSize()) {
+          val data =
+              rememberRxState(initial = emptyList()) {
+                transactionsRepository.transactions().map { list ->
+                  list.filter { it.payment == null }
+                }
+              }
 
-        LazyColumn(
-          modifier = Modifier.debugBorder()
-        ) {
-          items(data.value) { transaction ->
-            TransactionListRow(transaction, showDetails)
-            ListDivider()
+          LazyColumn(modifier = Modifier.debugBorder()) {
+            items(data.value) { transaction ->
+              TransactionListRow(transaction, showDetails)
+              ListDivider()
+            }
           }
         }
-      }
-    },
-    floatingActionButton = {
-      FloatingActionButton(
-        onClick = { showDetails(null) },
-      ) {
-        Icon(
-          id = R.drawable.ic_baseline_add_24,
-          tint = colors.onPrimary
-        )
-      }
-    },
+      },
+      floatingActionButton = {
+        FloatingActionButton(
+            onClick = { showDetails(null) },
+        ) { Icon(id = R.drawable.ic_baseline_add_24, tint = colors.onPrimary) }
+      },
   )
 }
 
 @Composable
 fun SearchBar(search: MutableState<TextFieldValue>) {
   TopAppBar(
-    content = {
-      val color = if (colors.isLight) colors.onPrimary else colors.onSurface
-      TextField(
-        value = search.value,
-        onValueChange = { search.value = it },
-        label = { Text("Search") },
-        colors = TextFieldDefaults.textFieldColors(
-          backgroundColor = Color.Transparent,
-          focusedIndicatorColor = color.copy(0.5f),
-          unfocusedIndicatorColor = color,
-        ),
-        modifier = Modifier.padding(2.dp),
-      )
-    }
-  )
+      content = {
+        val color = if (colors.isLight) colors.onPrimary else colors.onSurface
+        TextField(
+            value = search.value,
+            onValueChange = { search.value = it },
+            label = { Text("Search") },
+            colors =
+                TextFieldDefaults.textFieldColors(
+                    backgroundColor = Color.Transparent,
+                    focusedIndicatorColor = color.copy(0.5f),
+                    unfocusedIndicatorColor = color,
+                ),
+            modifier = Modifier.padding(2.dp),
+        )
+      })
 }
 
 @Composable
@@ -173,11 +158,7 @@ fun InboxTopBar() {
 
 @Composable
 fun TransactionListRow(transaction: Transaction, showDetails: (Transaction?) -> Unit) {
-  Row(
-    modifier = Modifier
-      .clickable(onClick = { showDetails(transaction) })
-      .padding(16.dp)
-  ) {
+  Row(modifier = Modifier.clickable(onClick = { showDetails(transaction) }).padding(16.dp)) {
     Column(modifier = Modifier.weight(1f)) {
       TransactionTitle(transaction)
       TransactionSubtitle(transaction)
@@ -189,49 +170,43 @@ fun TransactionListRow(transaction: Transaction, showDetails: (Transaction?) -> 
 fun TransactionTitle(transaction: Transaction) {
   Row(horizontalArrangement = Arrangement.SpaceAround) {
     Text(
-      transaction.merchant,
-      style = when {
-        transaction.cancelled -> typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
-        else -> typography.subtitle1
-      }
-    )
+        transaction.merchant,
+        style =
+            when {
+              transaction.cancelled ->
+                  typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
+              else -> typography.subtitle1
+            })
     Text(text = "", modifier = Modifier.weight(1F))
-    Text(
-      "${transaction.sum}",
-      style = typography.subtitle1
-    )
+    Text("${transaction.sum}", style = typography.subtitle1)
   }
 }
 
 @Composable
-fun TransactionSubtitle(
-  transaction: Transaction,
-  modifier: Modifier = Modifier
-) {
+fun TransactionSubtitle(transaction: Transaction, modifier: Modifier = Modifier) {
   Row(modifier) {
     Text(
-      text = transaction.category,
-      style = typography.subtitle2,
-      color = colors.primaryVariant,
+        text = transaction.category,
+        style = typography.subtitle2,
+        color = colors.primaryVariant,
     )
 
-    val subtitleComment = when {
-      transaction.payment?.auto == true -> "auto"
-      transaction.trip != null -> transaction.trip
-      else -> transaction.comment
-    }
+    val subtitleComment =
+        when {
+          transaction.payment?.auto == true -> "auto"
+          transaction.trip != null -> transaction.trip
+          else -> transaction.comment
+        }
     Text(
-      modifier = Modifier.padding(start = 16.dp),
-      text = subtitleComment,
-      style = typography.subtitle2,
-      color = colors.secondary,
+        modifier = Modifier.padding(start = 16.dp),
+        text = subtitleComment,
+        style = typography.subtitle2,
+        color = colors.secondary,
     )
   }
 }
 
 @Composable
 fun ListDivider() {
-  Divider(
-    color = colors.onSurface.copy(alpha = 0.08f)
-  )
+  Divider(color = colors.onSurface.copy(alpha = 0.08f))
 }

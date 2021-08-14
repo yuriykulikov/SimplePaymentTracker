@@ -1,6 +1,5 @@
 package simple.payment.tracker.compose
 
-
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,6 +34,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.util.Date
+import java.util.Locale
 import simple.payment.tracker.Icon
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
@@ -42,29 +45,18 @@ import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.stores.DataStore
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.util.Date
-import java.util.Locale
 
-private val dateFormat = SimpleDateFormat(
-  "dd-MM-yy HH:mm",
-  Locale.GERMANY
-)
+private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
 
-/**
- * Transaction can be with a notification or without
- */
+/** Transaction can be with a notification or without */
 @Composable
 fun DetailsScreen(
-  paymentsRepository: PaymentsRepository,
-  transaction: Transaction?,
-  onSave: () -> Unit,
-  settings: DataStore<Settings>
+    paymentsRepository: PaymentsRepository,
+    transaction: Transaction?,
+    onSave: () -> Unit,
+    settings: DataStore<Settings>
 ) {
-  val category: MutableState<String?> = remember {
-    mutableStateOf(transaction?.category)
-  }
+  val category: MutableState<String?> = remember { mutableStateOf(transaction?.category) }
   val sum: MutableState<TextFieldValue> = remember {
     mutableStateOf(TextFieldValue(transaction?.sum?.toString() ?: ""))
   }
@@ -73,161 +65,136 @@ fun DetailsScreen(
   }
   val time: MutableState<TextFieldValue> = remember {
     val initialTime = transaction?.time?.let { Instant.ofEpochMilli(it) } ?: Instant.now()
-    mutableStateOf(
-      TextFieldValue(dateFormat.format(Date.from(initialTime)))
-    )
+    mutableStateOf(TextFieldValue(dateFormat.format(Date.from(initialTime))))
   }
 
   val cancelled = remember { mutableStateOf(transaction?.cancelled ?: false) }
   val comment = remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
   val trip = remember {
     mutableStateOf(
-      TextFieldValue(
-        when {
-          transaction?.payment == null -> settings.value.trip
-          transaction.payment.trip != null -> transaction.payment.trip
-          else -> ""
-        }
-      )
-    )
+        TextFieldValue(
+            when {
+              transaction?.payment == null -> settings.value.trip
+              transaction.payment.trip != null -> transaction.payment.trip
+              else -> ""
+            }))
   }
 
   Scaffold(
-    topBar = {
-      TopAppBar(
-        title = { Text(text = "Payment") },
-        actions = {
-          val canSave = (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess
-            && sum.value.text.toIntOrNull() != null
-            && merchant.value.text.isNotEmpty()
-            && !category.value.isNullOrEmpty())
-          IconButton(onClick = {
-            if (canSave) {
-              paymentsRepository
-                .changeOrCreatePayment(
-                  transaction?.id,
-                  Payment(
-                    notificationId = transaction?.payment?.notificationId
-                      ?: transaction?.notification?.time,
-                    time = transaction?.notification?.time
-                      ?: requireNotNull(
-                        dateFormat.parse(time.value.text)
-                      ).time,
-                    category = category.value!!,
-                    comment = comment.value.text,
-                    merchant = merchant.value.text,
-                    sum = sum.value.text.toInt(),
-                    cancelled = cancelled.value,
-                    trip = trip.value.text.let { if (it.isEmpty()) null else it }
-                  )
-                )
-              onSave()
-            }
-          }) {
-            Icon(
-              modifier = Modifier.alpha(if (canSave) 1f else 0.2f),
-              painter = painterResource(id = R.drawable.ic_baseline_done_24),
-              contentDescription = null,
-              tint = colors.primary,
-            )
-          }
-        }
-      )
-    },
-    content = {
-      Box(
-        modifier = Modifier
-          .fillMaxSize()
-          .wrapContentSize(Alignment.TopCenter)
-      ) {
-        Column {
-          Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
-            Column(
-              modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-              Row {
-                NamedTextFieldInput(
-                  leadingIcon = {
-                    Icon(
-                      id = R.drawable.ic_baseline_today_24,
-                      tint = colors.onSurface
-                    )
-                  },
-                  state = time,
-                  enabled = transaction?.notification == null,
-                  modifier = Modifier.weight(0.5f),
-                )
-                NamedTextFieldInput(
-                  header = "Trip",
-                  leadingIcon = {
-                    Icon(
-                      id = R.drawable.ic_baseline_map_24,
-                      tint = colors.onSurface
-                    )
-                  },
-                  state = trip,
-                  modifier = Modifier
-                    .weight(0.5f)
-                    .padding(start = 8.dp),
+      topBar = {
+        TopAppBar(
+            title = { Text(text = "Payment") },
+            actions = {
+              val canSave =
+                  (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess &&
+                      sum.value.text.toIntOrNull() != null &&
+                      merchant.value.text.isNotEmpty() &&
+                      !category.value.isNullOrEmpty())
+              IconButton(
+                  onClick = {
+                    if (canSave) {
+                      paymentsRepository.changeOrCreatePayment(
+                          transaction?.id,
+                          Payment(
+                              notificationId = transaction?.payment?.notificationId
+                                      ?: transaction?.notification?.time,
+                              time = transaction?.notification?.time
+                                      ?: requireNotNull(dateFormat.parse(time.value.text)).time,
+                              category = category.value!!,
+                              comment = comment.value.text,
+                              merchant = merchant.value.text,
+                              sum = sum.value.text.toInt(),
+                              cancelled = cancelled.value,
+                              trip = trip.value.text.let { if (it.isEmpty()) null else it }))
+                      onSave()
+                    }
+                  }) {
+                Icon(
+                    modifier = Modifier.alpha(if (canSave) 1f else 0.2f),
+                    painter = painterResource(id = R.drawable.ic_baseline_done_24),
+                    contentDescription = null,
+                    tint = colors.primary,
                 )
               }
-              NamedTextFieldInput(
-                header = "€",
-                state = sum,
-                keyboardType = KeyboardType.Number,
-                onValueChange = {
-                  if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
-                    sum.value = it
-                  }
-                },
-              )
-              NamedTextFieldInput(header = "to", state = merchant)
+            })
+      },
+      content = {
+        Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
+          Column {
+            Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
+              Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Row {
+                  NamedTextFieldInput(
+                      leadingIcon = {
+                        Icon(id = R.drawable.ic_baseline_today_24, tint = colors.onSurface)
+                      },
+                      state = time,
+                      enabled = transaction?.notification == null,
+                      modifier = Modifier.weight(0.5f),
+                  )
+                  NamedTextFieldInput(
+                      header = "Trip",
+                      leadingIcon = {
+                        Icon(id = R.drawable.ic_baseline_map_24, tint = colors.onSurface)
+                      },
+                      state = trip,
+                      modifier = Modifier.weight(0.5f).padding(start = 8.dp),
+                  )
+                }
+                NamedTextFieldInput(
+                    header = "€",
+                    state = sum,
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = {
+                      if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
+                        sum.value = it
+                      }
+                    },
+                )
+                NamedTextFieldInput(header = "to", state = merchant)
 
-              OutlinedTextField(
-                label = { Text(text = "for", style = typography.body1) },
-                value = comment.value,
-                onValueChange = { comment.value = it },
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = typography.body1,
-              )
-              InputDivider()
-              CategorySelector(category)
+                OutlinedTextField(
+                    label = { Text(text = "for", style = typography.body1) },
+                    value = comment.value,
+                    onValueChange = { comment.value = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    textStyle = typography.body1,
+                )
+                InputDivider()
+                CategorySelector(category)
+              }
             }
           }
         }
-      }
-    }
-  )
+      })
 }
 
 @Composable
 fun InputDivider() {
-  Divider(
-    color = colors.onSurface.copy(alpha = 0.08f)
-  )
+  Divider(color = colors.onSurface.copy(alpha = 0.08f))
 }
 
 /** Header and TextField to input text */
 @Composable
 private fun NamedTextFieldInput(
-  modifier: Modifier = Modifier,
-  header: String? = null,
-  state: MutableState<TextFieldValue>,
-  keyboardType: KeyboardType = KeyboardType.Text,
-  enabled: Boolean = true,
-  onValueChange: (TextFieldValue) -> Unit = { state.value = it },
-  leadingIcon: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    header: String? = null,
+    state: MutableState<TextFieldValue>,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    enabled: Boolean = true,
+    onValueChange: (TextFieldValue) -> Unit = { state.value = it },
+    leadingIcon: @Composable (() -> Unit)? = null,
 ) {
   TextField(
-    label = header?.let { { Text(it, style = typography.overline) } },
-    value = state.value,
-    onValueChange = if (enabled) onValueChange else { _ -> },
-    leadingIcon = leadingIcon,
-    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-    modifier = modifier.fillMaxWidth(),
-    textStyle = typography.body1,
-//backgroundColor = Color.Transparent,
-  )
+      label = header?.let { { Text(it, style = typography.overline) } },
+      value = state.value,
+      onValueChange = if (enabled) onValueChange else { _ -> },
+      leadingIcon = leadingIcon,
+      keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+      modifier = modifier.fillMaxWidth(),
+      textStyle = typography.body1,
+      // backgroundColor = Color.Transparent,
+      )
 }
 
 /** Category tiles in 2 columns */
@@ -237,23 +204,18 @@ private fun CategorySelector(selected: MutableState<String?>) {
     Row {
       chunk.forEach { category ->
         Column(
-          modifier = Modifier
-            .weight(0.5F)
-            .clickable(onClick = { selected.value = category })
-        ) {
+            modifier = Modifier.weight(0.5F).clickable(onClick = { selected.value = category })) {
           Text(
-            category,
-            color = if (category == selected.value) colors.onSecondary else colors.onBackground,
-            style = typography.button,
-            modifier = Modifier
-              .padding(8.dp)
-              .then(
-                if (category == selected.value) Modifier.background(
-                  colors.secondary,
-                  CircleShape
-                ) else Modifier
-              )
-              .padding(8.dp),
+              category,
+              color = if (category == selected.value) colors.onSecondary else colors.onBackground,
+              style = typography.button,
+              modifier =
+                  Modifier.padding(8.dp)
+                      .then(
+                          if (category == selected.value)
+                              Modifier.background(colors.secondary, CircleShape)
+                          else Modifier)
+                      .padding(8.dp),
           )
         }
       }
@@ -261,32 +223,32 @@ private fun CategorySelector(selected: MutableState<String?>) {
   }
 }
 
-private val categories = arrayOf(
-  "Еда",
-  "Ресторан",
-  "Гедонизм",
-  "Транспорт",
-  "Для дома",
-  "Снаряга",
-  "Развлечения",
-  "Baby",
-  "Подарки",
-  "Машина",
-  "Косметика",
-  "Кот",
-  "Одежда и вещи",
-  "Разное",
-  "Аптека",
-  "Девайсы",
-  "Хобби",
-  "Путешествия",
-  "Проживание",
-  "Образование",
-  "Бытовая химия",
-  "Дурость",
-  "Парикмахер",
-  "Зубной",
-  "Линзы",
-  "Квартира",
-  "Помощь родителям"
-)
+private val categories =
+    arrayOf(
+        "Еда",
+        "Ресторан",
+        "Гедонизм",
+        "Транспорт",
+        "Для дома",
+        "Снаряга",
+        "Развлечения",
+        "Baby",
+        "Подарки",
+        "Машина",
+        "Косметика",
+        "Кот",
+        "Одежда и вещи",
+        "Разное",
+        "Аптека",
+        "Девайсы",
+        "Хобби",
+        "Путешествия",
+        "Проживание",
+        "Образование",
+        "Бытовая химия",
+        "Дурость",
+        "Парикмахер",
+        "Зубной",
+        "Линзы",
+        "Квартира",
+        "Помощь родителям")

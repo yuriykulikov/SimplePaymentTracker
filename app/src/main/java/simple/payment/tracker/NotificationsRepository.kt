@@ -8,38 +8,33 @@ import simple.payment.tracker.stores.listDataStore
 import simple.payment.tracker.stores.modify
 
 data class Notification(
-  val time: Long,
-  val text: String,
-  val device: String?,
+    val time: Long,
+    val text: String,
+    val device: String?,
 )
 
-/**
- * Notifications can only be added, never removed.
- */
+/** Notifications can only be added, never removed. */
 class NotificationsRepository(
-  private val logger: Logger,
-  private val filer: Filer,
-  private val moshi: Moshi,
-  private val firebaseDatabase: Firebase
+    private val logger: Logger,
+    private val filer: Filer,
+    private val moshi: Moshi,
+    private val firebaseDatabase: Firebase
 ) {
-  private val fileStore: FileDataStore<List<Notification>> = FileDataStore.listDataStore(
-    filer,
-    "notifications.txt",
-    "[]",
-    moshi
-  )
+  private val fileStore: FileDataStore<List<Notification>> =
+      FileDataStore.listDataStore(filer, "notifications.txt", "[]", moshi)
 
-  private val notificationsRef = firebaseDatabase
-    .child("notifications", mapper = { map ->
-      Notification(
-        time = map["time"] as Long,
-        text = map["text"] as String,
-        device = map["device"] as String?,
-      )
-    })
-  private val notifications: Observable<List<Notification>> = notificationsRef
-    .observe()
-    .map { it.values.toList() }
+  private val notificationsRef =
+      firebaseDatabase.child(
+          "notifications",
+          mapper = { map ->
+            Notification(
+                time = map["time"] as Long,
+                text = map["text"] as String,
+                device = map["device"] as String?,
+            )
+          })
+  private val notifications: Observable<List<Notification>> =
+      notificationsRef.observe().map { it.values.toList() }
 
   fun notifications(): Observable<List<Notification>> = notifications
 
