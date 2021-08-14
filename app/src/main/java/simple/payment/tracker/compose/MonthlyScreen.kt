@@ -15,8 +15,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import simple.payment.tracker.MonthlyReport
+import simple.payment.tracker.GroupReport
+import simple.payment.tracker.GroupReportsProvider
 import simple.payment.tracker.MonthlyStatistics
+import simple.payment.tracker.TripStatistics
 
 @Composable
 fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable() () -> Unit) {
@@ -28,11 +30,17 @@ fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable()
 }
 
 @Composable
-private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
-  val list: State<List<MonthlyReport>> =
-      rememberRxState(initial = emptyList()) {
-        monthlyStatistics.reports().map { reports -> reports.sortedByDescending { it.month } }
-      }
+fun TripsScreen(tripStatistics: TripStatistics, bottomBar: @Composable() () -> Unit) {
+  Scaffold(
+      topBar = { TopAppBar(title = { Text(text = "Stats") }) },
+      bottomBar = bottomBar,
+      content = { StatisticsContent(tripStatistics) },
+  )
+}
+
+@Composable
+private fun StatisticsContent(provider: GroupReportsProvider) {
+  val list: State<List<GroupReport>> = rememberRxState(initial = emptyList()) { provider.reports() }
 
   LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
     items(list.value) { stats ->
@@ -43,9 +51,9 @@ private fun StatisticsContent(monthlyStatistics: MonthlyStatistics) {
 }
 
 @Composable
-private fun MonthEntry(stats: MonthlyReport) {
+private fun MonthEntry(stats: GroupReport) {
   Row(modifier = Modifier.padding(top = 8.dp)) {
-    Column(Modifier.weight(2F)) { Text(stats.month, style = typography.h6) }
+    Column(Modifier.weight(2F)) { Text(stats.name, style = typography.h6) }
     Column(Modifier.weight(1F)) {
       Text(
           stats.payments.sumBy { it.sum }.toString(),

@@ -39,6 +39,14 @@ class Application : Application() {
                         (l1 + l2 + l3).filterNot { it.category == "Помощь родителям" }
                       }))
             }
+            single {
+              TripStatistics(
+                  Observables.combineLatest(
+                      get<PaymentsRepository>().payments(),
+                      get<AmazonPaymentsRepository>().payments,
+                      get<RecurrentPaymentsRepository>().payments,
+                      combineFunction = { l1, l2, l3 -> l1 + l2 + l3 }))
+            }
             single { Backs() }
             single<DataStore<Settings>> {
               FileDataStore.dataStore(

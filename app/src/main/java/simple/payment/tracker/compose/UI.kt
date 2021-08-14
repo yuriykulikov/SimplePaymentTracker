@@ -28,6 +28,7 @@ import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
+import simple.payment.tracker.TripStatistics
 import simple.payment.tracker.stores.DataStore
 import simple.payment.tracker.theme.ColoredTheme
 import simple.payment.tracker.theme.toColors
@@ -37,6 +38,7 @@ sealed class Screen {
   object ListAll : Screen()
   object New : Screen()
   object Monthly : Screen()
+  object Trips : Screen()
   object Settings : Screen()
 
   data class Details(val transaction: Transaction) : Screen()
@@ -48,6 +50,7 @@ fun PaymentsApp(
     transactions: TransactionsRepository,
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
+    tripsStatistics: TripStatistics,
     settings: DataStore<Settings>
 ) {
   val colors: State<Colors> =
@@ -61,6 +64,7 @@ fun PaymentsApp(
         transactions,
         paymentsRepository,
         monthlyStatistics,
+        tripsStatistics,
         settings,
     )
   }
@@ -72,6 +76,7 @@ private fun AppContent(
     transactions: TransactionsRepository,
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
+    tripsStatistics: TripStatistics,
     settings: DataStore<Settings>,
 ) {
   val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
@@ -102,6 +107,7 @@ private fun AppContent(
             DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar)
+        is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar)
         is Screen.Settings -> SettingsScreen(settings)
       }
     }
@@ -149,6 +155,12 @@ private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
         onClick = { currentScreen.value = Screen.Monthly },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Monthly)) {
       Text(text = "Stats")
+    }
+
+    IconButton(
+        onClick = { currentScreen.value = Screen.Trips },
+        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Trips)) {
+      Text(text = "Trips")
     }
 
     IconButton(

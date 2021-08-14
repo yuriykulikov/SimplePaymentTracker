@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
   private val paymentsRepository: PaymentsRepository by inject()
   private val transactionsRepository: TransactionsRepository by inject()
   private val monthlyStatistics: MonthlyStatistics by inject()
+  private val tripsStatistics: TripStatistics by inject()
   private val settings: DataStore<Settings> by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity() {
           transactionsRepository,
           paymentsRepository,
           monthlyStatistics,
+          tripsStatistics,
           settings,
       )
     }
