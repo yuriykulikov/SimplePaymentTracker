@@ -19,9 +19,9 @@ fun themeColors() =
     listOf(
         "Light" to LightColors,
         "Dark" to DarkColors,
-        "DeusEx" to DeusExColors,
+        "Deus" to DeusExColors,
         "Synth" to SynthwaveColors,
-        "G" to Gulasch,
+        "Deep" to DeepColors,
     )
 
 fun String.toColors(): Colors {
@@ -30,7 +30,7 @@ fun String.toColors(): Colors {
     "Dark" -> DarkColors
     "DeusEx" -> DeusExColors
     "Synth" -> SynthwaveColors
-    "G" -> Gulasch
+    "Deep" -> DeepColors
     else -> SynthwaveColors
   }
 }
@@ -41,61 +41,77 @@ private val shapes =
         medium = RoundedCornerShape(4.dp),
         large = RoundedCornerShape(8.dp))
 
-private val LightColors = lightColors()
-private val DarkColors = darkColors()
+private val blackish = Color(0xff1c1e20)
+private val grey = Color(0xffaaaaaa)
+private val whitish = Color(0xffdddddd)
+private val white = Color(0xffeeeeee)
+private val dark_grey = Color(0xff333333)
+private val transparent = Color(0x00000000)
+private val transparent_white = Color(0x66ffffff)
+private val mat_purple_black = Color(0xFF170017)
+private val mat_purple_dark = Color(0xFF332940)
+private val mat_purple_lighter = Color(0xFF5D4B70)
+private val mat_purple = Color(0xFFBB86FC)
+private val mat_blue_purple_primary = Color(0xFF6200EE)
+private val mat_blue_primary_variant = Color(0xFF3700B3)
+private val mat_teal_secondary = Color(0xFF03DAC6)
+private val mat_teal_secondary_variant = Color(0xFF018786)
+private val mat_almost_black = Color(0xFF121212)
+private val mat_teal_ws = Color(0xFF4EAC9C)
+private val mat_almost_black_ws = Color(0xFF131D23)
+private val mat_grey_ws = Color(0xFF242D35)
+private val mat_purple_ws = Color(0xFFAE7AC2)
+private val reactive_purple = Color(0xffee0e90)
+private val reactive_background = Color(0xff2b323b)
+private val reactive_surface = Color(0xff3f3d55)
+private val reactive_white = Color(0xffffffe8)
 
-private val Gold0 = Color(0xfffff69f)
-private val Gold1 = Color(0xfffdd870)
-private val Gold2 = Color(0xffd0902f)
-private val Gold3 = Color(0xffa15501)
-private val Gold4 = Color(0xff351409)
+private val LightColors = lightColors()
+private val DarkColors =
+    darkColors(
+        onBackground = whitish,
+        onSurface = whitish,
+        surface = mat_grey_ws,
+        background = mat_almost_black_ws,
+        secondary = mat_teal_ws,
+        primary = mat_teal_ws,
+        primaryVariant = mat_teal_ws,
+    )
 
 private val DeusExColors =
     darkColors(
-        primary = Gold2,
-        primaryVariant = Gold3,
-        secondary = Gold3,
-        background = Color.Black,
-        surface = Color.Black,
-        error = Gold0,
-        onPrimary = Color.DarkGray,
-        onSecondary = Color.DarkGray,
-        onBackground = Gold1,
-        onSurface = Gold1,
+        primary = Color(0xffd0902f),
+        primaryVariant = Color(0xffa15501),
+        secondary = Color(0xffd0902f),
+        background = blackish,
+        surface = dark_grey,
+        error = Color.Red,
+        onPrimary = dark_grey,
+        onSecondary = dark_grey,
+        onBackground = whitish,
+        onSurface = whitish,
         onError = Color.Black,
     )
 
-private val SynthPink = Color(0xffef9af2)
-private val SynthDarkPink = Color(0xff831187)
-private val SynthVibrantPurple = Color(0xff8a04ed)
-private val SynthPurple = Color(0xffBB86FC)
-private val SynthDarkPurple = Color(0xff240c76)
-private val SynthDarkerPurple = Color(0xff332940)
-private val SynthDarkestPurple = Color(0xff0c0c0c)
-
-private val MaterialCyan = Color(0xFF03DAC6)
-
 private val SynthwaveColors =
     darkColors(
-        background = SynthDarkerPurple,
-        surface = SynthDarkestPurple,
-        onBackground = SynthPurple,
-        onSurface = SynthPurple,
-        primary = SynthPink,
-        primaryVariant = SynthPink,
-        secondary = MaterialCyan,
+        background = mat_almost_black,
+        surface = mat_purple_black,
+        onBackground = whitish,
+        onSurface = whitish,
+        primary = mat_blue_primary_variant,
+        primaryVariant = mat_purple,
+        secondary = mat_purple,
         error = Color(0xFFCF6679),
     )
 
-private val GYellow = Color(red = 255, green = 242, blue = 0)
-private val GGreen = Color(red = 76, green = 177, blue = 34)
-private val Gulasch =
-    lightColors(
-        background = GYellow,
-        onBackground = GGreen,
-        surface = GGreen,
-        onSurface = GYellow,
-        primary = GGreen,
-        onPrimary = GYellow,
-        secondary = GGreen,
+private val DeepColors =
+    darkColors(
+        background = Color(0xFF17202A),
+        onBackground = whitish,
+        surface = Color(0xFF151D27),
+        onSurface = whitish,
+        primary = Color(0xFF4D9EEB),
+        primaryVariant = Color(0xFF4D9EEB),
+        secondary = Color(0xFF4D9EEB),
     )

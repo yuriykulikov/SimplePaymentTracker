@@ -24,27 +24,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import simple.payment.tracker.R
 
-private val regular = Font(R.font.montserrat_regular)
-private val medium = Font(R.font.montserrat_medium, FontWeight.W500)
-private val semibold = Font(R.font.montserrat_semibold, FontWeight.W600)
-
-private val appFontFamily = FontFamily(fonts = listOf(regular, medium, semibold))
+private val Montserrat =
+    FontFamily(
+        Font(R.font.montserrat_regular),
+        Font(R.font.montserrat_medium, FontWeight.W500),
+        Font(R.font.montserrat_semibold, FontWeight.W600))
 
 val themeTypography =
     Typography(
-        h4 = TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W600, fontSize = 30.sp),
-        h5 = TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W600, fontSize = 24.sp),
-        h6 = TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W600, fontSize = 20.sp),
+        defaultFontFamily = Montserrat,
+        h4 = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 30.sp, letterSpacing = 0.sp),
+        h5 = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 24.sp, letterSpacing = 0.sp),
+        h6 = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 20.sp, letterSpacing = 0.sp),
         subtitle1 =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W600, fontSize = 16.sp),
+            TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 16.sp, letterSpacing = 0.15.sp),
         subtitle2 =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W500, fontSize = 14.sp),
+            TextStyle(fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 0.1.sp),
         body1 =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp),
-        body2 = TextStyle(fontFamily = appFontFamily, fontSize = 14.sp),
+            TextStyle(
+                fontFamily = Montserrat,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                letterSpacing = 0.5.sp),
+        body2 =
+            TextStyle(fontWeight = FontWeight.Medium, fontSize = 14.sp, letterSpacing = 0.25.sp),
         button =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W500, fontSize = 14.sp),
+            TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 14.sp, letterSpacing = 1.25.sp),
         caption =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.Normal, fontSize = 12.sp),
+            TextStyle(fontWeight = FontWeight.Medium, fontSize = 12.sp, letterSpacing = 0.4.sp),
         overline =
-            TextStyle(fontFamily = appFontFamily, fontWeight = FontWeight.W500, fontSize = 12.sp))
+            TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 12.sp, letterSpacing = 1.sp))
