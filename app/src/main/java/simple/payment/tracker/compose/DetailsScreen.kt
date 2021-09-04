@@ -25,6 +25,8 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,6 +36,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
@@ -44,7 +48,6 @@ import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
-import simple.payment.tracker.stores.DataStore
 
 private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
 
@@ -70,11 +73,14 @@ fun DetailsScreen(
 
   val cancelled = remember { mutableStateOf(transaction?.cancelled ?: false) }
   val comment = remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
+
+  val tripState: State<String> = settings.data.map { it.trip }.collectAsState("")
+
   val trip = remember {
     mutableStateOf(
         TextFieldValue(
             when {
-              transaction?.payment == null -> settings.value.trip
+              transaction?.payment == null -> tripState.value
               transaction.payment.trip != null -> transaction.payment.trip
               else -> ""
             }))

@@ -3,10 +3,10 @@ package simple.payment.tracker
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.datastore.core.DataStore
 import org.koin.android.ext.android.inject
 import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
-import simple.payment.tracker.stores.DataStore
 
 class MainActivity : AppCompatActivity() {
   private val backs: Backs by inject()

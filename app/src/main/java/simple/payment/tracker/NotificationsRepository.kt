@@ -1,11 +1,6 @@
 package simple.payment.tracker
 
-import com.squareup.moshi.Moshi
 import io.reactivex.Observable
-import simple.payment.tracker.stores.FileDataStore
-import simple.payment.tracker.stores.Filer
-import simple.payment.tracker.stores.listDataStore
-import simple.payment.tracker.stores.modify
 
 data class Notification(
     val time: Long,
@@ -14,15 +9,7 @@ data class Notification(
 )
 
 /** Notifications can only be added, never removed. */
-class NotificationsRepository(
-    private val logger: Logger,
-    private val filer: Filer,
-    private val moshi: Moshi,
-    private val firebaseDatabase: Firebase
-) {
-  private val fileStore: FileDataStore<List<Notification>> =
-      FileDataStore.listDataStore(filer, "notifications.txt", "[]", moshi)
-
+class NotificationsRepository(private val logger: Logger, private val firebaseDatabase: Firebase) {
   private val notificationsRef =
       firebaseDatabase.child(
           "notifications",
@@ -40,7 +27,6 @@ class NotificationsRepository(
 
   fun addNotifications(newNotifications: List<Notification>) {
     logger.debug { "Adding notifications: $newNotifications" }
-    fileStore.modify { plus(newNotifications) }
     newNotifications.forEach { notification ->
       notificationsRef.put(notification.time.toString(), notification)
     }

@@ -15,40 +15,53 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.datastore.core.DataStore
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import simple.payment.tracker.Settings
-import simple.payment.tracker.stores.DataStore
-import simple.payment.tracker.stores.modify
 import simple.payment.tracker.theme.themeColors
 import simple.payment.tracker.theme.themeTypography
 
 @Composable
 fun SettingsScreen(settings: DataStore<Settings>) {
   Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    val coroutineScope = rememberCoroutineScope()
+
     Text(text = "Theme", style = typography.h6)
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
     ) {
       themeColors().forEach { (name, colors) ->
-        ThemeSelector({ settings.modify { it.copy(theme = name) } }, name, colors)
+        ThemeSelector(
+            // TODO launched effect?
+            onClick = { coroutineScope.launch { settings.updateData { it.copy(theme = name) } } },
+            text = name,
+            colors = colors)
       }
     }
     Divider()
-    val device = rememberRxState("") { settings.observe().map { it.deviceName } }
+    val device = settings.data.map { it.deviceName }.collectAsState("")
     OutlinedTextField(
         label = { Text(text = "Device", style = typography.body1) },
         value = device.value,
-        onValueChange = { settings.modify { prev -> prev.copy(deviceName = it) } },
+        onValueChange = {
+          coroutineScope.launch { settings.updateData { prev -> prev.copy(deviceName = it) } }
+        },
         modifier = Modifier.fillMaxWidth(),
         textStyle = typography.body1,
     )
-    val trip = rememberRxState("") { settings.observe().map { it.trip } }
+    val trip = settings.data.map { it.trip }.collectAsState("")
     OutlinedTextField(
         label = { Text(text = "Trip", style = typography.body1) },
         value = trip.value,
-        onValueChange = { settings.modify { prev -> prev.copy(trip = it) } },
+        onValueChange = {
+          coroutineScope.launch { settings.updateData { prev -> prev.copy(trip = it) } }
+        },
         modifier = Modifier.fillMaxWidth(),
         textStyle = typography.body1,
     )
@@ -68,7 +81,7 @@ private fun ThemeSelector(onClick: () -> Unit, text: String, colors: Colors) {
     Text(
         text,
         style = themeTypography.button,
-        color = colors.onBackground,
+        color = colors.primary,
     )
   }
 }

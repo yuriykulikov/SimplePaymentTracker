@@ -19,6 +19,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin")
         classpath("com.google.gms:google-services:4.3.10")
         classpath("de.mannodermaus.gradle.plugins:android-junit5:1.7.0.0")
+        classpath(kotlin("serialization", version = kotlin))
     }
 }
 

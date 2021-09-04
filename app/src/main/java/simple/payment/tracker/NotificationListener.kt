@@ -2,8 +2,10 @@ package simple.payment.tracker
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import androidx.datastore.core.DataStore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
-import simple.payment.tracker.stores.DataStore
 
 /**
  * Listens for incoming PayPal notificationsStore. Skips all other notificationsStore as well as
@@ -23,6 +25,8 @@ class NotificationListener : NotificationListenerService() {
   }
 
   private fun scan() {
+    val settings = runBlocking { settings.data.first() }
+
     val notifications =
         activeNotifications
             .filter { it.packageName == "com.paypal.android.p2pmobile" }
@@ -34,7 +38,7 @@ class NotificationListener : NotificationListenerService() {
                     Notification(
                         time = notification.postTime,
                         text = text,
-                        device = settings.value.deviceName,
+                        device = settings.deviceName,
                     )
                 else -> null
               }
