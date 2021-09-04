@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.material.FloatingActionButton
@@ -21,8 +22,6 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,7 +39,9 @@ fun ListScreen(
     showAll: Boolean,
     transactionsRepository: TransactionsRepository,
     showDetails: (Transaction?) -> Unit,
-    bottomBar: @Composable() () -> Unit
+    bottomBar: @Composable () -> Unit,
+    search: MutableState<TextFieldValue>,
+    listState: LazyListState,
 ) {
   when {
     showAll ->
@@ -48,12 +49,15 @@ fun ListScreen(
             transactionsRepository = transactionsRepository,
             showDetails = showDetails,
             bottomBar = bottomBar,
+            search = search,
+            listState = listState,
         )
     else ->
         InboxList(
             transactionsRepository = transactionsRepository,
             showDetails = showDetails,
             bottomBar = bottomBar,
+            listState = listState,
         )
   }
 }
@@ -63,15 +67,20 @@ private fun TransactionsList(
     modifier: Modifier = Modifier,
     transactionsRepository: TransactionsRepository,
     showDetails: (Transaction?) -> Unit,
-    bottomBar: @Composable() () -> Unit
+    bottomBar: @Composable () -> Unit,
+    search: MutableState<TextFieldValue>,
+    listState: LazyListState,
 ) {
-  val search = remember { mutableStateOf(TextFieldValue("")) }
-
   Scaffold(
       topBar = { SearchBar(search) },
       bottomBar = bottomBar,
-      content = {
-        Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
+      content = { innerPadding ->
+        Box(
+            modifier =
+                modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.TopStart)
+                    .padding(bottom = innerPadding.calculateBottomPadding())) {
           val data =
               rememberRxState(initial = emptyList()) { transactionsRepository.transactions() }
 
@@ -85,11 +94,12 @@ private fun TransactionsList(
                   }
                 }
               }
-
-          LazyColumn(modifier = Modifier.debugBorder()) {
-            items(items) { transaction ->
-              TransactionListRow(transaction, showDetails)
-              ListDivider()
+          if (items.isNotEmpty()) {
+            LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
+              items(items) { transaction ->
+                TransactionListRow(transaction, showDetails)
+                ListDivider()
+              }
             }
           }
         }
@@ -101,7 +111,8 @@ private fun InboxList(
     modifier: Modifier = Modifier,
     transactionsRepository: TransactionsRepository,
     showDetails: (Transaction?) -> Unit,
-    bottomBar: @Composable() () -> Unit
+    bottomBar: @Composable() () -> Unit,
+    listState: LazyListState,
 ) {
   Scaffold(
       topBar = { InboxTopBar() },
@@ -115,7 +126,7 @@ private fun InboxList(
                 }
               }
 
-          LazyColumn(modifier = Modifier.debugBorder()) {
+          LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
             items(data.value) { transaction ->
               TransactionListRow(transaction, showDetails)
               ListDivider()

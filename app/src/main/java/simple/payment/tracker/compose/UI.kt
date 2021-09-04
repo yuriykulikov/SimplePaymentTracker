@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import kotlin.random.Random.Default.nextInt
@@ -105,11 +106,15 @@ private fun AppContent(
 
   val screen: Screen = detailsToShow.value ?: selectedScreen.value
 
+  val search: MutableState<TextFieldValue> = remember { mutableStateOf(TextFieldValue("")) }
+  val inboxListState = rememberLazyListState()
+  val allListState = rememberLazyListState()
+
   Crossfade(screen) { scr ->
     Surface(color = colors.background) {
       when (scr) {
-        is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar)
-        is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar)
+        is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar, search, inboxListState)
+        is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar, search, allListState)
         is Screen.Details ->
             DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
