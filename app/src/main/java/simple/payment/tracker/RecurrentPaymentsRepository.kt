@@ -1,6 +1,7 @@
 package simple.payment.tracker
 
 import io.reactivex.Observable
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Calendar
@@ -9,6 +10,7 @@ import java.util.Locale
 
 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY)
 
+@Serializable
 data class RecurrringPayment(
     val comment: String,
     val category: String,

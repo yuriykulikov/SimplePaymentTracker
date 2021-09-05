@@ -1,7 +1,9 @@
 package simple.payment.tracker
 
 import io.reactivex.Observable
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class AmazonPayment(
     val orderId: String,
     val category: String,

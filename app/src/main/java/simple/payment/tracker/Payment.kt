@@ -1,14 +1,14 @@
 package simple.payment.tracker
 
-import androidx.annotation.Keep
 import com.google.firebase.database.IgnoreExtraProperties
 import java.time.Instant
 import java.util.Date
+import kotlinx.serialization.Serializable
 
 // TODO id und sum non null, better domain model
 
-@Keep
 @IgnoreExtraProperties
+@Serializable
 data class Payment(
     val category: String,
     val time: Long,
