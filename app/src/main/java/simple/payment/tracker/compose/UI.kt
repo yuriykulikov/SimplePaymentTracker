@@ -113,8 +113,10 @@ private fun AppContent(
   Crossfade(screen) { scr ->
     Surface(color = colors.background) {
       when (scr) {
-        is Screen.List -> ListScreen(false, transactions, showDetails, bottomBar, search, inboxListState)
-        is Screen.ListAll -> ListScreen(true, transactions, showDetails, bottomBar, search, allListState)
+        is Screen.List ->
+            ListScreen(false, transactions, showDetails, bottomBar, search, inboxListState)
+        is Screen.ListAll ->
+            ListScreen(true, transactions, showDetails, bottomBar, search, allListState)
         is Screen.Details ->
             DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)

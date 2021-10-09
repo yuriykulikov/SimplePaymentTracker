@@ -1,12 +1,12 @@
 package simple.payment.tracker
 
 import io.reactivex.Observable
-import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.serialization.Serializable
 
 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY)
 
