@@ -1,8 +1,10 @@
 package simple.payment.tracker
 
 import io.reactivex.Observable
+import kotlinx.serialization.Serializable
 
-class PaymentMatcher(
+@Serializable
+data class PaymentMatcher(
     val merchant: String,
     val category: String,
     val comment: String? = null,
@@ -29,27 +31,21 @@ class PaymentMatcher(
   }
 }
 
-class AutomaticPaymentsRepository {
+class AutomaticPaymentsRepository(private val firebaseDatabase: Firebase) {
+  private val matchers =
+      firebaseDatabase
+          .child(
+              "automatic",
+              mapper = { map ->
+                PaymentMatcher(
+                    merchant = map["merchant"] as String,
+                    category = map["category"] as String,
+                )
+              })
+          .observe()
+          .map { it.values.toList() }
+
   fun matchers(): Observable<List<PaymentMatcher>> {
-    return Observable.just(
-        listOf(
-            PaymentMatcher("Der Beck Fil. 352", "Еда"),
-            PaymentMatcher("Der Beck Fil. 353", "Еда"),
-            PaymentMatcher("Gold Thai Imbiss", "Ресторан"),
-            PaymentMatcher("Takeaway.com Payments B.V.", ""),
-            PaymentMatcher("Google", "Развлечения"),
-            PaymentMatcher("Spotify Finance Limited", "Развлечения"),
-            PaymentMatcher("Netflix.com", "Развлечения"),
-            PaymentMatcher("Voi Technology Germany GmbH", "Транспорт"),
-            PaymentMatcher("Tier Mobility GmbH", "Транспорт"),
-            PaymentMatcher("gemeinnützige Wikimedia Fördergesellschaft mbH", "Разное"),
-            PaymentMatcher("OMV 7532", "Разное"),
-            PaymentMatcher("Deutsche Post AG", "Разное"),
-            PaymentMatcher("DocMorris NV", "Аптека"),
-            PaymentMatcher("Mozart Apotheke", "Аптека"),
-            PaymentMatcher("top12 GmbH", "Гедонизм"),
-            PaymentMatcher("coffeefair online", "Гедонизм"),
-            PaymentMatcher("CREW Republic Brewery GmbH", "Гедонизм"),
-        ))
+    return matchers
   }
 }

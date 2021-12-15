@@ -27,7 +27,7 @@ class Application : Application() {
             single { Firebase(get(), get()) }
             single { AmazonPaymentsRepository(get()) }
             single { RecurrentPaymentsRepository(get()) }
-            single { AutomaticPaymentsRepository() }
+            single { AutomaticPaymentsRepository(get()) }
             single {
               MonthlyStatistics(
                   Observables.combineLatest(
