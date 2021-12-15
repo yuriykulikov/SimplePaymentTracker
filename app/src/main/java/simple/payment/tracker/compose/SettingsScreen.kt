@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import simple.payment.tracker.BuildConfig
 import simple.payment.tracker.Settings
 import simple.payment.tracker.theme.themeColors
 import simple.payment.tracker.theme.themeTypography
@@ -31,6 +32,8 @@ fun SettingsScreen(settings: DataStore<Settings>) {
   Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
     val coroutineScope = rememberCoroutineScope()
 
+    Text(text = "Version", style = typography.h6)
+    Text(text = BuildConfig.VERSION_NAME)
     Text(text = "Theme", style = typography.h6)
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
