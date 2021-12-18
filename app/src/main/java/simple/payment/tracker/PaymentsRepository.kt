@@ -5,7 +5,20 @@ import io.reactivex.Observable
 class PaymentsRepository(private val logger: Logger, private val firebaseDatabase: Firebase) {
   private val paymentsRef = firebaseDatabase.child("payments") { Payment.fromMap(it) }
   private val payments: Observable<List<Payment>> =
-      paymentsRef.observe().map { it.values.toList() }.replay(1).refCount()
+      paymentsRef
+          .observe()
+          .map { it.values.toList() }
+          .map { list ->
+            list.map {
+              if (it.category == "Гедонизм") {
+                it.copy(category = "Еда")
+              } else {
+                it
+              }
+            }
+          }
+          .replay(1)
+          .refCount()
 
   fun payments(): Observable<List<Payment>> = this.payments
 
