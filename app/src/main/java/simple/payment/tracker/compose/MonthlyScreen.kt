@@ -1,5 +1,6 @@
 package simple.payment.tracker.compose
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,51 +22,64 @@ import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.TripStatistics
 
 @Composable
-fun MonthlyScreen(monthlyStatistics: MonthlyStatistics, bottomBar: @Composable() () -> Unit) {
+fun MonthlyScreen(
+    monthlyStatistics: MonthlyStatistics,
+    bottomBar: @Composable () -> Unit,
+    showMonthDetails: (GroupReport) -> Unit,
+) {
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = "Stats") }) },
       bottomBar = bottomBar,
-      content = { StatisticsContent(monthlyStatistics) },
+      content = { StatisticsContent(monthlyStatistics, showMonthDetails) },
   )
 }
 
 @Composable
-fun TripsScreen(tripStatistics: TripStatistics, bottomBar: @Composable() () -> Unit) {
+fun TripsScreen(
+    tripStatistics: TripStatistics,
+    bottomBar: @Composable() () -> Unit,
+    showMonthDetails: (GroupReport) -> Unit
+) {
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = "Stats") }) },
       bottomBar = bottomBar,
-      content = { StatisticsContent(tripStatistics) },
+      content = { StatisticsContent(tripStatistics, showMonthDetails) },
   )
 }
 
 @Composable
-private fun StatisticsContent(provider: GroupReportsProvider) {
+private fun StatisticsContent(
+    provider: GroupReportsProvider,
+    showMonthDetails: (GroupReport) -> Unit,
+) {
   val list: State<List<GroupReport>> = rememberRxState(initial = emptyList()) { provider.reports() }
 
   LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
     items(list.value) { stats ->
-      MonthEntry(stats)
+      MonthEntry(stats, showMonthDetails)
       ListDivider()
     }
   }
 }
 
 @Composable
-private fun MonthEntry(stats: GroupReport) {
-  Row(modifier = Modifier.padding(top = 8.dp)) {
-    Column(Modifier.weight(2F)) { Text(stats.name, style = typography.h6) }
-    Column(Modifier.weight(1F)) {
-      Text(
-          stats.payments.sumBy { it.sum }.toString(),
-          style = typography.h6,
-          color = colors.secondary,
-      )
+private fun MonthEntry(stats: GroupReport, showMonthDetails: (GroupReport) -> Unit) {
+  Column(Modifier.clickable { showMonthDetails(stats) }) {
+    Row(modifier = Modifier.padding(top = 8.dp)) {
+      Column(Modifier.weight(2F)) { Text(stats.name, style = typography.h6) }
+      Column(Modifier.weight(1F)) {
+        Text(
+            stats.payments.sumBy { it.sum }.toString(),
+            style = typography.h6,
+            color = colors.secondary,
+        )
+      }
     }
-  }
-  stats.categorySums.sortedByDescending { (_, sum) -> sum }.forEach { (cat, sum) ->
-    Row {
-      Column(Modifier.weight(2F)) { Text(cat, style = typography.body1) }
-      Column(Modifier.weight(1F)) { Text(sum.toString(), style = typography.body1) }
+    stats.categorySums.sortedByDescending { (_, sum) -> sum }.forEach { (cat, sum) ->
+      Row {
+        Column(Modifier.weight(2F)) { Text(cat, style = typography.body1) }
+        Column(Modifier.weight(1F)) { Text(sum.toString(), style = typography.body1) }
+      }
     }
   }
 }

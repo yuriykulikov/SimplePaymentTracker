@@ -28,6 +28,7 @@ import kotlin.random.Random.Default.nextInt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import simple.payment.tracker.GroupReport
 import simple.payment.tracker.Icon
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.PaymentsRepository
@@ -48,6 +49,7 @@ sealed class Screen {
   object Settings : Screen()
 
   data class Details(val transaction: Transaction) : Screen()
+  data class MonthDetails(val report: GroupReport) : Screen()
 }
 
 @Composable
@@ -89,26 +91,32 @@ private fun AppContent(
 ) {
   val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
   val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
+  val monthDetailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
   val hideDetails = { detailsToShow.value = null }
   val showDetails: (Transaction?) -> Unit = {
     detailsToShow.value = if (it == null) Screen.New else Screen.Details(it)
   }
+  val showMonthDetails: (GroupReport) -> Unit = {
+    monthDetailsToShow.value = Screen.MonthDetails(it)
+  }
+  val hideMonthDetails = { monthDetailsToShow.value = null }
 
   val bottomBar = @Composable { NavigationBottomBar(selectedScreen) }
 
   backs.backPressed.CommitSubscribe {
-    if (detailsToShow.value != null) {
-      hideDetails()
-    } else {
-      selectedScreen.value = Screen.List
+    when {
+      detailsToShow.value != null -> hideDetails()
+      monthDetailsToShow.value != null -> hideMonthDetails()
+      else -> selectedScreen.value = Screen.List
     }
   }
 
-  val screen: Screen = detailsToShow.value ?: selectedScreen.value
+  val screen: Screen = detailsToShow.value ?: monthDetailsToShow.value ?: selectedScreen.value
 
   val search: MutableState<TextFieldValue> = remember { mutableStateOf(TextFieldValue("")) }
   val inboxListState = rememberLazyListState()
   val allListState = rememberLazyListState()
+  val monthDetailsState = rememberLazyListState()
 
   Crossfade(screen) { scr ->
     Surface(color = colors.background) {
@@ -120,8 +128,9 @@ private fun AppContent(
         is Screen.Details ->
             DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
-        is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar)
-        is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar)
+        is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar, showMonthDetails)
+        is Screen.MonthDetails -> MonthDetailsScreen(scr.report, showDetails, monthDetailsState)
+        is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar, showMonthDetails)
         is Screen.Settings -> SettingsScreen(settings)
       }
     }
