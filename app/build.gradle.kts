@@ -57,45 +57,44 @@ dependencies {
 
   implementation("org.koin:koin-core:2.2.2")
   implementation("org.koin:koin-android:2.2.2")
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 
   implementation("androidx.datastore:datastore:1.0.0")
-  implementation("androidx.appcompat:appcompat:1.3.1")
+  implementation("androidx.appcompat:appcompat:1.4.0")
 
-  implementation("com.google.firebase:firebase-database:20.0.1")
+  implementation("com.google.firebase:firebase-database:20.0.3")
 }
 
 // compose
 dependencies {
-  val compose_version = "1.0.1"
-  implementation("androidx.compose.runtime:runtime:$compose_version")
-  implementation("androidx.compose.foundation:foundation-layout:$compose_version")
-  implementation("androidx.compose.animation:animation:$compose_version")
-  implementation("androidx.activity:activity-compose:1.3.1")
+  implementation("androidx.compose.runtime:runtime:1.0.5")
+  implementation("androidx.compose.foundation:foundation-layout:1.0.5")
+  implementation("androidx.compose.animation:animation:1.0.5")
+  implementation("androidx.activity:activity-compose:1.4.0")
 
-  implementation("androidx.compose.ui:ui:1.0.1")
+  implementation("androidx.compose.ui:ui:1.0.5")
   // Tooling support (Previews, etc.)
-  implementation("androidx.compose.ui:ui-tooling:1.0.1")
+  implementation("androidx.compose.ui:ui-tooling:1.0.5")
   // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
-  implementation("androidx.compose.foundation:foundation:1.0.1")
+  implementation("androidx.compose.foundation:foundation:1.0.5")
   // Material Design
-  implementation("androidx.compose.material:material:1.0.1")
+  implementation("androidx.compose.material:material:1.0.5")
   // Material design icons
-  implementation("androidx.compose.material:material-icons-core:1.0.1")
-  implementation("androidx.compose.material:material-icons-extended:1.0.1")
+  implementation("androidx.compose.material:material-icons-core:1.0.5")
+  implementation("androidx.compose.material:material-icons-extended:1.0.5")
   // Integration with observables
-  implementation("androidx.compose.runtime:runtime-livedata:1.0.1")
-  implementation("androidx.compose.runtime:runtime-rxjava2:1.0.1")
+  implementation("androidx.compose.runtime:runtime-livedata:1.0.5")
+  implementation("androidx.compose.runtime:runtime-rxjava2:1.0.5")
 
   // UI Tests
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.1")
+  androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.5")
 }
 
 // test
 dependencies {
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.2")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.2")
-  testImplementation("org.assertj:assertj-core:3.16.1")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+  testImplementation("org.assertj:assertj-core:3.21.0")
 
   androidTestImplementation("androidx.test.ext:junit:1.1.3")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
