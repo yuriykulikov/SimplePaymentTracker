@@ -11,7 +11,7 @@ import simple.payment.tracker.logging.Logger
 data class Notification(
     val time: Long,
     val text: String,
-    val device: String?,
+    val device: String? = null,
 )
 
 /** Notifications can only be added, never removed. */

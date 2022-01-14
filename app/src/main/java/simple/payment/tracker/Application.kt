@@ -26,7 +26,9 @@ class Application : Application() {
             single { applicationContext }
             single { NotificationsRepository(logger("NotificationsRepository"), get()) }
             single { PaymentsRepository(logger("PaymentsRepository"), get()) }
-            single { TransactionsRepository(logger("TransactionsRepository"), get(), get(), get()) }
+            single {
+              TransactionsRepository.create(logger("TransactionsRepository"), get(), get(), get())
+            }
             single {
               FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) }
               dev.gitlive.firebase.Firebase.database
