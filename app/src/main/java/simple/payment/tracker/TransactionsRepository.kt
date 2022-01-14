@@ -52,12 +52,13 @@ class TransactionsRepository(
 
   val inbox: Observable<List<Transaction>> by lazy {
     Observables.combineLatest(
-            paymentsObservable,
-            processedNotifications,
+            paymentsObservable.observeOn(Schedulers.computation()),
+            processedNotifications.observeOn(Schedulers.computation()),
         ) { payments: List<Payment>, notifications: ProcessedNotifications,
           ->
           buildTransactionsList(notifications, payments, onlyInbox = true)
         }
+        .observeOn(scheduler)
         .replay(1)
         .refCount(45, TimeUnit.SECONDS, scheduler)
   }
