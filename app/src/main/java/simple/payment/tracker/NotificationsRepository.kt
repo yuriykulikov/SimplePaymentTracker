@@ -1,7 +1,11 @@
 package simple.payment.tracker
 
+import dev.gitlive.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asObservable
 import kotlinx.serialization.Serializable
+import simple.payment.tracker.logging.Logger
 
 @Serializable
 data class Notification(
@@ -11,26 +15,26 @@ data class Notification(
 )
 
 /** Notifications can only be added, never removed. */
-class NotificationsRepository(private val logger: Logger, private val firebaseDatabase: Firebase) {
-  private val notificationsRef =
-      firebaseDatabase.child(
-          "notifications",
-          mapper = { map ->
-            Notification(
-                time = map["time"] as Long,
-                text = map["text"] as String,
-                device = map["device"] as String?,
-            )
-          })
+class NotificationsRepository(
+    private val logger: Logger,
+    private val firebaseDatabase: FirebaseDatabase
+) {
+  private val notificationsRef = firebaseDatabase.reference("notifications")
+
   private val notifications: Observable<List<Notification>> =
-      notificationsRef.observe().map { it.values.toList() }
+      notificationsRef
+          .valueEvents
+          .map { it.value<Map<String, Notification>>().values.toList() }
+          .asObservable()
+          .replay(1)
+          .refCount()
 
   fun notifications(): Observable<List<Notification>> = notifications
 
-  fun addNotifications(newNotifications: List<Notification>) {
+  suspend fun addNotifications(newNotifications: List<Notification>) {
     logger.debug { "Adding notifications: $newNotifications" }
     newNotifications.forEach { notification ->
-      notificationsRef.put(notification.time.toString(), notification)
+      notificationsRef.child(notification.time.toString()).setValue(notification)
     }
   }
 }

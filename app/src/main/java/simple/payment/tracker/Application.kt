@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.Serializer
 import com.google.firebase.database.FirebaseDatabase
+import dev.gitlive.firebase.database.database
 import io.reactivex.rxkotlin.Observables
 import java.io.InputStream
 import java.io.OutputStream
@@ -12,19 +13,24 @@ import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import simple.payment.tracker.compose.Backs
+import simple.payment.tracker.logging.logger
+import simple.payment.tracker.logging.loggerModule
 
 class Application : Application() {
   override fun onCreate() {
     super.onCreate()
     startKoin {
       modules(
+          loggerModule(),
           module {
-            single { Logger() }
-            single { NotificationsRepository(get(), get()) }
-            single { PaymentsRepository(get(), get()) }
-            single { TransactionsRepository(get(), get(), get(), get()) }
-            single { FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) } }
-            single { Firebase(get(), get()) }
+            single { applicationContext }
+            single { NotificationsRepository(logger("NotificationsRepository"), get()) }
+            single { PaymentsRepository(logger("PaymentsRepository"), get()) }
+            single { TransactionsRepository(logger("TransactionsRepository"), get(), get(), get()) }
+            single {
+              FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) }
+              dev.gitlive.firebase.Firebase.database
+            }
             single { AmazonPaymentsRepository(get()) }
             single { RecurrentPaymentsRepository(get()) }
             single { AutomaticPaymentsRepository(get()) }

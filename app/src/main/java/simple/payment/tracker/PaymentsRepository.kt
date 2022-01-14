@@ -1,34 +1,31 @@
 package simple.payment.tracker
 
+import dev.gitlive.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asObservable
+import simple.payment.tracker.logging.Logger
 
-class PaymentsRepository(private val logger: Logger, private val firebaseDatabase: Firebase) {
-  private val paymentsRef = firebaseDatabase.child("payments") { Payment.fromMap(it) }
+class PaymentsRepository(
+    private val logger: Logger,
+    private val firebaseDatabase: FirebaseDatabase
+) {
+  private val paymentsRef = firebaseDatabase.reference("payments")
   private val payments: Observable<List<Payment>> =
       paymentsRef
-          .observe()
-          .map { it.values.toList() }
-          .map { list ->
-            list.map {
-              if (it.category == "Гедонизм") {
-                it.copy(category = "Еда")
-              } else {
-                it
-              }
-            }
-          }
-          .replay(1)
-          .refCount()
+          .valueEvents
+          .map { it.value<Map<String, Payment>>().values.toList() }
+          .asObservable()
 
   fun payments(): Observable<List<Payment>> = this.payments
 
-  fun changeOrCreatePayment(previousId: Long?, payment: Payment) {
+  suspend fun changeOrCreatePayment(previousId: Long?, payment: Payment) {
     logger.debug { "Adding payment: $payment" }
 
-    paymentsRef.put(payment.id.toString(), payment)
+    paymentsRef.child(payment.id.toString()).setValue(payment)
     if (previousId != null && payment.id != previousId) {
       logger.debug { "Removing the old one: $previousId" }
-      paymentsRef.remove(previousId.toString())
+      paymentsRef.child(previousId.toString()).removeValue()
     }
   }
 }

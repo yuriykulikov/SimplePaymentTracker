@@ -1,6 +1,9 @@
 package simple.payment.tracker
 
+import dev.gitlive.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asObservable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -31,19 +34,15 @@ data class PaymentMatcher(
   }
 }
 
-class AutomaticPaymentsRepository(private val firebaseDatabase: Firebase) {
+class AutomaticPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
   private val matchers =
       firebaseDatabase
-          .child(
-              "automatic",
-              mapper = { map ->
-                PaymentMatcher(
-                    merchant = map["merchant"] as String,
-                    category = map["category"] as String,
-                )
-              })
-          .observe()
-          .map { it.values.toList() }
+          .reference("automatic")
+          .valueEvents
+          .map { it.value<Map<String, PaymentMatcher>>().values.toList() }
+          .asObservable()
+          .replay(1)
+          .refCount()
 
   fun matchers(): Observable<List<PaymentMatcher>> {
     return matchers

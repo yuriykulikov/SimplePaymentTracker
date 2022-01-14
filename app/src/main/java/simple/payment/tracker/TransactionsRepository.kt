@@ -5,6 +5,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.Observables
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import simple.payment.tracker.logging.Logger
 
 data class Transaction(val payment: Payment? = null, val notification: Notification? = null) {
   val id: Long = payment?.id ?: requireNotNull(notification).time
@@ -19,10 +20,10 @@ data class Transaction(val payment: Payment? = null, val notification: Notificat
 
 /** Aggregates notifications and payments into one flat list ready for presentation. */
 class TransactionsRepository(
+    private val logger: Logger,
     private val paymentsRepository: PaymentsRepository,
     private val notificationsRepository: NotificationsRepository,
     private val automaticPaymentsRepository: AutomaticPaymentsRepository,
-    private val logger: Logger
 ) {
   private val transactions: Observable<List<Transaction>> by lazy {
     val notificationsById =

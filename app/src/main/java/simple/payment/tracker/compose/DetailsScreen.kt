@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -41,6 +42,7 @@ import java.time.Instant
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import simple.payment.tracker.Icon
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
@@ -90,6 +92,7 @@ fun DetailsScreen(
         TopAppBar(
             title = { Text(text = "Payment") },
             actions = {
+              val scope = rememberCoroutineScope()
               val canSave =
                   (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess &&
                       sum.value.text.toIntOrNull() != null &&
@@ -98,19 +101,21 @@ fun DetailsScreen(
               IconButton(
                   onClick = {
                     if (canSave) {
-                      paymentsRepository.changeOrCreatePayment(
-                          transaction?.id,
-                          Payment(
-                              notificationId = transaction?.payment?.notificationId
-                                      ?: transaction?.notification?.time,
-                              time = transaction?.notification?.time
-                                      ?: requireNotNull(dateFormat.parse(time.value.text)).time,
-                              category = category.value!!,
-                              comment = comment.value.text,
-                              merchant = merchant.value.text,
-                              sum = sum.value.text.toInt(),
-                              cancelled = cancelled.value,
-                              trip = trip.value.text.let { if (it.isEmpty()) null else it }))
+                      scope.launch {
+                        paymentsRepository.changeOrCreatePayment(
+                            transaction?.id,
+                            Payment(
+                                notificationId = transaction?.payment?.notificationId
+                                        ?: transaction?.notification?.time,
+                                time = transaction?.notification?.time
+                                        ?: requireNotNull(dateFormat.parse(time.value.text)).time,
+                                category = category.value!!,
+                                comment = comment.value.text,
+                                merchant = merchant.value.text,
+                                sum = sum.value.text.toInt(),
+                                cancelled = cancelled.value,
+                                trip = trip.value.text.let { if (it.isEmpty()) null else it }))
+                      }
                       onSave()
                     }
                   }) {

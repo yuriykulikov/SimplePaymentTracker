@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-  compileSdk = 30
+  compileSdk = 31
   defaultConfig {
     applicationId = "simple.payment.tracker"
     minSdk = 28
-    targetSdk = 30
+    targetSdk = 31
     versionCode = 10300
     versionName = "1.3.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -54,6 +54,7 @@ dependencies {
   implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
   implementation("io.reactivex.rxjava2:rxjava:2.2.19")
   implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.2")
 
   implementation("org.koin:koin-core:2.2.2")
   implementation("org.koin:koin-android:2.2.2")
@@ -62,7 +63,15 @@ dependencies {
   implementation("androidx.datastore:datastore:1.0.0")
   implementation("androidx.appcompat:appcompat:1.4.0")
 
+  implementation("org.slf4j:slf4j-api:1.7.32")
+  implementation("com.github.tony19:logback-android:2.0.0")
+
+  implementation("dev.gitlive:firebase-auth:1.4.3")
+  implementation("dev.gitlive:firebase-database:1.4.3")
   implementation("com.google.firebase:firebase-database:20.0.3")
+  implementation("com.google.firebase:firebase-database-ktx:20.0.3")
+  implementation("com.google.firebase:firebase-auth-ktx:21.0.1")
+  implementation("com.google.firebase:firebase-common-ktx:20.0.0")
 }
 
 // compose

@@ -26,19 +26,4 @@ data class Payment(
   override fun toString(): String {
     return "Payment(id=$id, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"
   }
-
-  companion object // functions below
-}
-
-/** Used to create payments from Firebase maps */
-fun Payment.Companion.fromMap(map: Map<String, Any>): Payment {
-  return Payment(
-      category = map["category"] as String,
-      notificationId = map["notificationId"] as Long?,
-      time = map["time"] as Long? ?: map["notificationId"] as Long,
-      comment = map["comment"] as String? ?: "",
-      merchant = map["merchant"] as String? ?: "",
-      sum = (map["sum"] as Long? ?: 0L).toInt(),
-      cancelled = map["cancelled"] as Boolean? ?: false,
-      trip = map["trip"] as String?)
 }

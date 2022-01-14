@@ -1,6 +1,9 @@
 package simple.payment.tracker
 
+import dev.gitlive.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asObservable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,25 +13,15 @@ data class AmazonPayment(
     val time: Long,
     val comment: String,
     val sum: Int
-) {
-  companion object {
-    fun fromMap(map: Map<String, Any>): AmazonPayment {
-      return AmazonPayment(
-          comment = map["comment"] as String? ?: "",
-          category = map["category"] as String,
-          sum = (map["sum"] as Long? ?: 0L).toInt(),
-          orderId = map["orderId"] as String,
-          time = map["time"] as Long)
-    }
-  }
-}
+)
 
-class AmazonPaymentsRepository(private val firebaseDatabase: Firebase) {
+class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
   private val amazonPayments: Observable<List<AmazonPayment>> =
       firebaseDatabase
-          .child("amazonpayments") { map -> AmazonPayment.fromMap(map) }
-          .observe()
-          .map { it.values.toList() }
+          .reference("amazonpayments")
+          .valueEvents
+          .map { it.value<Map<String, AmazonPayment>>().values.toList() }
+          .asObservable()
           .replay(1)
           .refCount()
 

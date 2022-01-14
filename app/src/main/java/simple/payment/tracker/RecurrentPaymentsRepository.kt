@@ -1,11 +1,14 @@
 package simple.payment.tracker
 
+import dev.gitlive.firebase.database.FirebaseDatabase
 import io.reactivex.Observable
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asObservable
 import kotlinx.serialization.Serializable
 
 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY)
@@ -17,25 +20,15 @@ data class RecurrringPayment(
     val sum: Int,
     val start: String,
     val end: String? = null
-) {
-  companion object {
-    fun fromMap(map: Map<String, Any>): RecurrringPayment {
-      return RecurrringPayment(
-          comment = map["comment"] as String? ?: "",
-          category = map["category"] as String,
-          sum = (map["sum"] as Long? ?: 0L).toInt(),
-          start = map["start"] as String,
-          end = map["end"] as String?)
-    }
-  }
-}
+)
 
-class RecurrentPaymentsRepository(private val firebaseDatabase: Firebase) {
+class RecurrentPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
   private val recurring: Observable<List<RecurrringPayment>> =
       firebaseDatabase
-          .child("recurringpayments") { map -> RecurrringPayment.fromMap(map) }
-          .observe()
-          .map { it.values.toList() }
+          .reference("recurringpayments")
+          .valueEvents
+          .map { it.value<Map<String, RecurrringPayment>>().values.toList() }
+          .asObservable()
           .replay(1)
           .refCount()
 
