@@ -36,7 +36,7 @@ data class WeekData(
 }
 
 @Composable
-fun MonthDetailsScreen(
+fun GroupDetailsScreen(
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
     state: LazyListState,
@@ -45,7 +45,7 @@ fun MonthDetailsScreen(
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = groupReport.name) }) },
       content = {
-        MonthDetailsContent(
+        GroupDetailsColumn(
             groupReport,
             showDetails,
             state,
@@ -56,7 +56,7 @@ fun MonthDetailsScreen(
 }
 
 @Composable
-private fun MonthDetailsContent(
+private fun GroupDetailsColumn(
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
     state: LazyListState,

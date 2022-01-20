@@ -1,7 +1,6 @@
 package simple.payment.tracker.compose
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme.colors
@@ -137,7 +136,7 @@ private fun AppContent(
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar, showMonthDetails)
         is Screen.MonthDetails ->
-            MonthDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)
+            GroupDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)
         is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar, showMonthDetails)
         is Screen.Settings -> SettingsScreen(settings)
       }
