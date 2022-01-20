@@ -3,17 +3,12 @@ package simple.payment.tracker.compose
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomAppBar
-import androidx.compose.material.Colors
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -24,20 +19,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlin.random.Random.Default.nextInt
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import simple.payment.tracker.GroupReport
-import simple.payment.tracker.Icon
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.PaymentsRepository
-import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.TripStatistics
 import simple.payment.tracker.theme.ColoredTheme
+import simple.payment.tracker.theme.ExtendedColors
+import simple.payment.tracker.theme.Theme
 import simple.payment.tracker.theme.toColors
 
 sealed class Screen {
@@ -61,14 +57,22 @@ fun PaymentsApp(
     tripsStatistics: TripStatistics,
     settings: DataStore<Settings>
 ) {
-  val colors: State<Colors> =
-      settings
-          .data
-          .map { it.theme.toColors() }
-          // TODO wtf
+  val colors: State<ExtendedColors> =
+      remember { settings.data.map { it.theme.toColors() } }
           .collectAsState(initial = runBlocking { settings.data.first().theme.toColors() })
 
   ColoredTheme(colors.value) {
+    // Remember a SystemUiController
+    val systemUiController = rememberSystemUiController()
+    val topColor = Theme.colors.topBar
+    val bottomColor = Theme.colors.bottomBar
+
+    SideEffect {
+      systemUiController.setStatusBarColor(color = topColor)
+      systemUiController.setNavigationBarColor(
+          color = bottomColor, navigationBarContrastEnforced = false)
+    }
+
     AppContent(
         backs,
         transactions,
@@ -161,52 +165,4 @@ fun Modifier.debugBorder(): Modifier = composed {
     border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
   }
   this
-}
-
-@Composable
-private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
-  BottomAppBar(modifier = Modifier.fillMaxWidth()) {
-    IconButton(
-        onClick = { currentScreen.value = Screen.List },
-        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.List)) {
-      Text(text = "Inbox")
-    }
-
-    IconButton(
-        onClick = { currentScreen.value = Screen.ListAll },
-        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.ListAll)) {
-      Text(text = "All")
-    }
-
-    IconButton(
-        onClick = { currentScreen.value = Screen.Monthly },
-        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Monthly)) {
-      Text(text = "Stats")
-    }
-
-    IconButton(
-        onClick = { currentScreen.value = Screen.Trips },
-        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Trips)) {
-      Text(text = "Trips")
-    }
-
-    IconButton(
-        onClick = { currentScreen.value = Screen.Settings },
-        modifier = Modifier.highlightIf(currentScreen, Screen.Settings)) {
-      Icon(
-          id = R.drawable.ic_baseline_more_vert_24,
-          tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
-      )
-    }
-  }
-}
-
-private fun Modifier.highlightIf(currentScreen: MutableState<Screen>, target: Screen): Modifier =
-    composed {
-  when (currentScreen.value) {
-    target -> {
-      background(color = colors.onSurface.copy(alpha = 0.1f), shape = RoundedCornerShape(20.dp))
-    }
-    else -> this
-  }
 }

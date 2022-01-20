@@ -95,6 +95,9 @@ dependencies {
   implementation("androidx.compose.runtime:runtime-livedata:1.0.5")
   implementation("androidx.compose.runtime:runtime-rxjava2:1.0.5")
 
+  // implementation("com.google.accompanist:accompanist-systemuicontroller:0.20.3")
+  implementation("com.google.accompanist:accompanist-systemuicontroller:0.22.0-rc")
+
   // UI Tests
   androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.5")
 }

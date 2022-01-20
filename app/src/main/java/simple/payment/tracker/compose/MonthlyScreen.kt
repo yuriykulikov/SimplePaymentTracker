@@ -20,6 +20,7 @@ import simple.payment.tracker.GroupReport
 import simple.payment.tracker.GroupReportsProvider
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.TripStatistics
+import simple.payment.tracker.theme.Theme
 
 @Composable
 fun MonthlyScreen(
@@ -28,7 +29,12 @@ fun MonthlyScreen(
     showMonthDetails: (GroupReport) -> Unit,
 ) {
   Scaffold(
-      topBar = { TopAppBar(title = { Text(text = "Stats") }) },
+      topBar = {
+        TopAppBar(
+            title = { Text(text = "Stats") },
+            backgroundColor = Theme.colors.topBar,
+        )
+      },
       bottomBar = bottomBar,
       content = { StatisticsContent(monthlyStatistics, showMonthDetails) },
   )
@@ -41,7 +47,9 @@ fun TripsScreen(
     showMonthDetails: (GroupReport) -> Unit,
 ) {
   Scaffold(
-      topBar = { TopAppBar(title = { Text(text = "Stats") }) },
+      topBar = {
+        TopAppBar(title = { Text(text = "Stats") }, backgroundColor = Theme.colors.topBar)
+      },
       bottomBar = bottomBar,
       content = { StatisticsContent(tripStatistics, showMonthDetails) },
   )
@@ -71,7 +79,7 @@ private fun MonthEntry(stats: GroupReport, showMonthDetails: (GroupReport) -> Un
         Text(
             stats.payments.sumBy { it.sum }.toString(),
             style = typography.h6,
-            color = colors.secondary,
+            color = Theme.colors.textAccent,
         )
       }
     }

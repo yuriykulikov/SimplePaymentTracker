@@ -28,11 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import java.util.Locale
+import java.util.*
 import simple.payment.tracker.Icon
 import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
+import simple.payment.tracker.theme.Theme
 
 @Composable
 fun ListScreen(
@@ -137,7 +138,8 @@ private fun InboxList(
       floatingActionButton = {
         FloatingActionButton(
             onClick = { showDetails(null) },
-        ) { Icon(id = R.drawable.ic_baseline_add_24, tint = colors.onPrimary) }
+            backgroundColor = Theme.colors.surfaceAccent,
+        ) { Icon(id = R.drawable.ic_baseline_add_24, tint = Theme.colors.text) }
       },
   )
 }
@@ -145,6 +147,7 @@ private fun InboxList(
 @Composable
 fun SearchBar(search: MutableState<TextFieldValue>) {
   TopAppBar(
+      backgroundColor = Theme.colors.topBar,
       content = {
         val color = if (colors.isLight) colors.onPrimary else colors.onSurface
         TextField(
@@ -164,7 +167,7 @@ fun SearchBar(search: MutableState<TextFieldValue>) {
 
 @Composable
 fun InboxTopBar() {
-  TopAppBar(title = { Text(text = "Inbox") })
+  TopAppBar(backgroundColor = Theme.colors.topBar, title = { Text(text = "Inbox") })
 }
 
 @Composable

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Colors
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
@@ -16,6 +15,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import simple.payment.tracker.BuildConfig
 import simple.payment.tracker.Settings
+import simple.payment.tracker.theme.ExtendedColors
 import simple.payment.tracker.theme.themeColors
 import simple.payment.tracker.theme.themeTypography
 
@@ -48,7 +49,7 @@ fun SettingsScreen(settings: DataStore<Settings>) {
       }
     }
     Divider()
-    val device = settings.data.map { it.deviceName }.collectAsState("")
+    val device = remember { settings.data.map { it.deviceName } }.collectAsState("")
     OutlinedTextField(
         label = { Text(text = "Device", style = typography.body1) },
         value = device.value,
@@ -58,7 +59,7 @@ fun SettingsScreen(settings: DataStore<Settings>) {
         modifier = Modifier.fillMaxWidth(),
         textStyle = typography.body1,
     )
-    val trip = settings.data.map { it.trip }.collectAsState("")
+    val trip = remember { settings.data.map { it.trip } }.collectAsState("")
     OutlinedTextField(
         label = { Text(text = "Trip", style = typography.body1) },
         value = trip.value,
@@ -72,7 +73,7 @@ fun SettingsScreen(settings: DataStore<Settings>) {
 }
 
 @Composable
-private fun ThemeSelector(onClick: () -> Unit, text: String, colors: Colors) {
+private fun ThemeSelector(onClick: () -> Unit, text: String, colors: ExtendedColors) {
   TextButton(
       onClick,
       modifier =
@@ -84,7 +85,7 @@ private fun ThemeSelector(onClick: () -> Unit, text: String, colors: Colors) {
     Text(
         text,
         style = themeTypography.button,
-        color = colors.primary,
+        color = colors.textAccent,
     )
   }
 }

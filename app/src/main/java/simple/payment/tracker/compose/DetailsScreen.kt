@@ -49,6 +49,7 @@ import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.theme.Theme
 
 private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
 
@@ -91,6 +92,7 @@ fun DetailsScreen(
       topBar = {
         TopAppBar(
             title = { Text(text = "Payment") },
+            backgroundColor = Theme.colors.topBar,
             actions = {
               val scope = rememberCoroutineScope()
               val canSave =
