@@ -211,10 +211,10 @@ fun TransactionSubtitle(transaction: Transaction, modifier: Modifier = Modifier)
         style = typography.subtitle2,
         color = colors.secondary,
     )
-
+  }
+  Row {
     if (transaction.payment?.auto == true) {
       Text(
-          modifier = Modifier.padding(start = 16.dp),
           text = "auto",
           style = typography.subtitle2,
           color = colors.primary,
@@ -222,7 +222,6 @@ fun TransactionSubtitle(transaction: Transaction, modifier: Modifier = Modifier)
     }
     if (transaction.trip != null) {
       Text(
-          modifier = Modifier.padding(start = 16.dp),
           text = transaction.trip,
           style = typography.subtitle2,
           color = colors.primary,
