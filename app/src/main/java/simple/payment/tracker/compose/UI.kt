@@ -118,6 +118,9 @@ private fun AppContent(
   val allListState = rememberLazyListState()
   val monthDetailsState = rememberLazyListState()
 
+  val reportLookup = { report: GroupReport ->
+    monthlyStatistics.report(report.name).onErrorResumeNext(tripsStatistics.report(report.name))
+  }
   Crossfade(screen) { scr ->
     Surface(color = colors.background) {
       when (scr) {
@@ -129,7 +132,8 @@ private fun AppContent(
             DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
         is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar, showMonthDetails)
-        is Screen.MonthDetails -> MonthDetailsScreen(scr.report, showDetails, monthDetailsState)
+        is Screen.MonthDetails ->
+            MonthDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)
         is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar, showMonthDetails)
         is Screen.Settings -> SettingsScreen(settings)
       }

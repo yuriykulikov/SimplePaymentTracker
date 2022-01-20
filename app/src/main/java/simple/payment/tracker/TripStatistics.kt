@@ -10,6 +10,10 @@ class TripStatistics(private val payments: Observable<List<Payment>>) : GroupRep
     return reports
   }
 
+  override fun report(name: String): Observable<GroupReport> {
+    return reports.map { reports -> reports.first { it.name == name } }
+  }
+
   companion object {
     fun monthly(merged: List<Payment>): List<GroupReport> {
       val trips = merged.filterNot { it.trip.isNullOrEmpty() }.groupBy { it.trip ?: "" }

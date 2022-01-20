@@ -16,6 +16,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.reactivex.Observable
 import java.util.*
 import simple.payment.tracker.GroupReport
 import simple.payment.tracker.Payment
@@ -39,6 +40,7 @@ fun MonthDetailsScreen(
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
     state: LazyListState,
+    reportLookup: (GroupReport) -> Observable<GroupReport>,
 ) {
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = groupReport.name) }) },
@@ -47,6 +49,7 @@ fun MonthDetailsScreen(
             groupReport,
             showDetails,
             state,
+            reportLookup,
         )
       },
   )
@@ -56,10 +59,12 @@ fun MonthDetailsScreen(
 private fun MonthDetailsContent(
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
-    state: LazyListState
+    state: LazyListState,
+    reportLookup: (GroupReport) -> Observable<GroupReport>,
 ) {
+  val report = rememberRxState(groupReport) { reportLookup(groupReport) }
   LazyColumn(state = state) {
-    items(groupReport.weeklyPaymentsWithoutRecurrent()) { weekData: WeekData ->
+    items(report.value.weeklyPaymentsWithoutRecurrent()) { weekData: WeekData ->
       WeekDetails(weekData, showDetails)
     }
   }

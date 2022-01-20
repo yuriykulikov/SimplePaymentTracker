@@ -38,7 +38,7 @@ fun MonthlyScreen(
 fun TripsScreen(
     tripStatistics: TripStatistics,
     bottomBar: @Composable() () -> Unit,
-    showMonthDetails: (GroupReport) -> Unit
+    showMonthDetails: (GroupReport) -> Unit,
 ) {
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = "Stats") }) },
