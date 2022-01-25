@@ -12,8 +12,8 @@ android {
     applicationId = "simple.payment.tracker"
     minSdk = 28
     targetSdk = 31
-    versionCode = 10401
-    versionName = "1.4.1"
+    versionCode = 10500
+    versionName = "1.5.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
   buildTypes {

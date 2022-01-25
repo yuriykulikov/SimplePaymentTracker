@@ -10,7 +10,9 @@ import io.reactivex.rxkotlin.Observables
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.json.Json
+import org.koin.android.ext.android.get
 import org.koin.core.context.startKoin
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.logging.logger
@@ -34,30 +36,28 @@ class Application : Application() {
               dev.gitlive.firebase.Firebase.database
             }
             single { AmazonPaymentsRepository(get()) }
+            single { TinkoffPaymentsRepository(get()) }
             single { RecurrentPaymentsRepository(get()) }
             single { AutomaticPaymentsRepository(get()) }
-            single {
-              MonthlyStatistics(
-                  Observables.combineLatest(
-                      get<TransactionsRepository>().transactions(),
-                      get<AmazonPaymentsRepository>().payments,
-                      get<RecurrentPaymentsRepository>().payments,
-                      combineFunction = { transactions, amazonPayments, recurrent ->
-                        transactions
-                            .mapNotNull { it.payment }
-                            .filterNot { it.category == "Помощь родителям" }
-                            .plus(amazonPayments)
-                            .plus(recurrent)
-                      }))
+            single(named("allPayments")) {
+              Observables.combineLatest(
+                  get<TransactionsRepository>().transactions(),
+                  get<AmazonPaymentsRepository>().payments,
+                  get<TinkoffPaymentsRepository>().payments,
+                  get<RecurrentPaymentsRepository>().payments,
+                  combineFunction = { transactions, amazonPayments, tinkoffPayments, recurrent ->
+                    transactions
+                        .asSequence()
+                        .mapNotNull { it.payment }
+                        .plus(amazonPayments)
+                        .plus(tinkoffPayments)
+                        .plus(recurrent)
+                        .filterNot { it.category == "Помощь родителям" }
+                        .toList()
+                  })
             }
-            single {
-              TripStatistics(
-                  Observables.combineLatest(
-                      get<PaymentsRepository>().payments(),
-                      get<AmazonPaymentsRepository>().payments,
-                      get<RecurrentPaymentsRepository>().payments,
-                      combineFunction = { l1, l2, l3 -> l1 + l2 + l3 }))
-            }
+            single { MonthlyStatistics(get(named("allPayments"))) }
+            single { TripStatistics(get(named("allPayments"))) }
             single { Backs() }
             single<DataStore<Settings>> {
               DataStoreFactory.create(
