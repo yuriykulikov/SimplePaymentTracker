@@ -39,11 +39,15 @@ class Application : Application() {
             single {
               MonthlyStatistics(
                   Observables.combineLatest(
-                      get<PaymentsRepository>().payments(),
+                      get<TransactionsRepository>().transactions(),
                       get<AmazonPaymentsRepository>().payments,
                       get<RecurrentPaymentsRepository>().payments,
-                      combineFunction = { l1, l2, l3 ->
-                        (l1 + l2 + l3).filterNot { it.category == "Помощь родителям" }
+                      combineFunction = { transactions, amazonPayments, recurrent ->
+                        transactions
+                            .mapNotNull { it.payment }
+                            .filterNot { it.category == "Помощь родителям" }
+                            .plus(amazonPayments)
+                            .plus(recurrent)
                       }))
             }
             single {
