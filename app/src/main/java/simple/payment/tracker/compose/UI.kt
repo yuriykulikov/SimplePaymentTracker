@@ -30,6 +30,7 @@ import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.TripStatistics
+import simple.payment.tracker.logging.LoggerFactory
 import simple.payment.tracker.theme.ColoredTheme
 import simple.payment.tracker.theme.ExtendedColors
 import simple.payment.tracker.theme.Theme
@@ -54,7 +55,8 @@ fun PaymentsApp(
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
     tripsStatistics: TripStatistics,
-    settings: DataStore<Settings>
+    settings: DataStore<Settings>,
+    loggers: LoggerFactory,
 ) {
   val colors: State<ExtendedColors> =
       remember { settings.data.map { it.theme.toColors() } }
@@ -79,6 +81,7 @@ fun PaymentsApp(
         monthlyStatistics,
         tripsStatistics,
         settings,
+        loggers,
     )
   }
 }
@@ -91,6 +94,7 @@ private fun AppContent(
     monthlyStatistics: MonthlyStatistics,
     tripsStatistics: TripStatistics,
     settings: DataStore<Settings>,
+    loggers: LoggerFactory,
 ) {
   val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
   val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
@@ -132,8 +136,21 @@ private fun AppContent(
         is Screen.ListAll ->
             ListScreen(true, transactions, showDetails, bottomBar, search, allListState)
         is Screen.Details ->
-            DetailsScreen(paymentsRepository, scr.transaction, hideDetails, settings)
-        is Screen.New -> DetailsScreen(paymentsRepository, null, hideDetails, settings)
+            DetailsScreen(
+                paymentsRepository,
+                scr.transaction,
+                hideDetails,
+                settings,
+                loggers.createLogger("DetailsScreen"),
+            )
+        is Screen.New ->
+            DetailsScreen(
+                paymentsRepository,
+                null,
+                hideDetails,
+                settings,
+                loggers.createLogger("DetailsScreen"),
+            )
         is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar, showMonthDetails)
         is Screen.MonthDetails ->
             GroupDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)

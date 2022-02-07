@@ -49,6 +49,7 @@ import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.logging.Logger
 import simple.payment.tracker.theme.Theme
 
 private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
@@ -59,8 +60,19 @@ fun DetailsScreen(
     paymentsRepository: PaymentsRepository,
     transaction: Transaction?,
     onSave: () -> Unit,
-    settings: DataStore<Settings>
+    settings: DataStore<Settings>,
+    logger: Logger,
 ) {
+  LaunchedEffect(transaction) {
+    logger.debug {
+      // Showing details for Transaction(payment=Payment(id=1644090240000,
+      // notificationId=1644090241414, date=Sat Feb 05 20:44:00 GMT+01:00 2022, sum=61,
+      // category='Ресторан', comment='', merchant='Namaste Indisches Rest', trip=null),
+      // notification=null)
+      "Showing details for $transaction"
+    }
+  }
+
   val category: MutableState<String?> = remember { mutableStateOf(transaction?.category) }
   val sum: MutableState<TextFieldValue> = remember {
     mutableStateOf(TextFieldValue(transaction?.sum?.toString() ?: ""))
@@ -106,6 +118,12 @@ fun DetailsScreen(
                       scope.launch {
                         paymentsRepository.changeOrCreatePayment(
                             transaction?.id,
+                            // here the issue is that notificaiton is null for some reason when
+                            // changing the existing payment
+                            // changeOrCreatePayment(previousId: 1644090240000, payment:
+                            // Payment(id=1644090240000, notificationId=1644090241414, date=Sat Feb
+                            // 05 20:44:00 GMT+01:00 2022, sum=60, category='Ресторан', comment='',
+                            // merchant='Namaste Indisches Rest', trip=null))
                             Payment(
                                 notificationId = transaction?.payment?.notificationId
                                         ?: transaction?.notification?.time,

@@ -9,6 +9,7 @@ import androidx.datastore.core.DataStore
 import org.koin.android.ext.android.inject
 import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
+import simple.payment.tracker.logging.LoggerFactory
 
 class MainActivity : AppCompatActivity() {
   private val backs: Backs by inject()
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
   private val monthlyStatistics: MonthlyStatistics by inject()
   private val tripsStatistics: TripStatistics by inject()
   private val settings: DataStore<Settings> by inject()
+  private val loggers: LoggerFactory by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
           monthlyStatistics,
           tripsStatistics,
           settings,
+          loggers,
       )
     }
   }

@@ -24,6 +24,6 @@ data class Payment(
   val isRecurrent: Boolean = merchant == "Recurrent"
 
   override fun toString(): String {
-    return "Payment(id=$id, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"
+    return "Payment(id=$id, notificationId=$notificationId, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"
   }
 }

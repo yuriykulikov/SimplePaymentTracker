@@ -20,7 +20,7 @@ class PaymentsRepository(
   fun payments(): Observable<List<Payment>> = this.payments
 
   suspend fun changeOrCreatePayment(previousId: Long?, payment: Payment) {
-    logger.debug { "Adding payment: $payment" }
+    logger.debug { "changeOrCreatePayment(previousId: $previousId, payment: $payment)" }
 
     paymentsRef.child(payment.id.toString()).setValue(payment)
     if (previousId != null && payment.id != previousId) {
