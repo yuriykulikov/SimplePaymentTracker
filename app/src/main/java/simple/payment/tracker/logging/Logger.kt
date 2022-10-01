@@ -1,13 +1,10 @@
 package simple.payment.tracker.logging
 
-import org.slf4j.LoggerFactory
-
 interface LoggerFactory {
   fun createLogger(tag: String): Logger
 }
 
-class Logger
-constructor(
+class Logger(
     val slf4jLogger: org.slf4j.Logger,
 ) {
   inline fun trace(supplier: () -> String) {
@@ -37,13 +34,6 @@ constructor(
   inline fun error(e: Throwable? = null, supplier: () -> String) {
     if (slf4jLogger.isErrorEnabled) {
       slf4jLogger.error(supplier(), e)
-    }
-  }
-
-  companion object {
-    @JvmStatic
-    fun create(): Logger {
-      return Logger(LoggerFactory.getLogger("DEFAULT"))
     }
   }
 }

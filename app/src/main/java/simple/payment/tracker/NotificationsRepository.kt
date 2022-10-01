@@ -22,8 +22,7 @@ class NotificationsRepository(
   private val notificationsRef = firebaseDatabase.reference("notifications")
 
   private val notifications: Observable<List<Notification>> =
-      notificationsRef
-          .valueEvents
+      notificationsRef.valueEvents
           .map { it.value<Map<String, Notification>>().values.toList() }
           .asObservable()
           .replay(1)

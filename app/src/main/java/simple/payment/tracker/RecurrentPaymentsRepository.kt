@@ -38,13 +38,12 @@ class RecurrentPaymentsRepository(private val firebaseDatabase: FirebaseDatabase
 fun List<RecurrringPayment>.toPayments(now: Calendar = Calendar.getInstance()): List<Payment> {
   return flatMap { rec ->
     generateSequence(dateFormat.parse(rec.start)) {
-      now
-          .apply {
-            time = it
-            add(Calendar.MONTH, 1)
-          }
-          .time
-    }
+          now.apply {
+                time = it
+                add(Calendar.MONTH, 1)
+              }
+              .time
+        }
         .takeWhile { it.before(rec.end?.let(dateFormat::parse) ?: Date.from(Instant.now())) }
         .mapIndexed { index, date ->
           Payment(

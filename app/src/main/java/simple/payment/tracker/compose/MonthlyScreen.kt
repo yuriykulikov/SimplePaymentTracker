@@ -83,11 +83,13 @@ private fun MonthEntry(stats: GroupReport, showMonthDetails: (GroupReport) -> Un
         )
       }
     }
-    stats.categorySums.sortedByDescending { (_, sum) -> sum }.forEach { (cat, sum) ->
-      Row {
-        Column(Modifier.weight(2F)) { Text(cat, style = typography.body1) }
-        Column(Modifier.weight(1F)) { Text(sum.toString(), style = typography.body1) }
-      }
-    }
+    stats.categorySums
+        .sortedByDescending { (_, sum) -> sum }
+        .forEach { (cat, sum) ->
+          Row {
+            Column(Modifier.weight(2F)) { Text(cat, style = typography.body1) }
+            Column(Modifier.weight(1F)) { Text(sum.toString(), style = typography.body1) }
+          }
+        }
   }
 }

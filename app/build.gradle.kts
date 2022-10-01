@@ -6,12 +6,14 @@ plugins {
   id("kotlinx-serialization")
 }
 
+val jetpackCompose = "1.2.1"
+
 android {
-  compileSdk = 31
+  compileSdk = 33
   defaultConfig {
     applicationId = "simple.payment.tracker"
     minSdk = 28
-    targetSdk = 31
+    targetSdk = 33
     versionCode = 10500
     versionName = "1.5.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -28,18 +30,11 @@ android {
     targetCompatibility = JavaVersion.VERSION_1_8
   }
 
+  kotlinOptions { jvmTarget = "1.8" }
+
   buildFeatures { compose = true }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.0.1" }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-  kotlinOptions {
-    freeCompilerArgs =
-        freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn" + "-Xopt-in=kotlin.Experimental"
-
-    jvmTarget = "1.8"
-  }
+  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
 }
 
 repositories {
@@ -50,63 +45,54 @@ repositories {
 }
 
 dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-stdlib:${project.extra["kotlin"]}")
   implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
-  implementation("io.reactivex.rxjava2:rxjava:2.2.19")
+  implementation("io.reactivex.rxjava2:rxjava:2.2.21")
   implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.5.2")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.1")
 
   implementation("org.koin:koin-core:2.2.2")
   implementation("org.koin:koin-android:2.2.2")
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
   implementation("androidx.datastore:datastore:1.0.0")
-  implementation("androidx.appcompat:appcompat:1.4.0")
+  implementation("androidx.appcompat:appcompat:1.5.1")
 
-  implementation("org.slf4j:slf4j-api:1.7.32")
+  implementation("org.slf4j:slf4j-api:1.7.36")
   implementation("com.github.tony19:logback-android:2.0.0")
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
   implementation("dev.gitlive:firebase-database:1.4.3")
-  implementation("com.google.firebase:firebase-database:20.0.3")
-  implementation("com.google.firebase:firebase-database-ktx:20.0.3")
-  implementation("com.google.firebase:firebase-auth-ktx:21.0.1")
-  implementation("com.google.firebase:firebase-common-ktx:20.0.0")
+  implementation("com.google.firebase:firebase-database:20.0.6")
+  implementation("com.google.firebase:firebase-database-ktx:20.0.6")
+  implementation("com.google.firebase:firebase-auth-ktx:21.0.8")
+  implementation("com.google.firebase:firebase-common-ktx:20.1.2")
 }
 
-// compose
 dependencies {
-  implementation("androidx.compose.runtime:runtime:1.0.5")
-  implementation("androidx.compose.foundation:foundation-layout:1.0.5")
-  implementation("androidx.compose.animation:animation:1.0.5")
-  implementation("androidx.activity:activity-compose:1.4.0")
-
-  implementation("androidx.compose.ui:ui:1.0.5")
+  implementation("androidx.compose.ui:ui:$jetpackCompose")
   // Tooling support (Previews, etc.)
-  implementation("androidx.compose.ui:ui-tooling:1.0.5")
+  implementation("androidx.compose.ui:ui-tooling:$jetpackCompose")
   // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
-  implementation("androidx.compose.foundation:foundation:1.0.5")
+  implementation("androidx.compose.foundation:foundation:$jetpackCompose")
   // Material Design
-  implementation("androidx.compose.material:material:1.0.5")
+  implementation("androidx.compose.material:material:$jetpackCompose")
   // Material design icons
-  implementation("androidx.compose.material:material-icons-core:1.0.5")
-  implementation("androidx.compose.material:material-icons-extended:1.0.5")
-  // Integration with observables
-  implementation("androidx.compose.runtime:runtime-livedata:1.0.5")
-  implementation("androidx.compose.runtime:runtime-rxjava2:1.0.5")
+  implementation("androidx.compose.material:material-icons-core:$jetpackCompose")
+  implementation("androidx.compose.material:material-icons-extended:$jetpackCompose")
 
-  // implementation("com.google.accompanist:accompanist-systemuicontroller:0.20.3")
-  implementation("com.google.accompanist:accompanist-systemuicontroller:0.22.0-rc")
+  implementation("com.google.accompanist:accompanist-systemuicontroller:0.25.1")
 
+  // Activity
+  implementation("androidx.activity:activity-compose:1.6.0")
   // UI Tests
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.0.5")
+  androidTestImplementation("androidx.compose.ui:ui-test-junit4:$jetpackCompose")
 }
 
 // test
 dependencies {
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-  testImplementation("org.assertj:assertj-core:3.21.0")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+  testImplementation("org.assertj:assertj-core:3.23.1")
 
   androidTestImplementation("androidx.test.ext:junit:1.1.3")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")

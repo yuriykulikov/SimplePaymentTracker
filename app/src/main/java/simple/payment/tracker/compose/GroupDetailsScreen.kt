@@ -148,12 +148,14 @@ private fun WeekBreakdown(
     }
     Row {
       Column {
-        payments.map { Transaction(payment = it) }.forEachIndexed { index, transaction ->
-          TransactionListRow(transaction, showDetails = showDetails)
-          if (index != payments.lastIndex) {
-            ListDivider()
-          }
-        }
+        payments
+            .map { Transaction(payment = it) }
+            .forEachIndexed { index, transaction ->
+              TransactionListRow(transaction, showDetails = showDetails)
+              if (index != payments.lastIndex) {
+                ListDivider()
+              }
+            }
       }
     }
   }

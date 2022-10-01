@@ -12,8 +12,7 @@ class PaymentsRepository(
 ) {
   private val paymentsRef = firebaseDatabase.reference("payments")
   private val payments: Observable<List<Payment>> =
-      paymentsRef
-          .valueEvents
+      paymentsRef.valueEvents
           .map { it.value<Map<String, Payment>>().values.toList() }
           .asObservable()
 

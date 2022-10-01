@@ -59,10 +59,10 @@ fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
 
 private fun Modifier.highlightIf(currentScreen: MutableState<Screen>, target: Screen): Modifier =
     composed {
-  when (currentScreen.value) {
-    target -> {
-      background(color = colors.onSurface.copy(alpha = 0.1f), shape = RoundedCornerShape(20.dp))
+      when (currentScreen.value) {
+        target -> {
+          background(color = colors.onSurface.copy(alpha = 0.1f), shape = RoundedCornerShape(20.dp))
+        }
+        else -> this
+      }
     }
-    else -> this
-  }
-}

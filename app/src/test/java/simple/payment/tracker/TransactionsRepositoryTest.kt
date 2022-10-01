@@ -3,30 +3,28 @@ package simple.payment.tracker
 import ch.qos.logback.core.ConsoleAppender
 import io.reactivex.Observable
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import private.Automatic
-import simple.payment.tracker.logging.Logger
 import simple.payment.tracker.logging.addAppender
+import simple.payment.tracker.logging.hide
 import simple.payment.tracker.logging.logback
 import simple.payment.tracker.logging.patternLayoutEncoder
 
 class TransactionsRepositoryTest {
 
-  @BeforeEach
-  fun setup() {
-    logback {
-      addAppender(ConsoleAppender()) { //
-        encoder = patternLayoutEncoder("[%thread] - %msg%n")
-      }
-    }
-  }
+  private val loggerFactory =
+      logback {
+            addAppender(ConsoleAppender()) { //
+              encoder = patternLayoutEncoder("[%thread] - %msg%n")
+            }
+          }
+          .hide()
 
   @Test
   fun `unassigned notifications from two devices are shown as one transaction`() {
     val aggregated =
         TransactionsRepository.createForTest(
-                Logger.create(),
+                loggerFactory.createLogger("test"),
                 Observable.just(
                     listOf(
                         Notification(

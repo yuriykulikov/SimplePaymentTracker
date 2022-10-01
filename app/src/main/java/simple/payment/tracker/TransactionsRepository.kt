@@ -97,8 +97,7 @@ class TransactionsRepository(
               val automaticallyAssignedNotifications =
                   notifications.automaticPayments.values.mapNotNull { it.notification }.toSet()
 
-              notifications
-                  .idToGroup
+              notifications.idToGroup
                   .minus(enteredIdsWithDuplicates)
                   .values
                   .distinct()
@@ -112,10 +111,10 @@ class TransactionsRepository(
             onlyInbox -> inbox
             else -> {
               listOf(
-                  payments.map { Transaction(payment = it) },
-                  inbox,
-                  fullAutoPayments,
-              )
+                      payments.map { Transaction(payment = it) },
+                      inbox,
+                      fullAutoPayments,
+                  )
                   .flatten()
                   .sortedByDescending { it.time }
             }
@@ -189,7 +188,7 @@ class ProcessedNotifications(
 
   val automaticPayments: Map<Long, Transaction> by lazy {
     findAutomatic(
-        idToGroup.values.distinct().map { notificationsById.getValue(it.first()) }, matchers)
+            idToGroup.values.distinct().map { notificationsById.getValue(it.first()) }, matchers)
         .associateBy { requireNotNull(it.notification).time }
   }
 }
@@ -228,31 +227,33 @@ fun findAutomatic(
 // You saved 1,36 EUR on a 34,10 EUR
 fun Notification.sum(): Int {
   return runCatching {
-    // You payed 1,34 EUR to Some Guy"
-    val sum =
-        text.substringAfter("You paid ")
-            .substringAfter("You sent ")
-            .substringAfter(" on a ")
-            .substringBefore(",")
-            .substringBefore(".")
-    val youSaved: Int =
+        // You payed 1,34 EUR to Some Guy"
+        val sum =
+            text
+                .substringAfter("You paid ")
+                .substringAfter("You sent ")
+                .substringAfter(" on a ")
+                .substringBefore(",")
+                .substringBefore(".")
+        val youSaved: Int =
+            when {
+              "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
+              else -> 0
+            }
         when {
-          "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
-          else -> 0
-        }
-    when {
-      sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
-      text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
-      else -> sum.toIntOrNull() ?: 0
-    } - youSaved
-  }
+          sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
+          text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
+          else -> sum.toIntOrNull() ?: 0
+        } - youSaved
+      }
       .getOrElse {
         throw IllegalArgumentException("Failed to parse sum of $this, caused by $it", it)
       }
 }
 
 fun Notification.merchant(): String {
-  return text.substringAfterLast(" EUR to ")
+  return text
+      .substringAfterLast(" EUR to ")
       .substringAfterLast(" EUR to ")
       .substringAfterLast(" USD to ")
       .substringAfterLast(" USD to ")

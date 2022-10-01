@@ -27,8 +27,7 @@ class MonthlyStatistics(private val payments: Observable<List<Payment>>) : Group
                 "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH).plus(1).toString()
                         .padStart(2, '0')}"
               }
-      return monthly
-          .entries
+      return monthly.entries
           .reversed()
           .map { (month, payments) -> GroupReport(month, payments) }
           .sortedByDescending { it.name }

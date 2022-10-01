@@ -139,7 +139,9 @@ private fun InboxList(
         FloatingActionButton(
             onClick = { showDetails(null) },
             backgroundColor = Theme.colors.surfaceAccent,
-        ) { Icon(id = R.drawable.ic_baseline_add_24, tint = Theme.colors.text) }
+        ) {
+          Icon(id = R.drawable.ic_baseline_add_24, tint = Theme.colors.text)
+        }
       },
   )
 }
