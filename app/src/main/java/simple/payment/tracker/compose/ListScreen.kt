@@ -119,7 +119,7 @@ private fun InboxList(
       topBar = { InboxTopBar() },
       bottomBar = bottomBar,
       content = {
-        Column(modifier = modifier.fillMaxSize()) {
+        Column(modifier = modifier.padding(it).fillMaxSize()) {
           val data =
               rememberRxState(initial = emptyList()) {
                 transactionsRepository.transactions().map { list ->

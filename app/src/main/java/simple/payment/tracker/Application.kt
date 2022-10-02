@@ -10,11 +10,11 @@ import io.reactivex.rxkotlin.Observables
 import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.json.Json
-import org.koin.android.ext.android.get
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import simple.payment.tracker.compose.Backs
+import simple.payment.tracker.firebase.FirebaseSignIn
 import simple.payment.tracker.logging.logger
 import simple.payment.tracker.logging.loggerModule
 
@@ -77,6 +77,7 @@ class Application : Application() {
                       },
                   produceFile = { applicationContext.filesDir.resolve("settings.txt") })
             }
+            single<FirebaseSignIn> { FirebaseSignIn(logger("GoogleSignIn"), get()) }
           })
     }
   }

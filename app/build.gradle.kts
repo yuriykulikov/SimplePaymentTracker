@@ -14,8 +14,8 @@ android {
     applicationId = "simple.payment.tracker"
     minSdk = 28
     targetSdk = 33
-    versionCode = 10500
-    versionName = "1.5.0"
+    versionCode = 10600
+    versionName = "1.6.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
   buildTypes {
@@ -62,10 +62,15 @@ dependencies {
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
   implementation("dev.gitlive:firebase-database:1.4.3")
-  implementation("com.google.firebase:firebase-database:20.0.6")
-  implementation("com.google.firebase:firebase-database-ktx:20.0.6")
-  implementation("com.google.firebase:firebase-auth-ktx:21.0.8")
-  implementation("com.google.firebase:firebase-common-ktx:20.1.2")
+  implementation(platform("com.google.firebase:firebase-bom:30.5.0"))
+  implementation("com.google.firebase:firebase-database")
+  implementation("com.google.firebase:firebase-database-ktx")
+  implementation("com.google.firebase:firebase-auth")
+  implementation("com.google.firebase:firebase-auth-ktx")
+  implementation("com.google.firebase:firebase-common-ktx")
+
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+  implementation("com.google.android.gms:play-services-auth:20.3.0")
 }
 
 dependencies {

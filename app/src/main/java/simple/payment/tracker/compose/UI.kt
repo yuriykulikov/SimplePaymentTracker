@@ -2,8 +2,10 @@ package simple.payment.tracker.compose
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -30,6 +32,7 @@ import simple.payment.tracker.Settings
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.TripStatistics
+import simple.payment.tracker.firebase.FirebaseSignIn
 import simple.payment.tracker.logging.LoggerFactory
 import simple.payment.tracker.theme.ColoredTheme
 import simple.payment.tracker.theme.ExtendedColors
@@ -57,6 +60,7 @@ fun PaymentsApp(
     tripsStatistics: TripStatistics,
     settings: DataStore<Settings>,
     loggers: LoggerFactory,
+    firebaseSignIn: FirebaseSignIn,
 ) {
   val colors: State<ExtendedColors> =
       remember { settings.data.map { it.theme.toColors() } }
@@ -74,15 +78,28 @@ fun PaymentsApp(
           color = bottomColor, navigationBarContrastEnforced = false)
     }
 
-    AppContent(
-        backs,
-        transactions,
-        paymentsRepository,
-        monthlyStatistics,
-        tripsStatistics,
-        settings,
-        loggers,
-    )
+    val signedInAs = firebaseSignIn.signedInUserEmail().collectAsState()
+
+    if (signedInAs.value == null) {
+      Scaffold(
+          content = {
+            SignInScreen(
+                Modifier.padding(it),
+                firebaseSignIn,
+            )
+          })
+    } else {
+      AppContent(
+          backs,
+          transactions,
+          paymentsRepository,
+          monthlyStatistics,
+          tripsStatistics,
+          settings,
+          loggers,
+          firebaseSignIn,
+      )
+    }
   }
 }
 
@@ -95,6 +112,7 @@ private fun AppContent(
     tripsStatistics: TripStatistics,
     settings: DataStore<Settings>,
     loggers: LoggerFactory,
+    firebaseSignIn: FirebaseSignIn,
 ) {
   val selectedScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
   val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
@@ -155,7 +173,7 @@ private fun AppContent(
         is Screen.MonthDetails ->
             GroupDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)
         is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar, showMonthDetails)
-        is Screen.Settings -> SettingsScreen(settings)
+        is Screen.Settings -> SettingsScreen(settings, firebaseSignIn)
       }
     }
   }

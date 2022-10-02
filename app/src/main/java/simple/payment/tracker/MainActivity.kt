@@ -4,11 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.input.key.Key.Companion.Settings
 import androidx.datastore.core.DataStore
 import org.koin.android.ext.android.inject
 import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
+import simple.payment.tracker.firebase.FirebaseSignIn
 import simple.payment.tracker.logging.LoggerFactory
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
   private val tripsStatistics: TripStatistics by inject()
   private val settings: DataStore<Settings> by inject()
   private val loggers: LoggerFactory by inject()
+  private val firebaseSignIn: FirebaseSignIn by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
           tripsStatistics,
           settings,
           loggers,
+          firebaseSignIn,
       )
     }
   }

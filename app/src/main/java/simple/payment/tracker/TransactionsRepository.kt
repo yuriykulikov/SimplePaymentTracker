@@ -123,7 +123,10 @@ class TransactionsRepository(
       }
 
   fun transactions(): Observable<List<Transaction>> {
-    return transactions
+    return transactions.retryWhen {
+      it.doOnNext { logger.warning { "Observable transactions() failed: $it, retry in 1 second!" } }
+          .delay(1, TimeUnit.SECONDS)
+    }
   }
 
   companion object {

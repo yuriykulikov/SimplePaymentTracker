@@ -1,5 +1,7 @@
 package simple.payment.tracker.compose
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
@@ -24,12 +27,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import simple.payment.tracker.BuildConfig
 import simple.payment.tracker.Settings
+import simple.payment.tracker.firebase.FirebaseSignIn
 import simple.payment.tracker.theme.ExtendedColors
 import simple.payment.tracker.theme.themeColors
 import simple.payment.tracker.theme.themeTypography
 
 @Composable
-fun SettingsScreen(settings: DataStore<Settings>) {
+fun SettingsScreen(
+    settings: DataStore<Settings>,
+    firebaseSignIn: FirebaseSignIn,
+) {
   Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -69,6 +76,24 @@ fun SettingsScreen(settings: DataStore<Settings>) {
         modifier = Modifier.fillMaxWidth(),
         textStyle = typography.body1,
     )
+
+    val scope = rememberCoroutineScope()
+
+    val signedIn = firebaseSignIn.signedInUserEmail().collectAsState()
+    if (signedIn.value != null) {
+      Text(text = "Signed in as ${signedIn.value}")
+      Button(onClick = { scope.launch { firebaseSignIn.signOut() } }) { Text(text = "Sign out") }
+    } else {
+      val signInLauncher =
+          rememberLauncherForActivityResult(
+              contract = ActivityResultContracts.StartIntentSenderForResult(),
+              onResult = { activityResult ->
+                scope.launch { firebaseSignIn.handleActivityResult(activityResult.data) }
+              })
+      Button(onClick = { scope.launch { signInLauncher.launch(firebaseSignIn.signInIntent()) } }) {
+        Text(text = "Sign in")
+      }
+    }
   }
 }
 
