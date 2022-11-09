@@ -19,6 +19,7 @@ data class Payment(
     val cancelled: Boolean,
     val trip: String? = null,
     val auto: Boolean = false,
+    val user: String? = null,
 ) {
   val id = time
   val isRecurrent: Boolean = merchant == "Recurrent"

@@ -27,7 +27,10 @@ class Application : Application() {
           module {
             single { applicationContext }
             single { NotificationsRepository(logger("NotificationsRepository"), get()) }
-            single { PaymentsRepository(logger("PaymentsRepository"), get()) }
+            single {
+              PaymentsRepository(
+                  logger("PaymentsRepository"), get(), get<FirebaseSignIn>().signedInUserEmail())
+            }
             single {
               TransactionsRepository.create(logger("TransactionsRepository"), get(), get(), get())
             }
