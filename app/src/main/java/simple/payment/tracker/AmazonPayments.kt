@@ -5,6 +5,7 @@ import io.reactivex.Observable
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.rx2.asObservable
 import kotlinx.serialization.Serializable
+import simple.payment.tracker.logging.Logger
 
 @Serializable
 data class AmazonPayment(
@@ -15,7 +16,7 @@ data class AmazonPayment(
     val sum: Int
 )
 
-class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
+class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase, logger: Logger) {
   private val amazonPayments: Observable<List<AmazonPayment>> =
       firebaseDatabase
           .reference("amazonpayments")
@@ -24,6 +25,10 @@ class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
           .asObservable()
           .replay(1)
           .refCount()
+          .onErrorResumeNext { e: Throwable ->
+            logger.error(e) { "Amazon payments failed: $e" }
+            Observable.just(emptyList<AmazonPayment>())
+          }
 
   val payments: Observable<List<Payment>> = amazonPayments.map { it.map(AmazonPayment::toPayment) }
 }

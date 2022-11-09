@@ -35,7 +35,7 @@ class Application : Application() {
               FirebaseDatabase.getInstance().apply { setPersistenceEnabled(true) }
               dev.gitlive.firebase.Firebase.database
             }
-            single { AmazonPaymentsRepository(get()) }
+            single { AmazonPaymentsRepository(get(), logger("AmazonPaymentsRepository")) }
             single { TinkoffPaymentsRepository(get()) }
             single { RecurrentPaymentsRepository(get()) }
             single { AutomaticPaymentsRepository(get()) }

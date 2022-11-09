@@ -98,6 +98,14 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
   testImplementation("org.assertj:assertj-core:3.23.1")
+  testImplementation("io.strikt:strikt-core:0.34.1")
+
+  testImplementation("com.google.auth:google-auth-library-oauth2-http:1.7.0")
+  val ktor_version = "2.1.0"
+  testImplementation("io.ktor:ktor-client-core:$ktor_version")
+  testImplementation("io.ktor:ktor-client-cio:$ktor_version")
+  testImplementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+  testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
   androidTestImplementation("androidx.test.ext:junit:1.1.3")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
