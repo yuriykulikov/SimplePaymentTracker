@@ -1,9 +1,9 @@
 package simple.payment.tracker
 
 import ch.qos.logback.core.ConsoleAppender
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.rx2.rxObservable
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import simple.payment.tracker.logging.addAppender
@@ -36,38 +36,39 @@ class TransactionsRepositoryMediumTest {
         val uniquePayments =
             TransactionsRepository.createForTest(
                     logger,
-                    rxObservable { trySend(firebase.notifications().values.toList()) },
-                    Observable.just(emptyList()),
-                    Observable.just(emptyList()),
+                    flowOf(firebase.notifications().values.toList()),
+                    flowOf(emptyList()),
+                    flowOf(emptyList()),
                 )
                 .transactions()
-                .blockingFirst()
+                .first()
 
         assertThat(uniquePayments).hasSize(2452)
       }
 
   @Test
-  fun `TransactionsRepository detects automatic payments`() {
-    val autoPayments =
-        TransactionsRepository.createForTest(
-                logger,
-                rxObservable { trySend(firebase.notifications().values.toList()) },
-                Observable.just(emptyList()),
-                rxObservable { trySend(firebase.automatic().values.toList()) },
-            )
-            .transactions()
-            .blockingFirst()
-            .filter { it.payment?.auto == true }
+  fun `TransactionsRepository detects automatic payments`() =
+      runBlocking<Unit> {
+        val autoPayments =
+            TransactionsRepository.createForTest(
+                    logger,
+                    flowOf(firebase.notifications().values.toList()),
+                    flowOf(emptyList()),
+                    flowOf(firebase.automatic().values.toList()),
+                )
+                .transactions()
+                .first()
+                .filter { it.payment?.auto == true }
 
-    assertThat(autoPayments).hasSize(950)
+        assertThat(autoPayments).hasSize(950)
 
-    autoPayments
-        .groupBy { it.payment?.merchant }
-        .values
-        .sortedByDescending { it.size }
-        .take(20)
-        .forEach { println("Automatic: $it") }
-  }
+        autoPayments
+            .groupBy { it.payment?.merchant }
+            .values
+            .sortedByDescending { it.size }
+            .take(20)
+            .forEach { println("Automatic: $it") }
+      }
 
   @Test
   fun `TransactionsRepository removes assigned payments from the inbox`() =
@@ -78,12 +79,12 @@ class TransactionsRepositoryMediumTest {
         val inbox =
             TransactionsRepository.createForTest(
                     logger,
-                    Observable.just(notifications),
-                    Observable.just(payments),
-                    rxObservable { trySend(firebase.automatic().values.toList()) },
+                    flowOf(notifications),
+                    flowOf(payments),
+                    flowOf(firebase.automatic().values.toList()),
                 )
                 .inbox
-                .blockingFirst()
+                .first()
                 .associateBy { it.time }
 
         assertThat(inbox).hasSize(7)

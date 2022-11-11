@@ -1,7 +1,9 @@
 package simple.payment.tracker
 
 import ch.qos.logback.core.ConsoleAppender
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import simple.payment.tracker.logging.addAppender
@@ -20,27 +22,28 @@ class TransactionsRepositoryTest {
           .hide()
 
   @Test
-  fun `unassigned notifications from two devices are shown as one transaction`() {
-    val aggregated =
-        TransactionsRepository.createForTest(
-                loggerFactory.createLogger("test"),
-                Observable.just(
-                    listOf(
-                        Notification(
-                            time = 1600267655959,
-                            device = "Pixel 3a",
-                            text = "You paid 17.00 EUR to GRUBIGSTEINBAHN IV"),
-                        Notification(
-                            time = 1600267718253,
-                            device = "Pixel 4",
-                            text = "You paid 17.00 EUR to GRUBIGSTEINBAHN IV",
-                        ))),
-                Observable.just(emptyList()),
-                Observable.just(emptyList()),
-            )
-            .transactions()
-            .blockingFirst()
+  fun `unassigned notifications from two devices are shown as one transaction`() =
+      runBlocking<Unit> {
+        val aggregated =
+            TransactionsRepository.createForTest(
+                    loggerFactory.createLogger("test"),
+                    flowOf(
+                        listOf(
+                            Notification(
+                                time = 1600267655959,
+                                device = "Pixel 3a",
+                                text = "You paid 17.00 EUR to GRUBIGSTEINBAHN IV"),
+                            Notification(
+                                time = 1600267718253,
+                                device = "Pixel 4",
+                                text = "You paid 17.00 EUR to GRUBIGSTEINBAHN IV",
+                            ))),
+                    flowOf(emptyList()),
+                    flowOf(emptyList()),
+                )
+                .transactions()
+                .first()
 
-    assertThat(aggregated).hasSize(1)
-  }
+        assertThat(aggregated).hasSize(1)
+      }
 }

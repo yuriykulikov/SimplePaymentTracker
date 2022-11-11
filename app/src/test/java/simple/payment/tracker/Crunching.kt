@@ -4,8 +4,9 @@ import ch.qos.logback.core.ConsoleAppender
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.rx2.rxObservable
 import org.junit.jupiter.api.Test
 import simple.payment.tracker.logging.addAppender
 import simple.payment.tracker.logging.hide
@@ -27,12 +28,12 @@ class Crunching {
     val aggregated: List<Transaction> =
         TransactionsRepository.createForTest(
                 logger,
-                rxObservable { trySend(firebase.notifications().values.toList()) },
-                rxObservable { trySend(firebase.payments().values.toList()) },
-                rxObservable { trySend(firebase.automatic().values.toList()) },
+                flowOf(firebase.notifications().values.toList()),
+                flowOf(firebase.payments().values.toList()),
+                flowOf(firebase.automatic().values.toList()),
             )
             .transactions()
-            .blockingFirst()
+            .first()
 
     val july2019 = dateFormat.parse("2019-07-01")?.time ?: 0
     return (aggregated.mapNotNull { it.payment } +

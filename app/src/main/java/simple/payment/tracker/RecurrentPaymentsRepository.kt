@@ -1,14 +1,15 @@
 package simple.payment.tracker
 
 import dev.gitlive.firebase.database.FirebaseDatabase
-import io.reactivex.Observable
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asObservable
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.Serializable
 
 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY)
@@ -23,16 +24,16 @@ data class RecurrringPayment(
 )
 
 class RecurrentPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
-  private val recurring: Observable<List<RecurrringPayment>> =
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
+
+  private val recurring: Flow<List<RecurrringPayment>> =
       firebaseDatabase
           .reference("recurringpayments")
           .valueEvents
           .map { it.value<Map<String, RecurrringPayment>>().values.toList() }
-          .asObservable()
-          .replay(1)
-          .refCount()
+          .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
 
-  val payments: Observable<List<Payment>> = recurring.map { it.toPayments() }
+  val payments: Flow<List<Payment>> = recurring.map { it.toPayments() }
 }
 
 fun List<RecurrringPayment>.toPayments(now: Calendar = Calendar.getInstance()): List<Payment> {

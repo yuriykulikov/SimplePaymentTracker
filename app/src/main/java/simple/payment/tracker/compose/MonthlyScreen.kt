@@ -7,13 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import simple.payment.tracker.GroupReport
@@ -36,7 +37,9 @@ fun MonthlyScreen(
         )
       },
       bottomBar = bottomBar,
-      content = { StatisticsContent(monthlyStatistics, showMonthDetails) },
+      content = { paddingValues ->
+        StatisticsContent(Modifier.padding(paddingValues), monthlyStatistics, showMonthDetails)
+      },
   )
 }
 
@@ -51,18 +54,22 @@ fun TripsScreen(
         TopAppBar(title = { Text(text = "Stats") }, backgroundColor = Theme.colors.topBar)
       },
       bottomBar = bottomBar,
-      content = { StatisticsContent(tripStatistics, showMonthDetails) },
+      content = { paddingValues ->
+        StatisticsContent(Modifier.padding(paddingValues), tripStatistics, showMonthDetails)
+      },
   )
 }
 
 @Composable
 private fun StatisticsContent(
+    modifier: Modifier,
     provider: GroupReportsProvider,
     showMonthDetails: (GroupReport) -> Unit,
 ) {
-  val list: State<List<GroupReport>> = rememberRxState(initial = emptyList()) { provider.reports() }
+  val list: State<List<GroupReport>> =
+      remember { provider.reports() }.collectAsState(initial = emptyList())
 
-  LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+  LazyColumn(modifier = modifier.fillMaxSize().padding(horizontal = 16.dp)) {
     items(list.value) { stats ->
       MonthEntry(stats, showMonthDetails)
       ListDivider()

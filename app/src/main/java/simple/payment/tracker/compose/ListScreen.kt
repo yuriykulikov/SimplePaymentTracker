@@ -22,6 +22,8 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +31,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import java.util.*
+import kotlinx.coroutines.flow.map
 import simple.payment.tracker.Icon
 import simple.payment.tracker.R
 import simple.payment.tracker.Transaction
@@ -83,7 +86,8 @@ private fun TransactionsList(
                     .wrapContentSize(Alignment.TopStart)
                     .padding(bottom = innerPadding.calculateBottomPadding())) {
           val data =
-              rememberRxState(initial = emptyList()) { transactionsRepository.transactions() }
+              remember { transactionsRepository.transactions() }
+                  .collectAsState(initial = emptyList())
 
           val items =
               when {
@@ -121,11 +125,12 @@ private fun InboxList(
       content = {
         Column(modifier = modifier.padding(it).fillMaxSize()) {
           val data =
-              rememberRxState(initial = emptyList()) {
-                transactionsRepository.transactions().map { list ->
-                  list.filter { it.payment == null }
-                }
-              }
+              remember {
+                    transactionsRepository.transactions().map { list ->
+                      list.filter { transaction -> transaction.payment == null }
+                    }
+                  }
+                  .collectAsState(initial = emptyList())
 
           LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
             items(data.value) { transaction ->

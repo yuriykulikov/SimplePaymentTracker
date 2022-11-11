@@ -45,11 +45,6 @@ repositories {
 }
 
 dependencies {
-  implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
-  implementation("io.reactivex.rxjava2:rxjava:2.2.21")
-  implementation("io.reactivex.rxjava2:rxkotlin:2.4.0")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.6.1")
-
   implementation("org.koin:koin-core:2.2.2")
   implementation("org.koin:koin-android:2.2.2")
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")

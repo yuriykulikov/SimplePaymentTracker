@@ -1,14 +1,18 @@
 package simple.payment.tracker
 
-import io.reactivex.Observable
-import io.reactivex.Scheduler
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.Observables
-import io.reactivex.schedulers.Schedulers
-import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.retry
+import kotlinx.coroutines.flow.shareIn
 import simple.payment.tracker.logging.Logger
 
 data class Transaction(val payment: Payment? = null, val notification: Notification? = null) {
@@ -25,42 +29,39 @@ data class Transaction(val payment: Payment? = null, val notification: Notificat
 /** Aggregates notifications and payments into one flat list ready for presentation. */
 class TransactionsRepository(
     private val logger: Logger,
-    private val scheduler: Scheduler,
-    private val notificationsObservable: Observable<List<Notification>>,
-    private val paymentsObservable: Observable<List<Payment>>,
-    private val matchersObservable: Observable<List<PaymentMatcher>>,
+    private val notificationsFlow: Flow<List<Notification>>,
+    private val paymentsFlow: Flow<List<Payment>>,
+    private val matchersFlow: Flow<List<PaymentMatcher>>,
 ) {
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
+
   private val processedNotifications =
-      Observables.combineLatest(notificationsObservable, matchersObservable) {
-              notifications,
-              matchers ->
+      combine(notificationsFlow, matchersFlow) { notifications, matchers ->
             ProcessedNotifications(notifications, matchers)
           }
-          .replay(1)
-          .refCount()
-  private val transactions: Observable<List<Transaction>> by lazy {
-    Observables.combineLatest(
-            paymentsObservable,
+          .flowOn(Dispatchers.Default)
+          .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
+
+  private val transactions: Flow<List<Transaction>> by lazy {
+    combine(
+            paymentsFlow,
             processedNotifications,
         ) { payments: List<Payment>, notifications: ProcessedNotifications,
           ->
           buildTransactionsList(notifications, payments)
         }
-        .replay(1)
-        .refCount(45, TimeUnit.SECONDS, scheduler)
+        .shareIn(scope, SharingStarted.WhileSubscribed(45.seconds.inWholeMilliseconds), 1)
   }
 
-  val inbox: Observable<List<Transaction>> by lazy {
-    Observables.combineLatest(
-            paymentsObservable.observeOn(Schedulers.computation()),
-            processedNotifications.observeOn(Schedulers.computation()),
+  val inbox: Flow<List<Transaction>> by lazy {
+    combine(
+            paymentsFlow,
+            processedNotifications,
         ) { payments: List<Payment>, notifications: ProcessedNotifications,
           ->
           buildTransactionsList(notifications, payments, onlyInbox = true)
         }
-        .observeOn(scheduler)
-        .replay(1)
-        .refCount(45, TimeUnit.SECONDS, scheduler)
+        .shareIn(scope, SharingStarted.WhileSubscribed(45.seconds.inWholeMilliseconds), 1)
   }
 
   private fun buildTransactionsList(
@@ -122,10 +123,11 @@ class TransactionsRepository(
         }
       }
 
-  fun transactions(): Observable<List<Transaction>> {
-    return transactions.retryWhen {
-      it.doOnNext { logger.warning { "Observable transactions() failed: $it, retry in 1 second!" } }
-          .delay(1, TimeUnit.SECONDS)
+  fun transactions(): Flow<List<Transaction>> {
+    return transactions.retry {
+      logger.warning { "Flow transactions() failed: $it, retry in 1 second!" }
+      delay(1.seconds)
+      true
     }
   }
 
@@ -138,7 +140,6 @@ class TransactionsRepository(
     ): TransactionsRepository {
       return TransactionsRepository(
           logger,
-          AndroidSchedulers.mainThread(),
           notificationsRepository.notifications(),
           paymentsRepository.payments(),
           automaticPaymentsRepository.matchers(),
@@ -147,16 +148,11 @@ class TransactionsRepository(
 
     fun createForTest(
         logger: Logger,
-        notificationsObservable: Observable<List<Notification>>,
-        paymentsObservable: Observable<List<Payment>>,
-        matchersObservable: Observable<List<PaymentMatcher>>
+        notificationsFlow: Flow<List<Notification>>,
+        paymentsFlow: Flow<List<Payment>>,
+        matchersFlow: Flow<List<PaymentMatcher>>
     ): TransactionsRepository {
-      return TransactionsRepository(
-          logger,
-          Schedulers.computation(),
-          notificationsObservable,
-          paymentsObservable,
-          matchersObservable)
+      return TransactionsRepository(logger, notificationsFlow, paymentsFlow, matchersFlow)
     }
   }
 }

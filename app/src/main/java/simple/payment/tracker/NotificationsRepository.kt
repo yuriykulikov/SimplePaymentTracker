@@ -1,9 +1,12 @@
 package simple.payment.tracker
 
 import dev.gitlive.firebase.database.FirebaseDatabase
-import io.reactivex.Observable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asObservable
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.Serializable
 import simple.payment.tracker.logging.Logger
 
@@ -19,16 +22,15 @@ class NotificationsRepository(
     private val logger: Logger,
     private val firebaseDatabase: FirebaseDatabase
 ) {
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
   private val notificationsRef = firebaseDatabase.reference("notifications")
 
-  private val notifications: Observable<List<Notification>> =
+  private val notifications: Flow<List<Notification>> =
       notificationsRef.valueEvents
           .map { it.value<Map<String, Notification>>().values.toList() }
-          .asObservable()
-          .replay(1)
-          .refCount()
+          .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
 
-  fun notifications(): Observable<List<Notification>> = notifications
+  fun notifications(): Flow<List<Notification>> = notifications
 
   suspend fun addNotifications(newNotifications: List<Notification>) {
     logger.debug { "Adding notifications: $newNotifications" }

@@ -1,19 +1,28 @@
 package simple.payment.tracker
 
-import io.reactivex.Observable
 import java.time.Instant
 import java.util.Calendar
 import java.util.Date
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 
-class MonthlyStatistics(private val payments: Observable<List<Payment>>) : GroupReportsProvider {
-  private val reports = payments.map { monthly(it) }.replay(1).refCount(1, TimeUnit.SECONDS)
+class MonthlyStatistics(private val payments: Flow<List<Payment>>) : GroupReportsProvider {
+  private val scope = CoroutineScope(Dispatchers.Unconfined)
+  private val reports =
+      payments
+          .map { monthly(it) }
+          .shareIn(scope, SharingStarted.WhileSubscribed(1.seconds.inWholeMilliseconds), 1)
 
-  override fun reports(): Observable<List<GroupReport>> {
+  override fun reports(): Flow<List<GroupReport>> {
     return reports
   }
 
-  override fun report(name: String): Observable<GroupReport> {
+  override fun report(name: String): Flow<GroupReport> {
     return reports.map { reports -> reports.first { it.name == name } }
   }
 

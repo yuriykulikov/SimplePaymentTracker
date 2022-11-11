@@ -1,5 +1,6 @@
 package simple.payment.tracker.compose
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
@@ -22,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlin.random.Random.Default.nextInt
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
@@ -53,7 +56,6 @@ sealed class Screen {
 
 @Composable
 fun PaymentsApp(
-    backs: Backs,
     transactions: TransactionsRepository,
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
@@ -90,7 +92,6 @@ fun PaymentsApp(
           })
     } else {
       AppContent(
-          backs,
           transactions,
           paymentsRepository,
           monthlyStatistics,
@@ -105,7 +106,6 @@ fun PaymentsApp(
 
 @Composable
 private fun AppContent(
-    backs: Backs,
     transactions: TransactionsRepository,
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
@@ -128,7 +128,7 @@ private fun AppContent(
 
   val bottomBar = @Composable { NavigationBottomBar(selectedScreen) }
 
-  backs.backPressed.CommitSubscribe {
+  BackHandler {
     when {
       detailsToShow.value != null -> hideDetails()
       monthDetailsToShow.value != null -> hideMonthDetails()
@@ -144,7 +144,7 @@ private fun AppContent(
   val monthDetailsState = rememberLazyListState()
 
   val reportLookup = { report: GroupReport ->
-    monthlyStatistics.report(report.name).onErrorResumeNext(tripsStatistics.report(report.name))
+    monthlyStatistics.report(report.name).catch { emitAll(tripsStatistics.report(report.name)) }
   }
   Crossfade(screen) { scr ->
     Surface(color = colors.background) {

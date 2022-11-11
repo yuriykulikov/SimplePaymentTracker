@@ -6,13 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
 import org.koin.android.ext.android.inject
-import simple.payment.tracker.compose.Backs
 import simple.payment.tracker.compose.PaymentsApp
 import simple.payment.tracker.firebase.FirebaseSignIn
 import simple.payment.tracker.logging.LoggerFactory
 
 class MainActivity : AppCompatActivity() {
-  private val backs: Backs by inject()
   private val paymentsRepository: PaymentsRepository by inject()
   private val transactionsRepository: TransactionsRepository by inject()
   private val monthlyStatistics: MonthlyStatistics by inject()
@@ -30,7 +28,6 @@ class MainActivity : AppCompatActivity() {
     }
     setContent {
       PaymentsApp(
-          backs,
           transactionsRepository,
           paymentsRepository,
           monthlyStatistics,
@@ -40,9 +37,5 @@ class MainActivity : AppCompatActivity() {
           firebaseSignIn,
       )
     }
-  }
-
-  override fun onBackPressed() {
-    backs.backPressed.onNext("MainActivity")
   }
 }

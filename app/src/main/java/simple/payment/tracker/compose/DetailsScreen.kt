@@ -149,7 +149,7 @@ fun DetailsScreen(
             })
       },
       content = {
-        Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter)) {
+        Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter).padding(it)) {
           Column {
             Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
               Column(modifier = Modifier.padding(horizontal = 16.dp)) {

@@ -1,9 +1,14 @@
 package simple.payment.tracker
 
 import dev.gitlive.firebase.database.FirebaseDatabase
-import io.reactivex.Observable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asObservable
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.serialization.Serializable
 import simple.payment.tracker.logging.Logger
 
@@ -17,20 +22,19 @@ data class AmazonPayment(
 )
 
 class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase, logger: Logger) {
-  private val amazonPayments: Observable<List<AmazonPayment>> =
+  private val shareScope = CoroutineScope(Dispatchers.Unconfined)
+  private val amazonPayments: Flow<List<AmazonPayment>> =
       firebaseDatabase
           .reference("amazonpayments")
           .valueEvents
           .map { it.value<Map<String, AmazonPayment>>().values.toList() }
-          .asObservable()
-          .replay(1)
-          .refCount()
-          .onErrorResumeNext { e: Throwable ->
+          .catch { e ->
             logger.error(e) { "Amazon payments failed: $e" }
-            Observable.just(emptyList<AmazonPayment>())
+            flowOf(emptyList<AmazonPayment>())
           }
+          .shareIn(shareScope, SharingStarted.WhileSubscribed(250), 1)
 
-  val payments: Observable<List<Payment>> = amazonPayments.map { it.map(AmazonPayment::toPayment) }
+  val payments: Flow<List<Payment>> = amazonPayments.map { it.map(AmazonPayment::toPayment) }
 }
 
 fun AmazonPayment.toPayment(): Payment {

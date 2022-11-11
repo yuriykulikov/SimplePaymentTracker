@@ -14,12 +14,13 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.reactivex.Observable
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.flow.Flow
 import simple.payment.tracker.GroupReport
 import simple.payment.tracker.Payment
 import simple.payment.tracker.Transaction
@@ -45,12 +46,13 @@ fun GroupDetailsScreen(
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
     state: LazyListState,
-    reportLookup: (GroupReport) -> Observable<GroupReport>,
+    reportLookup: (GroupReport) -> Flow<GroupReport>,
 ) {
   Scaffold(
       topBar = { TopAppBar(title = { Text(text = groupReport.name) }) },
       content = {
         GroupDetailsColumn(
+            Modifier.padding(it),
             groupReport,
             showDetails,
             state,
@@ -62,13 +64,14 @@ fun GroupDetailsScreen(
 
 @Composable
 private fun GroupDetailsColumn(
+    modifier: Modifier,
     groupReport: GroupReport,
     showDetails: (Transaction?) -> Unit,
     state: LazyListState,
-    reportLookup: (GroupReport) -> Observable<GroupReport>,
+    reportLookup: (GroupReport) -> Flow<GroupReport>,
 ) {
-  val report = rememberRxState(groupReport) { reportLookup(groupReport) }
-  LazyColumn(state = state) {
+  val report = remember { reportLookup(groupReport) }.collectAsState(initial = groupReport)
+  LazyColumn(modifier = modifier, state = state) {
     items(report.value.byCategory()) { categoryData: CategoryData ->
       CategoryBreakdown(categoryData, showDetails)
     }

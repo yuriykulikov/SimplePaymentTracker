@@ -1,10 +1,9 @@
 package simple.payment.tracker
 
 import dev.gitlive.firebase.database.FirebaseDatabase
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asObservable
 import simple.payment.tracker.logging.Logger
 
 class PaymentsRepository(
@@ -13,12 +12,10 @@ class PaymentsRepository(
     private val signedInUserEmail: StateFlow<String?>,
 ) {
   private val paymentsRef = firebaseDatabase.reference("payments")
-  private val payments: Observable<List<Payment>> =
-      paymentsRef.valueEvents
-          .map { it.value<Map<String, Payment>>().values.toList() }
-          .asObservable()
+  private val payments: Flow<List<Payment>> =
+      paymentsRef.valueEvents.map { it.value<Map<String, Payment>>().values.toList() }
 
-  fun payments(): Observable<List<Payment>> = this.payments
+  fun payments(): Flow<List<Payment>> = this.payments
 
   suspend fun changeOrCreatePayment(previousId: Long?, payment: Payment) {
     val paymentWithUserId =
