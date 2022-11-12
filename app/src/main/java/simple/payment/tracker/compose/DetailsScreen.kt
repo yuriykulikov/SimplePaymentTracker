@@ -25,10 +25,11 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -39,8 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import simple.payment.tracker.Icon
@@ -73,22 +73,21 @@ fun DetailsScreen(
     }
   }
 
-  val category: MutableState<String?> = remember { mutableStateOf(transaction?.category) }
-  val sum: MutableState<TextFieldValue> = remember {
+  var category: String? by remember { mutableStateOf(transaction?.category) }
+  var sum: TextFieldValue by remember {
     mutableStateOf(TextFieldValue(transaction?.sum?.toString() ?: ""))
   }
-  val merchant: MutableState<TextFieldValue> = remember {
+  var merchant: TextFieldValue by remember {
     mutableStateOf(TextFieldValue(transaction?.merchant ?: ""))
   }
-  val time: MutableState<TextFieldValue> = remember {
+  var time: TextFieldValue by remember {
     val initialTime = transaction?.time?.let { Instant.ofEpochMilli(it) } ?: Instant.now()
     mutableStateOf(TextFieldValue(dateFormat.format(Date.from(initialTime))))
   }
 
-  val cancelled = remember { mutableStateOf(transaction?.cancelled ?: false) }
-  val comment = remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
+  var comment by remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
 
-  val trip = remember { mutableStateOf(TextFieldValue("")) }
+  var trip by remember { mutableStateOf(TextFieldValue("")) }
 
   LaunchedEffect(transaction) {
     val initialTripValue =
@@ -97,7 +96,7 @@ fun DetailsScreen(
           transaction.payment.trip != null -> transaction.payment.trip
           else -> ""
         }
-    trip.value = TextFieldValue(initialTripValue)
+    trip = TextFieldValue(initialTripValue)
   }
 
   Scaffold(
@@ -108,10 +107,10 @@ fun DetailsScreen(
             actions = {
               val scope = rememberCoroutineScope()
               val canSave =
-                  (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess &&
-                      sum.value.text.toIntOrNull() != null &&
-                      merchant.value.text.isNotEmpty() &&
-                      !category.value.isNullOrEmpty())
+                  (runCatching<Date?> { dateFormat.parse(time.text) }.isSuccess &&
+                      sum.text.toIntOrNull() != null &&
+                      merchant.text.isNotEmpty() &&
+                      !category.isNullOrEmpty())
               IconButton(
                   onClick = {
                     if (canSave) {
@@ -128,13 +127,12 @@ fun DetailsScreen(
                                 notificationId = transaction?.payment?.notificationId
                                         ?: transaction?.notification?.time,
                                 time = transaction?.notification?.time
-                                        ?: requireNotNull(dateFormat.parse(time.value.text)).time,
-                                category = category.value!!,
-                                comment = comment.value.text,
-                                merchant = merchant.value.text,
-                                sum = sum.value.text.toInt(),
-                                cancelled = cancelled.value,
-                                trip = trip.value.text.let { if (it.isEmpty()) null else it }))
+                                        ?: requireNotNull(dateFormat.parse(time.text)).time,
+                                category = category!!,
+                                comment = comment.text,
+                                merchant = merchant.text,
+                                sum = sum.text.toInt(),
+                                trip = trip.text.let { if (it.isEmpty()) null else it }))
                       }
                       onSave()
                     }
@@ -148,8 +146,12 @@ fun DetailsScreen(
               }
             })
       },
-      content = {
-        Box(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.TopCenter).padding(it)) {
+      content = { paddingValues ->
+        Box(
+            modifier =
+                Modifier.fillMaxSize()
+                    .wrapContentSize(Alignment.TopCenter)
+                    .padding(paddingValues)) {
           Column {
             Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
               Column(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -158,7 +160,8 @@ fun DetailsScreen(
                       leadingIcon = {
                         Icon(id = R.drawable.ic_baseline_today_24, tint = colors.onSurface)
                       },
-                      state = time,
+                      value = time,
+                      onValueChange = { time = it },
                       enabled = transaction?.notification == null,
                       modifier = Modifier.weight(0.5f),
                   )
@@ -167,31 +170,34 @@ fun DetailsScreen(
                       leadingIcon = {
                         Icon(id = R.drawable.ic_baseline_map_24, tint = colors.onSurface)
                       },
-                      state = trip,
+                      value = trip,
+                      onValueChange = { trip = it },
                       modifier = Modifier.weight(0.5f).padding(start = 8.dp),
                   )
                 }
                 NamedTextFieldInput(
                     header = "€",
-                    state = sum,
+                    value = sum,
                     keyboardType = KeyboardType.Number,
                     onValueChange = {
                       if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
-                        sum.value = it
+                        sum = it
                       }
                     },
                 )
-                NamedTextFieldInput(header = "to", state = merchant)
+
+                NamedTextFieldInput(
+                    header = "to", value = merchant, onValueChange = { merchant = it })
 
                 OutlinedTextField(
                     label = { Text(text = "for", style = typography.body1) },
-                    value = comment.value,
-                    onValueChange = { comment.value = it },
+                    value = comment,
+                    onValueChange = { comment = it },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = typography.body1,
                 )
                 InputDivider()
-                CategorySelector(category)
+                CategorySelector(selected = category, select = { category = it })
               }
             }
           }
@@ -209,40 +215,38 @@ fun InputDivider() {
 private fun NamedTextFieldInput(
     modifier: Modifier = Modifier,
     header: String? = null,
-    state: MutableState<TextFieldValue>,
+    value: TextFieldValue,
     keyboardType: KeyboardType = KeyboardType.Text,
     enabled: Boolean = true,
-    onValueChange: (TextFieldValue) -> Unit = { state.value = it },
+    onValueChange: (TextFieldValue) -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {
   TextField(
       label = header?.let { { Text(it, style = typography.overline) } },
-      value = state.value,
+      value = value,
       onValueChange = if (enabled) onValueChange else { _ -> },
       leadingIcon = leadingIcon,
       keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
       modifier = modifier.fillMaxWidth(),
       textStyle = typography.body1,
-      // backgroundColor = Color.Transparent,
-      )
+  )
 }
 
 /** Category tiles in 2 columns */
 @Composable
-private fun CategorySelector(selected: MutableState<String?>) {
+private fun CategorySelector(selected: String?, select: (String?) -> Unit) {
   categories.toList().chunked(2).forEach { chunk ->
     Row {
       chunk.forEach { category ->
-        Column(
-            modifier = Modifier.weight(0.5F).clickable(onClick = { selected.value = category })) {
+        Column(modifier = Modifier.weight(0.5F).clickable(onClick = { select(category) })) {
           Text(
               category,
-              color = if (category == selected.value) colors.onSecondary else colors.onBackground,
+              color = if (category == selected) colors.onSecondary else colors.onBackground,
               style = typography.button,
               modifier =
                   Modifier.padding(8.dp)
                       .then(
-                          if (category == selected.value)
+                          if (category == selected)
                               Modifier.background(colors.secondary, CircleShape)
                           else Modifier)
                       .padding(8.dp),

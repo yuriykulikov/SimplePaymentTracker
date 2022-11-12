@@ -16,7 +16,7 @@ data class Payment(
     val merchant: String,
     val sum: Int,
     val notificationId: Long? = null,
-    val cancelled: Boolean,
+    val cancelled: Boolean = false,
     val trip: String? = null,
     val auto: Boolean = false,
     val user: String? = null,
