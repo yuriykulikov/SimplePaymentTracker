@@ -107,10 +107,10 @@ private fun ThemeSelector(onClick: () -> Unit, text: String, colors: ExtendedCol
                   color = colors.background,
                   shape = CircleShape,
               )) {
-    Text(
-        text,
-        style = themeTypography.button,
-        color = colors.textAccent,
-    )
-  }
+        Text(
+            text,
+            style = themeTypography.button,
+            color = colors.textAccent,
+        )
+      }
 }

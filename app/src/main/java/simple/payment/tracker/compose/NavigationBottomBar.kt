@@ -25,35 +25,35 @@ fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
     IconButton(
         onClick = { currentScreen.value = Screen.List },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.List)) {
-      Text(text = "Inbox")
-    }
+          Text(text = "Inbox")
+        }
 
     IconButton(
         onClick = { currentScreen.value = Screen.ListAll },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.ListAll)) {
-      Text(text = "All")
-    }
+          Text(text = "All")
+        }
 
     IconButton(
         onClick = { currentScreen.value = Screen.Monthly },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Monthly)) {
-      Text(text = "Stats")
-    }
+          Text(text = "Stats")
+        }
 
     IconButton(
         onClick = { currentScreen.value = Screen.Trips },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Trips)) {
-      Text(text = "Trips")
-    }
+          Text(text = "Trips")
+        }
 
     IconButton(
         onClick = { currentScreen.value = Screen.Settings },
         modifier = Modifier.highlightIf(currentScreen, Screen.Settings)) {
-      Icon(
-          id = R.drawable.ic_baseline_more_vert_24,
-          tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
-      )
-    }
+          Icon(
+              id = R.drawable.ic_baseline_more_vert_24,
+              tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
+          )
+        }
   }
 }
 

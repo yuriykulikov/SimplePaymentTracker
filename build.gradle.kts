@@ -14,7 +14,7 @@ buildscript {
 
 plugins {
   val kotlin = "1.7.10"
-  id("com.diffplug.spotless") version "6.9.0"
+  id("com.diffplug.spotless") version "6.11.0"
   kotlin("android") version kotlin apply false
   kotlin("plugin.serialization") version kotlin apply false
 }

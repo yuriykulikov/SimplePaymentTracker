@@ -24,19 +24,20 @@ fun SignInScreen(
       modifier.fillMaxSize(),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center) {
-    val scope = rememberCoroutineScope()
-    val signInLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.StartIntentSenderForResult(),
-            onResult = { activityResult ->
-              scope.launch {
-                // TODO show snackbar if this fails?
-                firebaseSignIn.handleActivityResult(activityResult.data)
-              }
-            })
+        val scope = rememberCoroutineScope()
+        val signInLauncher =
+            rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartIntentSenderForResult(),
+                onResult = { activityResult ->
+                  scope.launch {
+                    // TODO show snackbar if this fails?
+                    firebaseSignIn.handleActivityResult(activityResult.data)
+                  }
+                })
 
-    Button(onClick = { scope.launch { signInLauncher.launch(firebaseSignIn.signInIntent()) } }) {
-      Text(text = "Sign in")
-    }
-  }
+        Button(
+            onClick = { scope.launch { signInLauncher.launch(firebaseSignIn.signInIntent()) } }) {
+              Text(text = "Sign in")
+            }
+      }
 }
