@@ -7,6 +7,7 @@ import java.util.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Test
 import simple.payment.tracker.logging.addAppender
 import simple.payment.tracker.logging.hide
@@ -25,7 +26,7 @@ class Crunching {
           .createLogger("test")
 
   private suspend fun merged(): List<Payment> {
-    val aggregated: List<Transaction> =
+    val aggregated: List<Payment> =
         TransactionsRepository.createForTest(
                 logger,
                 flowOf(firebase.notifications().values.toList()),
@@ -36,16 +37,18 @@ class Crunching {
             .first()
 
     val july2019 = dateFormat.parse("2019-07-01")?.time ?: 0
-    return (aggregated.mapNotNull { it.payment } +
-            firebase.amazon().values.map { it.toPayment() } +
-            firebase.recurring().values.toList().toPayments())
+    return (aggregated +
+            firebase.amazon().values.map { it } +
+            firebase.recurring().values.toList().flatMap { it.generateSequence() })
         .filter { it.time >= july2019 }
   }
 
   @Test
   fun `month sums`() = runBlocking {
-    val merged = merged()
-    MonthlyStatistics.monthly(merged).forEach { println(it.toString()) }
+    withTimeout(5000) {
+      val merged = merged()
+      MonthlyStatistics.monthly(merged).forEach { println(it.toString()) }
+    }
   }
 
   @Test

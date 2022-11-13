@@ -50,7 +50,6 @@ class Application : Application() {
               ) { transactions, amazonPayments, tinkoffPayments, recurrent ->
                 transactions
                     .asSequence()
-                    .mapNotNull { it.payment }
                     .plus(amazonPayments)
                     .plus(tinkoffPayments)
                     .plus(recurrent)

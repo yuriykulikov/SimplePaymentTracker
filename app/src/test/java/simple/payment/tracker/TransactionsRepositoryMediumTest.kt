@@ -58,12 +58,12 @@ class TransactionsRepositoryMediumTest {
                 )
                 .transactions()
                 .first()
-                .filter { it.payment?.auto == true }
+                .filter { it is AutomaticPayment }
 
         assertThat(autoPayments).hasSize(950)
 
         autoPayments
-            .groupBy { it.payment?.merchant }
+            .groupBy { it.merchant }
             .values
             .sortedByDescending { it.size }
             .take(20)
@@ -73,7 +73,7 @@ class TransactionsRepositoryMediumTest {
   @Test
   fun `TransactionsRepository removes assigned payments from the inbox`() =
       runBlocking<Unit> {
-        val payments: List<Payment> = firebase.payments().values.toList()
+        val payments: List<PaymentRecord> = firebase.payments().values.toList()
         val notifications = firebase.notifications().values.toList()
 
         val inbox =

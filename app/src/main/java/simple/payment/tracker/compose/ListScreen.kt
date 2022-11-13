@@ -28,13 +28,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import java.util.*
 import kotlinx.coroutines.flow.map
+import simple.payment.tracker.AutomaticPayment
 import simple.payment.tracker.Icon
+import simple.payment.tracker.InboxPayment
+import simple.payment.tracker.Payment
 import simple.payment.tracker.R
-import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.theme.Theme
 
@@ -42,7 +42,7 @@ import simple.payment.tracker.theme.Theme
 fun ListScreen(
     showAll: Boolean,
     transactionsRepository: TransactionsRepository,
-    showDetails: (Transaction?) -> Unit,
+    showDetails: (Payment?) -> Unit,
     bottomBar: @Composable () -> Unit,
     search: MutableState<TextFieldValue>,
     listState: LazyListState,
@@ -70,7 +70,7 @@ fun ListScreen(
 private fun TransactionsList(
     modifier: Modifier = Modifier,
     transactionsRepository: TransactionsRepository,
-    showDetails: (Transaction?) -> Unit,
+    showDetails: (Payment?) -> Unit,
     bottomBar: @Composable () -> Unit,
     search: MutableState<TextFieldValue>,
     listState: LazyListState,
@@ -85,29 +85,29 @@ private fun TransactionsList(
                     .fillMaxSize()
                     .wrapContentSize(Alignment.TopStart)
                     .padding(bottom = innerPadding.calculateBottomPadding())) {
-          val data =
-              remember { transactionsRepository.transactions() }
-                  .collectAsState(initial = emptyList())
+              val data =
+                  remember { transactionsRepository.transactions() }
+                      .collectAsState(initial = emptyList())
 
-          val items =
-              when {
-                search.value.text.isEmpty() -> data.value
-                else -> {
-                  val searchLowercase = search.value.text.toLowerCase(Locale.getDefault())
-                  data.value.filter { transaction ->
-                    searchLowercase in transaction.toString().toLowerCase(Locale.getDefault())
+              val items =
+                  when {
+                    search.value.text.isEmpty() -> data.value
+                    else -> {
+                      val searchLowercase = search.value.text.lowercase()
+                      data.value.filter { transaction ->
+                        searchLowercase in transaction.toString().lowercase()
+                      }
+                    }
+                  }
+              if (items.isNotEmpty()) {
+                LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
+                  items(items) { transaction ->
+                    TransactionListRow(transaction, showDetails)
+                    ListDivider()
                   }
                 }
               }
-          if (items.isNotEmpty()) {
-            LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
-              items(items) { transaction ->
-                TransactionListRow(transaction, showDetails)
-                ListDivider()
-              }
             }
-          }
-        }
       })
 }
 
@@ -115,7 +115,7 @@ private fun TransactionsList(
 private fun InboxList(
     modifier: Modifier = Modifier,
     transactionsRepository: TransactionsRepository,
-    showDetails: (Transaction?) -> Unit,
+    showDetails: (Payment?) -> Unit,
     bottomBar: @Composable() () -> Unit,
     listState: LazyListState,
 ) {
@@ -127,7 +127,7 @@ private fun InboxList(
           val data =
               remember {
                     transactionsRepository.transactions().map { list ->
-                      list.filter { transaction -> transaction.payment == null }
+                      list.filterIsInstance<InboxPayment>()
                     }
                   }
                   .collectAsState(initial = emptyList())
@@ -178,58 +178,52 @@ fun InboxTopBar() {
 }
 
 @Composable
-fun TransactionListRow(transaction: Transaction, showDetails: (Transaction?) -> Unit) {
-  Row(modifier = Modifier.clickable(onClick = { showDetails(transaction) }).padding(16.dp)) {
+fun TransactionListRow(payment: Payment, showDetails: (Payment?) -> Unit) {
+  Row(modifier = Modifier.clickable(onClick = { showDetails(payment) }).padding(16.dp)) {
     Column(modifier = Modifier.weight(1f)) {
-      TransactionTitle(transaction)
-      TransactionSubtitle(transaction)
+      TransactionTitle(payment)
+      TransactionSubtitle(payment)
     }
   }
 }
 
 @Composable
-fun TransactionTitle(transaction: Transaction) {
+fun TransactionTitle(payment: Payment) {
   Row(horizontalArrangement = Arrangement.SpaceAround) {
-    Text(
-        transaction.merchant,
-        style =
-            when {
-              transaction.cancelled ->
-                  typography.subtitle1.copy(textDecoration = TextDecoration.LineThrough)
-              else -> typography.subtitle1
-            })
+    Text(payment.merchant, style = typography.subtitle1)
     Text(text = "", modifier = Modifier.weight(1F))
-    Text("${transaction.sum}", style = typography.subtitle1)
+    Text("${payment.sum}", style = typography.subtitle1)
   }
 }
 
 @Composable
-fun TransactionSubtitle(transaction: Transaction, modifier: Modifier = Modifier) {
+fun TransactionSubtitle(payment: Payment, modifier: Modifier = Modifier) {
   Row(modifier) {
     Text(
-        text = transaction.category,
+        text = payment.category,
         style = typography.subtitle2,
         color = colors.primaryVariant,
     )
 
     Text(
         modifier = Modifier.padding(start = 16.dp),
-        text = transaction.comment,
+        text = payment.comment,
         style = typography.subtitle2,
         color = colors.secondary,
     )
   }
   Row {
-    if (transaction.payment?.auto == true) {
+    if (payment is AutomaticPayment) {
       Text(
           text = "auto",
           style = typography.subtitle2,
           color = colors.primary,
       )
     }
-    if (transaction.trip != null) {
+    val trip = payment.trip
+    if (trip != null) {
       Text(
-          text = transaction.trip,
+          text = trip,
           style = typography.subtitle2,
           color = colors.primary,
       )

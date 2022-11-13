@@ -13,6 +13,10 @@ class TinkoffPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) 
       firebaseDatabase
           .reference("tinkoffpayments")
           .valueEvents
-          .map { it.value<Map<String, Payment>>().values.toList() }
+          .map {
+            it.value<Map<String, PaymentRecord>>().values.toList().map {
+              ManualPayment(payment = it)
+            }
+          }
           .shareIn(CoroutineScope(Dispatchers.Unconfined), SharingStarted.WhileSubscribed(250), 1)
 }

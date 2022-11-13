@@ -30,9 +30,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import simple.payment.tracker.GroupReport
 import simple.payment.tracker.MonthlyStatistics
+import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Settings
-import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.TripStatistics
 import simple.payment.tracker.firebase.FirebaseSignIn
@@ -50,7 +50,7 @@ sealed class Screen {
   object Trips : Screen()
   object Settings : Screen()
 
-  data class Details(val transaction: Transaction) : Screen()
+  data class Details(val payment: Payment) : Screen()
   data class MonthDetails(val report: GroupReport) : Screen()
 }
 
@@ -118,7 +118,7 @@ private fun AppContent(
   val detailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
   val monthDetailsToShow: MutableState<Screen?> = remember { mutableStateOf(null) }
   val hideDetails = { detailsToShow.value = null }
-  val showDetails: (Transaction?) -> Unit = {
+  val showDetails: (Payment?) -> Unit = {
     detailsToShow.value = if (it == null) Screen.New else Screen.Details(it)
   }
   val showMonthDetails: (GroupReport) -> Unit = {
@@ -156,7 +156,7 @@ private fun AppContent(
         is Screen.Details ->
             DetailsScreen(
                 paymentsRepository,
-                scr.transaction,
+                scr.payment,
                 hideDetails,
                 settings,
                 loggers.createLogger("DetailsScreen"),

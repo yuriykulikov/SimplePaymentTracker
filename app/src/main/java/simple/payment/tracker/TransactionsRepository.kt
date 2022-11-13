@@ -6,31 +6,78 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.shareIn
 import simple.payment.tracker.logging.Logger
 
-data class Transaction(val payment: Payment? = null, val notification: Notification? = null) {
-  val id: Long = payment?.id ?: requireNotNull(notification).time
-  val merchant: String = payment?.merchant ?: requireNotNull(notification).merchant()
-  val sum: Int = payment?.sum ?: requireNotNull(notification).sum()
-  val comment: String = payment?.comment ?: ""
-  val cancelled: Boolean = payment?.cancelled ?: false
-  val time: Long = payment?.time ?: requireNotNull(notification).time
-  val category: String = payment?.category ?: ""
-  val trip: String? = payment?.trip
+sealed class Payment {
+  abstract val merchant: String
+  abstract val sum: Int
+  abstract val comment: String
+  abstract val time: Long
+  abstract val category: String
+  abstract val trip: String?
+}
+
+data class ManualPayment(
+    val payment: PaymentRecord,
+) : Payment() {
+  override val merchant: String
+    get() = payment.merchant
+  override val sum: Int
+    get() = payment.sum ?: 0
+  override val comment: String
+    get() = payment.comment
+  override val time: Long
+    get() = payment.time
+  override val category: String
+    get() = payment.category
+  override val trip: String?
+    get() = payment.trip
+}
+
+data class PaypalPayment(
+    val payment: PaymentRecord,
+    val notification: Notification,
+) : Payment() {
+  override val merchant: String = payment.merchant
+  override val sum: Int = notification.sum()
+  override val comment: String = payment.comment
+  override val time: Long = notification.time
+  override val category: String = payment.category
+  override val trip: String? = payment.trip
+}
+
+data class InboxPayment(
+    val notification: Notification,
+) : Payment() {
+  override val merchant: String = notification.merchant()
+  override val sum: Int = notification.sum()
+  override val comment: String = ""
+  override val time: Long = notification.time
+  override val category: String = ""
+  override val trip: String? = null
+}
+
+data class AutomaticPayment(
+    val notification: Notification,
+    override val merchant: String,
+    override val category: String,
+    override val comment: String,
+) : Payment() {
+  override val sum: Int = notification.sum()
+  override val time: Long = notification.time
+  override val trip: String? = null
 }
 
 /** Aggregates notifications and payments into one flat list ready for presentation. */
 class TransactionsRepository(
     private val logger: Logger,
     private val notificationsFlow: Flow<List<Notification>>,
-    private val paymentsFlow: Flow<List<Payment>>,
+    private val paymentsFlow: Flow<List<PaymentRecord>>,
     private val matchersFlow: Flow<List<PaymentMatcher>>,
 ) {
   private val scope = CoroutineScope(Dispatchers.Unconfined)
@@ -42,22 +89,22 @@ class TransactionsRepository(
           .flowOn(Dispatchers.Default)
           .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
 
-  private val transactions: Flow<List<Transaction>> by lazy {
+  private val transactions: Flow<List<Payment>> by lazy {
     combine(
             paymentsFlow,
             processedNotifications,
-        ) { payments: List<Payment>, notifications: ProcessedNotifications,
+        ) { payments: List<PaymentRecord>, notifications: ProcessedNotifications,
           ->
           buildTransactionsList(notifications, payments)
         }
         .shareIn(scope, SharingStarted.WhileSubscribed(45.seconds.inWholeMilliseconds), 1)
   }
 
-  val inbox: Flow<List<Transaction>> by lazy {
+  val inbox: Flow<List<Payment>> by lazy {
     combine(
             paymentsFlow,
             processedNotifications,
-        ) { payments: List<Payment>, notifications: ProcessedNotifications,
+        ) { payments: List<PaymentRecord>, notifications: ProcessedNotifications,
           ->
           buildTransactionsList(notifications, payments, onlyInbox = true)
         }
@@ -66,69 +113,81 @@ class TransactionsRepository(
 
   private fun buildTransactionsList(
       notifications: ProcessedNotifications,
-      payments: List<Payment>,
+      payments: List<PaymentRecord>,
       onlyInbox: Boolean = false,
-  ) =
-      logger.logTimedValue("combine") {
-        logger.logTimedValue("  warmup idToGroup") { notifications.idToGroup }
-        logger.logTimedValue("  warmup automaticPayments") {
-          notifications.automaticPayments.values
-        }
+  ): List<Payment> {
+    return logger.logTimedValue("combine") {
+      logger.logTimedValue("  warmup idToGroup") { notifications.idToGroup }
+      logger.logTimedValue("  warmup automaticPayments") { notifications.automaticPayments.values }
 
-        val manuallyAssignedNotificationIds = payments.mapNotNull { it.notificationId }.toSet()
+      val manuallyAssignedNotificationIds = payments.mapNotNull { it.notificationId }.toSet()
 
-        val fullAutoPayments by lazy {
-          logger.logTimedValue("  fullAutoPayments") {
-            notifications.automaticPayments.minus(manuallyAssignedNotificationIds).values
-          }
-        }
-
-        val inbox =
-            logger.logTimedValue("  inbox") {
-              val enteredIdsWithDuplicates =
-                  logger.logTimedValue("    enteredIdsWithDuplicates") {
-                    manuallyAssignedNotificationIds
-                        .flatMap { id ->
-                          // for the given ID find id's of all duplicate notifications
-                          notifications.idToGroup.getOrDefault(id, emptyList()) + id
-                        }
-                        .toSet()
-                  }
-
-              val automaticallyAssignedNotifications =
-                  notifications.automaticPayments.values.mapNotNull { it.notification }.toSet()
-
-              notifications.idToGroup
-                  .minus(enteredIdsWithDuplicates)
-                  .values
-                  .distinct()
-                  .map { notifications.notificationsById.getValue(it.first()) }
-                  .minus(automaticallyAssignedNotifications)
-                  .map { Transaction(notification = it) }
-            }
-
-        logger.logTimedValue("  flatten and sort") {
-          when {
-            onlyInbox -> inbox
-            else -> {
-              listOf(
-                      payments.map { Transaction(payment = it) },
-                      inbox,
-                      fullAutoPayments,
-                  )
-                  .flatten()
-                  .sortedByDescending { it.time }
-            }
-          }
+      val fullAutoPayments by lazy {
+        logger.logTimedValue("  fullAutoPayments") {
+          notifications.automaticPayments.minus(manuallyAssignedNotificationIds).values
         }
       }
 
-  fun transactions(): Flow<List<Transaction>> {
-    return transactions.retry {
-      logger.warning { "Flow transactions() failed: $it, retry in 1 second!" }
-      delay(1.seconds)
-      true
+      val inbox: List<InboxPayment> =
+          logger.logTimedValue("  inbox") {
+            val enteredIdsWithDuplicates =
+                logger.logTimedValue("    enteredIdsWithDuplicates") {
+                  manuallyAssignedNotificationIds
+                      .flatMap { id ->
+                        // for the given ID find id's of all duplicate notifications
+                        notifications.idToGroup.getOrDefault(id, emptyList()) + id
+                      }
+                      .toSet()
+                }
+
+            val automaticallyAssignedNotifications =
+                notifications.automaticPayments.values.mapNotNull { it.notification }.toSet()
+
+            notifications.idToGroup
+                .minus(enteredIdsWithDuplicates)
+                .values
+                .distinct()
+                .map { notifications.notificationsById.getValue(it.first()) }
+                .minus(automaticallyAssignedNotifications)
+                .map { InboxPayment(notification = it) }
+          }
+
+      logger.logTimedValue("  flatten and sort") {
+        when {
+          onlyInbox -> inbox
+          else -> {
+            val (paymentsWithNotifications, paymentsWithoutNotifications) =
+                payments.partition { it.notificationId != null }
+
+            val manualPayments = paymentsWithoutNotifications.map { ManualPayment(payment = it) }
+
+            val paypalPayments =
+                paymentsWithNotifications.mapNotNull { payment ->
+                  notifications.notificationsById[checkNotNull(payment.notificationId)] //
+                      ?.let { notification -> PaypalPayment(payment, notification) }
+                      .also {
+                        if (it == null) {
+                          logger.warning { "Something is off: $payment" }
+                        }
+                      }
+                }
+
+            listOf(
+                    manualPayments,
+                    paypalPayments,
+                    inbox,
+                    fullAutoPayments,
+                )
+                .flatten()
+                .sortedByDescending { it.time }
+          }
+        }
+      }
     }
+  }
+
+  fun transactions(): Flow<List<Payment>> {
+    return transactions
   }
 
   companion object {
@@ -149,7 +208,7 @@ class TransactionsRepository(
     fun createForTest(
         logger: Logger,
         notificationsFlow: Flow<List<Notification>>,
-        paymentsFlow: Flow<List<Payment>>,
+        paymentsFlow: Flow<List<PaymentRecord>>,
         matchersFlow: Flow<List<PaymentMatcher>>
     ): TransactionsRepository {
       return TransactionsRepository(logger, notificationsFlow, paymentsFlow, matchersFlow)
@@ -185,7 +244,7 @@ class ProcessedNotifications(
     notifications.associateBy(Notification::time)
   }
 
-  val automaticPayments: Map<Long, Transaction> by lazy {
+  val automaticPayments: Map<Long, AutomaticPayment> by lazy {
     findAutomatic(
             idToGroup.values.distinct().map { notificationsById.getValue(it.first()) }, matchers)
         .associateBy { requireNotNull(it.notification).time }
@@ -217,7 +276,7 @@ fun findDuplicates(notifications: List<Notification>): List<Pair<Long, Set<Long>
 fun findAutomatic(
     validNotifications: List<Notification>,
     matchers: List<PaymentMatcher>
-): List<Transaction> {
+): List<AutomaticPayment> {
   return validNotifications.mapNotNull { notification ->
     matchers.firstOrNull { it.matches(notification) }?.convert(notification)
   }

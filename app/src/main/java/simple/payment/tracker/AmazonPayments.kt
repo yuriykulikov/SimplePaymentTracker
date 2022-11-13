@@ -15,36 +15,26 @@ import simple.payment.tracker.logging.Logger
 @Serializable
 data class AmazonPayment(
     val orderId: String,
-    val category: String,
-    val time: Long,
-    val comment: String,
-    val sum: Int
-)
+    override val category: String,
+    override val time: Long,
+    override val comment: String,
+    override val sum: Int
+) : Payment() {
+  override val merchant: String = "Amazon"
+  override val trip: String? = null
+}
 
 class AmazonPaymentsRepository(private val firebaseDatabase: FirebaseDatabase, logger: Logger) {
   private val shareScope = CoroutineScope(Dispatchers.Unconfined)
-  private val amazonPayments: Flow<List<AmazonPayment>> =
+
+  val payments: Flow<List<Payment>> =
       firebaseDatabase
           .reference("amazonpayments")
           .valueEvents
           .map { it.value<Map<String, AmazonPayment>>().values.toList() }
           .catch { e ->
             logger.error(e) { "Amazon payments failed: $e" }
-            flowOf(emptyList<AmazonPayment>())
+            flowOf<List<AmazonPayment>>(emptyList())
           }
           .shareIn(shareScope, SharingStarted.WhileSubscribed(250), 1)
-
-  val payments: Flow<List<Payment>> = amazonPayments.map { it.map(AmazonPayment::toPayment) }
-}
-
-fun AmazonPayment.toPayment(): Payment {
-  return Payment(
-      category = category,
-      trip = null,
-      time = time,
-      cancelled = false,
-      sum = sum,
-      merchant = "Amazon",
-      notificationId = null,
-      comment = comment)
 }

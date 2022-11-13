@@ -1,28 +1,28 @@
 package simple.payment.tracker
 
-import com.google.firebase.database.IgnoreExtraProperties
 import java.time.Instant
-import java.util.Date
+import java.util.*
 import kotlinx.serialization.Serializable
 
-// TODO id und sum non null, better domain model
-
-@IgnoreExtraProperties
+/**
+ * A payment created by a user.
+ *
+ * Can be created from [Notification] or from scratch
+ *
+ * @param time creation time. Used as [id]
+ */
 @Serializable
-data class Payment(
+data class PaymentRecord(
     val category: String,
     val time: Long,
     val comment: String,
     val merchant: String,
-    val sum: Int,
     val notificationId: Long? = null,
-    val cancelled: Boolean = false,
+    val sum: Int,
     val trip: String? = null,
-    val auto: Boolean = false,
     val user: String? = null,
 ) {
   val id = time
-  val isRecurrent: Boolean = merchant == "Recurrent"
 
   override fun toString(): String {
     return "Payment(id=$id, notificationId=$notificationId, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"

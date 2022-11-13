@@ -23,7 +23,7 @@ import java.util.*
 import kotlinx.coroutines.flow.Flow
 import simple.payment.tracker.GroupReport
 import simple.payment.tracker.Payment
-import simple.payment.tracker.Transaction
+import simple.payment.tracker.RecurringPayment
 
 data class CategoryData(
     val category: String,
@@ -44,7 +44,7 @@ data class CategoryData(
 @Composable
 fun GroupDetailsScreen(
     groupReport: GroupReport,
-    showDetails: (Transaction?) -> Unit,
+    showDetails: (Payment?) -> Unit,
     state: LazyListState,
     reportLookup: (GroupReport) -> Flow<GroupReport>,
 ) {
@@ -66,7 +66,7 @@ fun GroupDetailsScreen(
 private fun GroupDetailsColumn(
     modifier: Modifier,
     groupReport: GroupReport,
-    showDetails: (Transaction?) -> Unit,
+    showDetails: (Payment?) -> Unit,
     state: LazyListState,
     reportLookup: (GroupReport) -> Flow<GroupReport>,
 ) {
@@ -79,7 +79,7 @@ private fun GroupDetailsColumn(
 }
 
 @Composable
-private fun CategoryBreakdown(categoryData: CategoryData, showDetails: (Transaction?) -> Unit) {
+private fun CategoryBreakdown(categoryData: CategoryData, showDetails: (Payment?) -> Unit) {
   Card(modifier = Modifier.fillMaxWidth().padding(15.dp), elevation = 10.dp) {
     Column {
       CategoryHeader(categoryData)
@@ -91,15 +91,17 @@ private fun CategoryBreakdown(categoryData: CategoryData, showDetails: (Transact
                         horizontal = 16.dp,
                         vertical = if (index == categoryData.byWeek.lastIndex) 16.dp else 8.dp),
             elevation = 10.dp) {
-          val tag = remember {
-            val calendar = Calendar.getInstance().apply { set(Calendar.WEEK_OF_YEAR, weekNumber) }
-            calendar.get(Calendar.WEEK_OF_MONTH)
-            val month = SimpleDateFormat("MMM", Locale.getDefault()).format(calendar.timeInMillis)
-            val week = SimpleDateFormat("W", Locale.getDefault()).format(calendar.timeInMillis)
-            "$month, week $week"
-          }
-          WeekBreakdown(tag, payments, showDetails)
-        }
+              val tag = remember {
+                val calendar =
+                    Calendar.getInstance().apply { set(Calendar.WEEK_OF_YEAR, weekNumber) }
+                calendar.get(Calendar.WEEK_OF_MONTH)
+                val month =
+                    SimpleDateFormat("MMM", Locale.getDefault()).format(calendar.timeInMillis)
+                val week = SimpleDateFormat("W", Locale.getDefault()).format(calendar.timeInMillis)
+                "$month, week $week"
+              }
+              WeekBreakdown(tag, payments, showDetails)
+            }
       }
     }
   }
@@ -110,29 +112,25 @@ private fun CategoryHeader(categoryData: CategoryData) {
   Row(
       modifier = Modifier.fillMaxWidth().padding(16.dp),
       horizontalArrangement = Arrangement.SpaceBetween) {
-    Column {
-      Text(
-          text = categoryData.category,
-          style = MaterialTheme.typography.h5,
-          color = MaterialTheme.colors.secondary,
-      )
-    }
-    Column {
-      Text(
-          text = categoryData.sum.toString(),
-          style = MaterialTheme.typography.h5,
-          color = MaterialTheme.colors.secondary,
-      )
-    }
-  }
+        Column {
+          Text(
+              text = categoryData.category,
+              style = MaterialTheme.typography.h5,
+              color = MaterialTheme.colors.secondary,
+          )
+        }
+        Column {
+          Text(
+              text = categoryData.sum.toString(),
+              style = MaterialTheme.typography.h5,
+              color = MaterialTheme.colors.secondary,
+          )
+        }
+      }
 }
 
 @Composable
-private fun WeekBreakdown(
-    cat: String,
-    payments: List<Payment>,
-    showDetails: (Transaction?) -> Unit
-) {
+private fun WeekBreakdown(cat: String, payments: List<Payment>, showDetails: (Payment?) -> Unit) {
   Column(Modifier.padding(10.dp)) {
     Row(Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
       Column {
@@ -151,21 +149,19 @@ private fun WeekBreakdown(
     }
     Row {
       Column {
-        payments
-            .map { Transaction(payment = it) }
-            .forEachIndexed { index, transaction ->
-              TransactionListRow(transaction, showDetails = showDetails)
-              if (index != payments.lastIndex) {
-                ListDivider()
-              }
-            }
+        payments.forEachIndexed { index, transaction ->
+          TransactionListRow(transaction, showDetails = showDetails)
+          if (index != payments.lastIndex) {
+            ListDivider()
+          }
+        }
       }
     }
   }
 }
 
 private fun GroupReport.byCategory(): List<CategoryData> {
-  val (recurrent, notRecurrent) = payments.partition { it.isRecurrent }
+  val (recurrent, notRecurrent) = payments.partition { it is RecurringPayment }
   return notRecurrent
       .groupBy { it.category }
       .entries

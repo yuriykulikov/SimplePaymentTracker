@@ -43,12 +43,16 @@ import java.time.Instant
 import java.util.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import simple.payment.tracker.AutomaticPayment
 import simple.payment.tracker.Icon
+import simple.payment.tracker.InboxPayment
+import simple.payment.tracker.ManualPayment
 import simple.payment.tracker.Payment
+import simple.payment.tracker.PaymentRecord
 import simple.payment.tracker.PaymentsRepository
+import simple.payment.tracker.PaypalPayment
 import simple.payment.tracker.R
 import simple.payment.tracker.Settings
-import simple.payment.tracker.Transaction
 import simple.payment.tracker.logging.Logger
 import simple.payment.tracker.theme.Theme
 
@@ -58,45 +62,34 @@ private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
 @Composable
 fun DetailsScreen(
     paymentsRepository: PaymentsRepository,
-    transaction: Transaction?,
+    payment: Payment?,
     onSave: () -> Unit,
     settings: DataStore<Settings>,
     logger: Logger,
 ) {
-  LaunchedEffect(transaction) {
-    logger.debug {
-      // Showing details for Transaction(payment=Payment(id=1644090240000,
-      // notificationId=1644090241414, date=Sat Feb 05 20:44:00 GMT+01:00 2022, sum=61,
-      // category='Ресторан', comment='', merchant='Namaste Indisches Rest', trip=null),
-      // notification=null)
-      "Showing details for $transaction"
-    }
-  }
+  LaunchedEffect(payment) { logger.debug { "Showing details for $payment" } }
 
-  var category: String? by remember { mutableStateOf(transaction?.category) }
+  var category: String? by remember { mutableStateOf(payment?.category) }
   var sum: TextFieldValue by remember {
-    mutableStateOf(TextFieldValue(transaction?.sum?.toString() ?: ""))
+    mutableStateOf(TextFieldValue(payment?.sum?.toString() ?: ""))
   }
   var merchant: TextFieldValue by remember {
-    mutableStateOf(TextFieldValue(transaction?.merchant ?: ""))
+    mutableStateOf(TextFieldValue(payment?.merchant ?: ""))
   }
-  var time: TextFieldValue by remember {
-    val initialTime = transaction?.time?.let { Instant.ofEpochMilli(it) } ?: Instant.now()
+  val time: TextFieldValue by remember {
+    val initialTime = payment?.time?.let { Instant.ofEpochMilli(it) } ?: Instant.now()
     mutableStateOf(TextFieldValue(dateFormat.format(Date.from(initialTime))))
   }
 
-  var comment by remember { mutableStateOf(TextFieldValue(transaction?.comment ?: "")) }
+  var comment by remember { mutableStateOf(TextFieldValue(payment?.comment ?: "")) }
 
   var trip by remember { mutableStateOf(TextFieldValue("")) }
 
-  LaunchedEffect(transaction) {
-    val initialTripValue =
-        when {
-          transaction?.payment == null -> settings.data.first().trip
-          transaction.payment.trip != null -> transaction.payment.trip
-          else -> ""
-        }
-    trip = TextFieldValue(initialTripValue)
+  if (payment is PaypalPayment) {
+    trip = TextFieldValue(payment.trip ?: "")
+  } else {
+    // for new transactions get the value from settings
+    LaunchedEffect(payment) { trip = TextFieldValue(settings.data.first().trip) }
   }
 
   Scaffold(
@@ -106,44 +99,35 @@ fun DetailsScreen(
             backgroundColor = Theme.colors.topBar,
             actions = {
               val scope = rememberCoroutineScope()
+              val categoryValue = category
               val canSave =
                   (runCatching<Date?> { dateFormat.parse(time.text) }.isSuccess &&
                       sum.text.toIntOrNull() != null &&
                       merchant.text.isNotEmpty() &&
-                      !category.isNullOrEmpty())
+                      !categoryValue.isNullOrEmpty())
               IconButton(
                   onClick = {
-                    if (canSave) {
+                    if (canSave && categoryValue != null) {
                       scope.launch {
-                        paymentsRepository.changeOrCreatePayment(
-                            transaction?.id,
-                            // here the issue is that notificaiton is null for some reason when
-                            // changing the existing payment
-                            // changeOrCreatePayment(previousId: 1644090240000, payment:
-                            // Payment(id=1644090240000, notificationId=1644090241414, date=Sat Feb
-                            // 05 20:44:00 GMT+01:00 2022, sum=60, category='Ресторан', comment='',
-                            // merchant='Namaste Indisches Rest', trip=null))
-                            Payment(
-                                notificationId = transaction?.payment?.notificationId
-                                        ?: transaction?.notification?.time,
-                                time = transaction?.notification?.time
-                                        ?: requireNotNull(dateFormat.parse(time.text)).time,
-                                category = category!!,
-                                comment = comment.text,
-                                merchant = merchant.text,
-                                sum = sum.text.toInt(),
-                                trip = trip.text.let { if (it.isEmpty()) null else it }))
+                        save(
+                            payment,
+                            paymentsRepository,
+                            categoryValue,
+                            comment,
+                            merchant,
+                            trip,
+                            sum)
                       }
                       onSave()
                     }
                   }) {
-                Icon(
-                    modifier = Modifier.alpha(if (canSave) 1f else 0.2f),
-                    painter = painterResource(id = R.drawable.ic_baseline_done_24),
-                    contentDescription = null,
-                    tint = colors.primary,
-                )
-              }
+                    Icon(
+                        modifier = Modifier.alpha(if (canSave) 1f else 0.2f),
+                        painter = painterResource(id = R.drawable.ic_baseline_done_24),
+                        contentDescription = null,
+                        tint = colors.primary,
+                    )
+                  }
             })
       },
       content = { paddingValues ->
@@ -152,56 +136,57 @@ fun DetailsScreen(
                 Modifier.fillMaxSize()
                     .wrapContentSize(Alignment.TopCenter)
                     .padding(paddingValues)) {
-          Column {
-            Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
-              Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Row {
-                  NamedTextFieldInput(
-                      leadingIcon = {
-                        Icon(id = R.drawable.ic_baseline_today_24, tint = colors.onSurface)
-                      },
-                      value = time,
-                      onValueChange = { time = it },
-                      enabled = transaction?.notification == null,
-                      modifier = Modifier.weight(0.5f),
-                  )
-                  NamedTextFieldInput(
-                      header = "Trip",
-                      leadingIcon = {
-                        Icon(id = R.drawable.ic_baseline_map_24, tint = colors.onSurface)
-                      },
-                      value = trip,
-                      onValueChange = { trip = it },
-                      modifier = Modifier.weight(0.5f).padding(start = 8.dp),
-                  )
+              Column {
+                Column(modifier = Modifier.verticalScroll(ScrollState(0))) {
+                  Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Row {
+                      NamedTextFieldInput(
+                          leadingIcon = {
+                            Icon(id = R.drawable.ic_baseline_today_24, tint = colors.onSurface)
+                          },
+                          value = time,
+                          onValueChange = {},
+                          readOnly = true,
+                          modifier = Modifier.weight(0.5f),
+                      )
+                      NamedTextFieldInput(
+                          header = "Trip",
+                          leadingIcon = {
+                            Icon(id = R.drawable.ic_baseline_map_24, tint = colors.onSurface)
+                          },
+                          value = trip,
+                          onValueChange = { trip = it },
+                          modifier = Modifier.weight(0.5f).padding(start = 8.dp),
+                      )
+                    }
+                    NamedTextFieldInput(
+                        header = "€",
+                        value = sum,
+                        keyboardType = KeyboardType.Number,
+                        readOnly = payment != null,
+                        onValueChange = {
+                          if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
+                            sum = it
+                          }
+                        },
+                    )
+
+                    NamedTextFieldInput(
+                        header = "to", value = merchant, onValueChange = { merchant = it })
+
+                    OutlinedTextField(
+                        label = { Text(text = "for", style = typography.body1) },
+                        value = comment,
+                        onValueChange = { comment = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = typography.body1,
+                    )
+                    InputDivider()
+                    CategorySelector(selected = category, select = { category = it })
+                  }
                 }
-                NamedTextFieldInput(
-                    header = "€",
-                    value = sum,
-                    keyboardType = KeyboardType.Number,
-                    onValueChange = {
-                      if (it.text.toIntOrNull() != null || it.text.isEmpty()) {
-                        sum = it
-                      }
-                    },
-                )
-
-                NamedTextFieldInput(
-                    header = "to", value = merchant, onValueChange = { merchant = it })
-
-                OutlinedTextField(
-                    label = { Text(text = "for", style = typography.body1) },
-                    value = comment,
-                    onValueChange = { comment = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = typography.body1,
-                )
-                InputDivider()
-                CategorySelector(selected = category, select = { category = it })
               }
             }
-          }
-        }
       })
 }
 
@@ -217,14 +202,15 @@ private fun NamedTextFieldInput(
     header: String? = null,
     value: TextFieldValue,
     keyboardType: KeyboardType = KeyboardType.Text,
-    enabled: Boolean = true,
+    readOnly: Boolean = false,
     onValueChange: (TextFieldValue) -> Unit,
     leadingIcon: @Composable (() -> Unit)? = null,
 ) {
   TextField(
       label = header?.let { { Text(it, style = typography.overline) } },
       value = value,
-      onValueChange = if (enabled) onValueChange else { _ -> },
+      onValueChange = onValueChange,
+      readOnly = readOnly,
       leadingIcon = leadingIcon,
       keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
       modifier = modifier.fillMaxWidth(),
@@ -282,3 +268,65 @@ private val categories =
         "Парикмахер",
         "Зубной",
     )
+
+private suspend fun save(
+    payment: Payment?,
+    paymentsRepository: PaymentsRepository,
+    categoryValue: String,
+    comment: TextFieldValue,
+    merchant: TextFieldValue,
+    trip: TextFieldValue,
+    sum: TextFieldValue,
+) {
+  val paymentRecord =
+      when (payment) {
+        is PaypalPayment -> payment.payment
+        is ManualPayment -> payment.payment
+        else -> null
+      }
+
+  val notification =
+      when (payment) {
+        is InboxPayment -> payment.notification
+        is AutomaticPayment -> payment.notification
+        else -> null
+      }
+
+  if (paymentRecord != null) {
+    paymentsRepository.changeOrCreatePayment(
+        paymentRecord.id,
+        paymentRecord.copy(
+            category = categoryValue,
+            comment = comment.text,
+            merchant = merchant.text,
+            trip = trip.text.takeIf { it.isNotEmpty() },
+        ),
+    )
+  } else if (notification != null) {
+    paymentsRepository.changeOrCreatePayment(
+        null,
+        PaymentRecord(
+            notificationId = notification.time,
+            time = notification.time,
+            category = categoryValue,
+            comment = comment.text,
+            merchant = merchant.text,
+            sum = 0,
+            trip = trip.text.takeIf { it.isNotEmpty() },
+        ),
+    )
+  } else {
+    paymentsRepository.changeOrCreatePayment(
+        null,
+        PaymentRecord(
+            notificationId = null,
+            time = Instant.now().toEpochMilli(),
+            category = categoryValue,
+            comment = comment.text,
+            merchant = merchant.text,
+            sum = sum.text.toInt(),
+            trip = trip.text.takeIf { it.isNotEmpty() },
+        ),
+    )
+  }
+}

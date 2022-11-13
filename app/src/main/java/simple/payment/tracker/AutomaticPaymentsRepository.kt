@@ -20,24 +20,17 @@ data class PaymentMatcher(
     return notification.merchant() == merchant && sum?.equals(notification.sum()) ?: true
   }
 
-  fun convert(notification: Notification): Transaction {
-    return Transaction(
-        Payment(
-            category = category,
-            time = notification.time,
-            comment = comment ?: "",
-            merchant = merchant,
-            sum = notification.sum(),
-            notificationId = notification.time,
-            cancelled = false,
-            trip = null,
-            auto = true,
-        ),
-        notification)
+  fun convert(notification: Notification): AutomaticPayment {
+    return AutomaticPayment(
+        notification = notification,
+        merchant = merchant,
+        category = category,
+        comment = comment ?: "",
+    )
   }
 }
 
-class AutomaticPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
+class AutomaticPaymentsRepository(firebaseDatabase: FirebaseDatabase) {
   private val scope = CoroutineScope(Dispatchers.Unconfined)
   private val matchers =
       firebaseDatabase

@@ -12,7 +12,7 @@ suspend fun FirebaseTestAccess.notifications(): Map<String, Notification> {
       cacheFile = "build/testcache/notifications.json")
 }
 
-suspend fun FirebaseTestAccess.payments(): Map<String, Payment> {
+suspend fun FirebaseTestAccess.payments(): Map<String, PaymentRecord> {
   return getOrLoad(
       firebaseUrl = "https://simplepaymenttracker.firebaseio.com/testpayments.json",
       cacheFile = "build/testcache/payments.json")

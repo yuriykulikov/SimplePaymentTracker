@@ -1,5 +1,3 @@
 /build
-src/test/java/private
-src/test/resources
 /release/app-release.aab
 /release/output-metadata.json

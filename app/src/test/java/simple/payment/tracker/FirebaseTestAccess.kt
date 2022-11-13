@@ -25,16 +25,21 @@ class FirebaseTestAccess {
     prettyPrint = true
   }
 
-  private val serviceAccount = FileInputStream("service-user.json")
+  companion object {
+    private val serviceAccount = FileInputStream("service-user.json")
 
-  private fun accessToken(): String {
-    return GoogleCredentials.fromStream(serviceAccount)
-        .createScoped(
-            "https://www.googleapis.com/auth/firebase.database",
-            "https://www.googleapis.com/auth/userinfo.email",
-        )
-        .refreshAccessToken()
-        .tokenValue
+    val accessToken: String =
+        GoogleCredentials.fromStream(serviceAccount)
+            .createScoped(
+                "https://www.googleapis.com/auth/firebase.database",
+                "https://www.googleapis.com/auth/userinfo.email",
+            )
+            .refreshAccessToken()
+            .tokenValue
+
+    private fun accessToken(): String {
+      return accessToken
+    }
   }
 
   private val ktor = HttpClient(CIO) { install(ContentNegotiation) { json(json) } }

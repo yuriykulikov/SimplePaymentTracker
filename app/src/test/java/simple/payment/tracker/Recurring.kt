@@ -2,6 +2,7 @@ package simple.payment.tracker
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class Recurring {
@@ -15,7 +16,7 @@ class Recurring {
         Assertions.assertThat(read.values).hasSize(16)
       }
 
-  // @Disabled
+  @Disabled
   @Test
   fun `write recurring payments`() = runBlocking {
     firebaseAccess.put(

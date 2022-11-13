@@ -23,7 +23,17 @@ data class RecurrringPayment(
     val end: String? = null
 )
 
-class RecurrentPaymentsRepository(private val firebaseDatabase: FirebaseDatabase) {
+data class RecurringPayment(
+    override val sum: Int,
+    override val comment: String,
+    override val time: Long,
+    override val category: String,
+) : Payment() {
+  override val trip: String? = null
+  override val merchant = "Recurrent"
+}
+
+class RecurrentPaymentsRepository(firebaseDatabase: FirebaseDatabase) {
   private val scope = CoroutineScope(Dispatchers.Unconfined)
 
   private val recurring: Flow<List<RecurrringPayment>> =
@@ -33,29 +43,25 @@ class RecurrentPaymentsRepository(private val firebaseDatabase: FirebaseDatabase
           .map { it.value<Map<String, RecurrringPayment>>().values.toList() }
           .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
 
-  val payments: Flow<List<Payment>> = recurring.map { it.toPayments() }
+  val payments: Flow<List<Payment>> =
+      recurring.map { recurringPayments -> recurringPayments.flatMap { it.generateSequence() } }
 }
 
-fun List<RecurrringPayment>.toPayments(now: Calendar = Calendar.getInstance()): List<Payment> {
-  return flatMap { rec ->
-    generateSequence(dateFormat.parse(rec.start)) {
-          now.apply {
-                time = it
-                add(Calendar.MONTH, 1)
-              }
-              .time
-        }
-        .takeWhile { it.before(rec.end?.let(dateFormat::parse) ?: Date.from(Instant.now())) }
-        .mapIndexed { index, date ->
-          Payment(
-              category = rec.category,
-              trip = null,
-              time = date.time + index, // add some millis to avoid duplicate dates
-              cancelled = false,
-              sum = rec.sum,
-              merchant = "Recurrent",
-              notificationId = null,
-              comment = rec.comment)
-        }
-  }
+fun RecurrringPayment.generateSequence(now: Calendar = Calendar.getInstance()): Sequence<Payment> {
+  val rec = this
+  return generateSequence(dateFormat.parse(rec.start)) {
+        now.apply {
+              time = it
+              add(Calendar.MONTH, 1)
+            }
+            .time
+      }
+      .takeWhile { it.before(rec.end?.let(dateFormat::parse) ?: Date.from(Instant.now())) }
+      .mapIndexed { index, date ->
+        RecurringPayment(
+            category = rec.category,
+            time = date.time + index, // add some millis to avoid duplicate dates
+            sum = rec.sum,
+            comment = rec.comment)
+      }
 }
