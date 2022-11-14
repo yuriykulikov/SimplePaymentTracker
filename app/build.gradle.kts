@@ -35,6 +35,8 @@ android {
   buildFeatures { compose = true }
 
   composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+
+  packagingOptions { resources.excludes.add("META-INF/INDEX.LIST") }
 }
 
 repositories {
@@ -52,8 +54,9 @@ dependencies {
   implementation("androidx.datastore:datastore:1.0.0")
   implementation("androidx.appcompat:appcompat:1.5.1")
 
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("com.github.tony19:logback-android:2.0.0")
+  api("org.slf4j:slf4j-api:2.0.3")
+  // we need 1.3.x on android because of the Java version
+  implementation("ch.qos.logback:logback-classic:1.3.4")
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
   implementation("dev.gitlive:firebase-database:1.4.3")

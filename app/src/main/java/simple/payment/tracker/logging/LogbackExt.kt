@@ -27,6 +27,7 @@ fun logback(config: LoggerContext.() -> Unit): ILoggerFactory {
   val context = org.slf4j.LoggerFactory.getILoggerFactory() as LoggerContext
   context.stop()
   config(context)
+  context.start()
   return context
 }
 

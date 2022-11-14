@@ -1,7 +1,6 @@
 package simple.payment.tracker.logging
 
 import android.content.Context
-import ch.qos.logback.classic.android.LogcatAppender
 import ch.qos.logback.core.rolling.RollingFileAppender
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
