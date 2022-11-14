@@ -20,6 +20,11 @@ sealed class Payment {
   abstract val time: Long
   abstract val category: String
   abstract val trip: String?
+  open val refunds: List<Refund> = emptyList()
+  val refunded
+    get() = refunds.sumOf { it.sum }
+  val initialSum
+    get() = sum + refunded
 }
 
 data class ManualPayment(
@@ -28,7 +33,7 @@ data class ManualPayment(
   override val merchant: String
     get() = payment.merchant
   override val sum: Int
-    get() = payment.sum ?: 0
+    get() = payment.sum - refunded
   override val comment: String
     get() = payment.comment
   override val time: Long
@@ -37,6 +42,8 @@ data class ManualPayment(
     get() = payment.category
   override val trip: String?
     get() = payment.trip
+  override val refunds: List<Refund>
+    get() = payment.refunds.orEmpty()
 }
 
 data class PaypalPayment(
@@ -44,11 +51,13 @@ data class PaypalPayment(
     val notification: Notification,
 ) : Payment() {
   override val merchant: String = payment.merchant
-  override val sum: Int = notification.sum()
+  override val sum: Int = notification.sum() - refunded
   override val comment: String = payment.comment
   override val time: Long = notification.time
   override val category: String = payment.category
   override val trip: String? = payment.trip
+  override val refunds: List<Refund>
+    get() = payment.refunds.orEmpty()
 }
 
 data class InboxPayment(
@@ -282,27 +291,40 @@ fun findAutomatic(
   }
 }
 
-// You saved 1,36 EUR on a 34,10 EUR
+// You paid 43,05 EUR to MGP Vinted - Kleiderkreisel
+// You saved 1,36 EUR on a 34,10 EUR purchase at Georg Endres
+// You sent 14,00 EUR to Iaroslav Karpenko
 fun Notification.sum(): Int {
   return runCatching {
-        // You payed 1,34 EUR to Some Guy"
-        val sum =
-            text
-                .substringAfter("You paid ")
-                .substringAfter("You sent ")
-                .substringAfter(" on a ")
-                .substringBefore(",")
-                .substringBefore(".")
-        val youSaved: Int =
+        val sumText =
             when {
-              "You saved " in text -> text.substringAfter("You saved ").substringBefore(",").toInt()
-              else -> 0
+              text.startsWith("You paid") ->
+                  text.substringAfter("You paid ").substringBefore(" to ")
+              text.startsWith("You saved") ->
+                  text.substringAfter(" on a ").substringBefore(" purchase at ")
+              text.startsWith("You sent") ->
+                  text.substringAfter("You sent ").substringBefore(" to ")
+              else -> return 0
             }
-        when {
-          sum.startsWith("$") -> sum.removePrefix("$").toInt() * 10 / 9
-          text.contains("RUB to") -> sum.replace(".", "").toInt() / 80
-          else -> sum.toIntOrNull() ?: 0
-        } - youSaved
+        val currency = sumText.substringAfter(" ").substringAfter(" ") ?: "EUR"
+        val number =
+            sumText
+                .substringBefore(" ")
+                .substringBefore(" ")
+                .removePrefix("$")
+                .replace(",", "")
+                .replace(".", "")
+                .toIntOrNull()
+                ?: 0
+        val sum =
+            when (currency) {
+              "EUR" -> number / 100
+              "USD" -> number / 100
+              "GBP" -> number / 100
+              "RUB" -> number / 100 / 80
+              else -> error("Cannot parse $text")
+            }
+        sum
       }
       .getOrElse {
         throw IllegalArgumentException("Failed to parse sum of $this, caused by $it", it)
@@ -310,12 +332,5 @@ fun Notification.sum(): Int {
 }
 
 fun Notification.merchant(): String {
-  return text
-      .substringAfterLast(" EUR to ")
-      .substringAfterLast(" EUR to ")
-      .substringAfterLast(" USD to ")
-      .substringAfterLast(" USD to ")
-      .substringAfterLast(" RUB to ")
-      .substringAfterLast(" RUB to ")
-      .substringAfterLast("purchase at ")
+  return text.substringAfter(" to ").substringAfter("purchase at ")
 }

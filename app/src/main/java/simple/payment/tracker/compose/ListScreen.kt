@@ -192,7 +192,7 @@ fun TransactionTitle(payment: Payment) {
   Row(horizontalArrangement = Arrangement.SpaceAround) {
     Text(payment.merchant, style = typography.subtitle1)
     Text(text = "", modifier = Modifier.weight(1F))
-    Text("${payment.sum}", style = typography.subtitle1)
+    Text(payment.annotatedSumWithRefunds(), style = typography.subtitle1)
   }
 }
 

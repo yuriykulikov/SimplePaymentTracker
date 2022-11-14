@@ -18,9 +18,11 @@ data class PaymentRecord(
     val comment: String,
     val merchant: String,
     val notificationId: Long? = null,
+    val manualSum: Int? = null,
     val sum: Int,
     val trip: String? = null,
     val user: String? = null,
+    val refunds: List<Refund>? = null,
 ) {
   val id = time
 
@@ -28,3 +30,9 @@ data class PaymentRecord(
     return "Payment(id=$id, notificationId=$notificationId, date=${Date.from(Instant.ofEpochMilli(time))}, sum=$sum, category='$category', comment='$comment', merchant='$merchant', trip=$trip)"
   }
 }
+
+@Serializable
+data class Refund(
+    val sum: Int,
+    val comment: String,
+)

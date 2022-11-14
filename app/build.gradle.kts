@@ -14,9 +14,10 @@ android {
     applicationId = "simple.payment.tracker"
     minSdk = 28
     targetSdk = 33
-    versionCode = 10600
-    versionName = "1.6.0"
+    versionCode = 10700
+    versionName = "1.7.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    multiDexEnabled = true
   }
   buildTypes {
     getByName("debug") {
@@ -24,7 +25,6 @@ android {
       isMinifyEnabled = false
     }
   }
-
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
