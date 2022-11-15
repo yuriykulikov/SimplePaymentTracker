@@ -43,7 +43,7 @@ class TransactionsRepositoryMediumTest {
                 .transactions()
                 .first()
 
-        assertThat(uniquePayments).hasSize(2452)
+        assertThat(uniquePayments).hasSize(2455)
       }
 
   @Test
@@ -87,6 +87,6 @@ class TransactionsRepositoryMediumTest {
                 .first()
                 .associateBy { it.time }
 
-        assertThat(inbox).hasSize(7)
+        assertThat(inbox).hasSize(8)
       }
 }
