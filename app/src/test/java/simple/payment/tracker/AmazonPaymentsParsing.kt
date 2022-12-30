@@ -7,6 +7,11 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class AmazonPaymentsParsing {
+  @Test
+  fun printAmazonPayments() {
+    parseAmazonPayments().forEach { println(it) }
+  }
+
   @Disabled
   @Test
   fun `upload amazon json to firebase`() =
