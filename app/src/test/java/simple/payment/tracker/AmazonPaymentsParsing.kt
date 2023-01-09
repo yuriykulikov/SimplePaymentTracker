@@ -39,16 +39,18 @@ class AmazonPaymentsParsing {
             loader.getResource("Amazon - 2022.tsv"),
         )
         .map { it.readText(charset = Charsets.UTF_8) }
-        .flatMap { it.lines() }
-        .filterNot { line -> line.startsWith("order id") }
-        .mapNotNull { parseLine(it) }
+        .flatMap {
+          val lines = it.lines()
+          val indexOfSum = lines.first().split("\t").indexOf("sum")
+          lines.drop(1).mapNotNull { line -> parseLine(line, indexOfSum) }
+        }
   }
 
-  private fun parseLine(line: String): AmazonPayment? {
+  private fun parseLine(line: String, indexOfSum: Int): AmazonPayment? {
     val split = line.split("\t")
     val orderId = split[0]
     val dateText = split[3]
-    val (sumText, category, comment) = split.takeLast(3)
+    val (sumText, category, comment) = split.subList(indexOfSum, indexOfSum + 3)
     val sum = sumText.substringBefore(",").toInt()
     val date = dateFormats.firstNotNullOf { runCatching { it.parse(dateText) }.getOrNull() }
     return if (sum != 0) {
