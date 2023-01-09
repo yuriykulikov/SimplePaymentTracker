@@ -6,7 +6,7 @@ plugins {
   id("kotlinx-serialization")
 }
 
-val jetpackCompose = "1.2.1"
+val jetpackCompose = "1.3.1"
 
 android {
   compileSdk = 33
@@ -54,7 +54,7 @@ dependencies {
   implementation("androidx.datastore:datastore:1.0.0")
   implementation("androidx.appcompat:appcompat:1.5.1")
 
-  api("org.slf4j:slf4j-api:2.0.3")
+  api("org.slf4j:slf4j-api:2.0.6")
   // we need 1.3.x on android because of the Java version
   implementation("ch.qos.logback:logback-classic:1.3.4")
 
@@ -68,7 +68,7 @@ dependencies {
   implementation("com.google.firebase:firebase-common-ktx")
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
-  implementation("com.google.android.gms:play-services-auth:20.3.0")
+  implementation("com.google.android.gms:play-services-auth:20.4.0")
 }
 
 dependencies {
@@ -83,10 +83,10 @@ dependencies {
   implementation("androidx.compose.material:material-icons-core:$jetpackCompose")
   implementation("androidx.compose.material:material-icons-extended:$jetpackCompose")
 
-  implementation("com.google.accompanist:accompanist-systemuicontroller:0.25.1")
+  implementation("com.google.accompanist:accompanist-systemuicontroller:0.27.1")
 
   // Activity
-  implementation("androidx.activity:activity-compose:1.6.0")
+  implementation("androidx.activity:activity-compose:1.6.1")
   // UI Tests
   androidTestImplementation("androidx.compose.ui:ui-test-junit4:$jetpackCompose")
 }
@@ -105,6 +105,6 @@ dependencies {
   testImplementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
   testImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 
-  androidTestImplementation("androidx.test.ext:junit:1.1.3")
-  androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+  androidTestImplementation("androidx.test.ext:junit:1.1.5")
+  androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
