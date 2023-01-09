@@ -220,6 +220,15 @@ fun TransactionSubtitle(payment: Payment, modifier: Modifier = Modifier) {
           color = colors.primary,
       )
     }
+    val user = payment.user
+    if (user != null) {
+      Text(
+          modifier = Modifier.padding(end = 2.dp),
+          text = if (user.startsWith("y")) "Y" else "K",
+          style = typography.subtitle2,
+          color = colors.primary,
+      )
+    }
     val trip = payment.trip
     if (trip != null) {
       Text(

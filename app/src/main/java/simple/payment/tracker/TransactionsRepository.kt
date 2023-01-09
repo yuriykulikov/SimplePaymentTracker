@@ -25,6 +25,7 @@ sealed class Payment {
     get() = refunds.sumOf { it.sum }
   val initialSum
     get() = sum + refunded
+  open val user: String? = null
 }
 
 data class ManualPayment(
@@ -44,6 +45,8 @@ data class ManualPayment(
     get() = payment.trip
   override val refunds: List<Refund>
     get() = payment.refunds.orEmpty()
+  override val user: String?
+    get() = payment.user
 }
 
 data class PaypalPayment(
@@ -58,6 +61,8 @@ data class PaypalPayment(
   override val trip: String? = payment.trip
   override val refunds: List<Refund>
     get() = payment.refunds.orEmpty()
+  override val user: String?
+    get() = payment.user
 }
 
 data class InboxPayment(
