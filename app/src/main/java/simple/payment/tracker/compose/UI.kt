@@ -187,10 +187,14 @@ private fun AppContent(
                 settings,
                 loggers.createLogger("DetailsScreen"),
             )
-        is Screen.Monthly -> MonthlyScreen(monthlyStatistics, bottomBar, showMonthDetails)
+        is Screen.Monthly ->
+            MonthlyScreen(
+                monthlyStatistics, firebaseSignIn.signedInUserEmail(), bottomBar, showMonthDetails)
         is Screen.MonthDetails ->
             GroupDetailsScreen(scr.report, showDetails, monthDetailsState, reportLookup)
-        is Screen.Trips -> TripsScreen(tripsStatistics, bottomBar, showMonthDetails)
+        is Screen.Trips ->
+            TripsScreen(
+                tripsStatistics, firebaseSignIn.signedInUserEmail(), bottomBar, showMonthDetails)
         is Screen.Settings -> SettingsScreen(settings, firebaseSignIn)
       }
     }
