@@ -18,7 +18,8 @@ data class AmazonPayment(
     override val category: String,
     override val time: Long,
     override val comment: String,
-    override val sum: Int
+    override val sum: Int,
+    override val user: String?,
 ) : Payment() {
   override val merchant: String = "Amazon"
   override val trip: String? = null

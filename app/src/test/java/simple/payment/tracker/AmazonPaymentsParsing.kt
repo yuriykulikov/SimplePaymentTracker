@@ -50,12 +50,17 @@ class AmazonPaymentsParsing {
     val split = line.split("\t")
     val orderId = split[0]
     val dateText = split[3]
-    val (sumText, category, comment) = split.subList(indexOfSum, indexOfSum + 3)
+    val (sumText, category, comment, user) = split.subList(indexOfSum, indexOfSum + 4)
     val sum = sumText.substringBefore(",").toInt()
     val date = dateFormats.firstNotNullOf { runCatching { it.parse(dateText) }.getOrNull() }
     return if (sum != 0) {
       AmazonPayment(
-          category = category, time = date.time, sum = sum, comment = comment, orderId = orderId)
+          category = category,
+          time = date.time,
+          sum = sum,
+          comment = comment,
+          orderId = orderId,
+          user = user)
     } else {
       null
     }
