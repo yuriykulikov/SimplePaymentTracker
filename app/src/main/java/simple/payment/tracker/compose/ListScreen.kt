@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
@@ -29,45 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.flow.map
 import simple.payment.tracker.AutomaticPayment
-import simple.payment.tracker.Icon
-import simple.payment.tracker.InboxPayment
 import simple.payment.tracker.Payment
-import simple.payment.tracker.R
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.theme.Theme
 
 @Composable
-fun ListScreen(
-    showAll: Boolean,
-    transactionsRepository: TransactionsRepository,
-    showDetails: (Payment?) -> Unit,
-    bottomBar: @Composable () -> Unit,
-    search: MutableState<TextFieldValue>,
-    listState: LazyListState,
-) {
-  when {
-    showAll ->
-        TransactionsList(
-            transactionsRepository = transactionsRepository,
-            showDetails = showDetails,
-            bottomBar = bottomBar,
-            search = search,
-            listState = listState,
-        )
-    else ->
-        InboxList(
-            transactionsRepository = transactionsRepository,
-            showDetails = showDetails,
-            bottomBar = bottomBar,
-            listState = listState,
-        )
-  }
-}
-
-@Composable
-private fun TransactionsList(
+fun TransactionsList(
     modifier: Modifier = Modifier,
     transactionsRepository: TransactionsRepository,
     showDetails: (Payment?) -> Unit,
@@ -109,46 +76,6 @@ private fun TransactionsList(
               }
             }
       })
-}
-
-@Composable
-private fun InboxList(
-    modifier: Modifier = Modifier,
-    transactionsRepository: TransactionsRepository,
-    showDetails: (Payment?) -> Unit,
-    bottomBar: @Composable() () -> Unit,
-    listState: LazyListState,
-) {
-  Scaffold(
-      topBar = { InboxTopBar() },
-      bottomBar = bottomBar,
-      content = {
-        Column(modifier = modifier.padding(it).fillMaxSize()) {
-          val data =
-              remember {
-                    transactionsRepository.transactions().map { list ->
-                      list.filterIsInstance<InboxPayment>()
-                    }
-                  }
-                  .collectAsState(initial = emptyList())
-
-          LazyColumn(modifier = Modifier.debugBorder(), state = listState) {
-            items(data.value) { transaction ->
-              TransactionListRow(transaction, showDetails)
-              ListDivider()
-            }
-          }
-        }
-      },
-      floatingActionButton = {
-        FloatingActionButton(
-            onClick = { showDetails(null) },
-            backgroundColor = Theme.colors.surfaceAccent,
-        ) {
-          Icon(id = R.drawable.ic_baseline_add_24, tint = Theme.colors.text)
-        }
-      },
-  )
 }
 
 @Composable

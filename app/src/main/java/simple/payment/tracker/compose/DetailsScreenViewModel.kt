@@ -40,6 +40,7 @@ data class Sum(
 class DetailsScreenViewModel(
     private val payment: Payment?,
     private val paymentsRepository: PaymentsRepository,
+    private val swipedPaymentsRepository: SwipedPaymentsRepository,
     private val onSave: () -> Unit,
     private val settings: DataStore<Settings>,
     private val logger: Logger,
@@ -203,6 +204,7 @@ class DetailsScreenViewModel(
 
     viewModelScope.launch {
       paymentsRepository.changeOrCreatePayment(paymentRecord?.id, toSave)
+      swipedPaymentsRepository.remove(notification?.time)
       onSave()
     }
   }

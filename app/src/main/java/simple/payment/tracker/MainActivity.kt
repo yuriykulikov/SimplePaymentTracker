@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
   private val settings: DataStore<Settings> by inject()
   private val loggers: LoggerFactory by inject()
   private val firebaseSignIn: FirebaseSignIn by inject()
+  private val swipedPaymentsRepository: SwipedPaymentsRepository by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
           settings,
           loggers,
           firebaseSignIn,
+          swipedPaymentsRepository,
       )
     }
   }

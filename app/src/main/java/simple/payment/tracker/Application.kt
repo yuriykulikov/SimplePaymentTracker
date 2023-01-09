@@ -78,6 +78,9 @@ class Application : Application() {
                   produceFile = { applicationContext.filesDir.resolve("settings.txt") })
             }
             single<FirebaseSignIn> { FirebaseSignIn(logger("GoogleSignIn"), get()) }
+            single<SwipedPaymentsRepository> {
+              SwipedPaymentsRepository(get(), get<FirebaseSignIn>().signedInUserEmail())
+            }
           })
     }
   }

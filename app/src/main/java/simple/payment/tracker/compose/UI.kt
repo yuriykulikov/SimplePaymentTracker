@@ -33,6 +33,7 @@ import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Settings
+import simple.payment.tracker.SwipedPaymentsRepository
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.TripStatistics
 import simple.payment.tracker.firebase.FirebaseSignIn
@@ -63,6 +64,7 @@ fun PaymentsApp(
     settings: DataStore<Settings>,
     loggers: LoggerFactory,
     firebaseSignIn: FirebaseSignIn,
+    swipedPaymentsRepository: SwipedPaymentsRepository,
 ) {
   val colors: State<ExtendedColors> =
       remember { settings.data.map { it.theme.toColors() } }
@@ -96,6 +98,7 @@ fun PaymentsApp(
           paymentsRepository,
           monthlyStatistics,
           tripsStatistics,
+          swipedPaymentsRepository,
           settings,
           loggers,
           firebaseSignIn,
@@ -110,6 +113,7 @@ private fun AppContent(
     paymentsRepository: PaymentsRepository,
     monthlyStatistics: MonthlyStatistics,
     tripsStatistics: TripStatistics,
+    swipedPaymentsRepository: SwipedPaymentsRepository,
     settings: DataStore<Settings>,
     loggers: LoggerFactory,
     firebaseSignIn: FirebaseSignIn,
@@ -150,12 +154,25 @@ private fun AppContent(
     Surface(color = colors.background) {
       when (scr) {
         is Screen.List ->
-            ListScreen(false, transactions, showDetails, bottomBar, search, inboxListState)
+            InboxList(
+                transactionsRepository = transactions,
+                swipedPaymentsRepository = swipedPaymentsRepository,
+                showDetails = showDetails,
+                bottomBar = bottomBar,
+                listState = inboxListState,
+            )
         is Screen.ListAll ->
-            ListScreen(true, transactions, showDetails, bottomBar, search, allListState)
+            TransactionsList(
+                transactionsRepository = transactions,
+                showDetails = showDetails,
+                bottomBar = bottomBar,
+                search = search,
+                listState = allListState,
+            )
         is Screen.Details ->
             DetailsScreen(
                 paymentsRepository,
+                swipedPaymentsRepository,
                 scr.payment,
                 hideDetails,
                 settings,
@@ -164,6 +181,7 @@ private fun AppContent(
         is Screen.New ->
             DetailsScreen(
                 paymentsRepository,
+                swipedPaymentsRepository,
                 null,
                 hideDetails,
                 settings,

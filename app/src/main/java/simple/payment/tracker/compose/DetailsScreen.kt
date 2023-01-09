@@ -54,6 +54,7 @@ import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.R
 import simple.payment.tracker.Settings
+import simple.payment.tracker.SwipedPaymentsRepository
 import simple.payment.tracker.logging.Logger
 import simple.payment.tracker.theme.ColoredTheme
 import simple.payment.tracker.theme.toColors
@@ -64,6 +65,7 @@ private val dateFormat = SimpleDateFormat("dd-MM-yy HH:mm", Locale.GERMANY)
 @Composable
 fun DetailsScreen(
     paymentsRepository: PaymentsRepository,
+    swipedPaymentsRepository: SwipedPaymentsRepository,
     payment: Payment?,
     onSave: () -> Unit,
     settings: DataStore<Settings>,
@@ -74,7 +76,8 @@ fun DetailsScreen(
   // TODO make it an actual viewmodel
   val viewModel =
       remember(payment) {
-        DetailsScreenViewModel(payment, paymentsRepository, onSave, settings, logger)
+        DetailsScreenViewModel(
+            payment, paymentsRepository, swipedPaymentsRepository, onSave, settings, logger)
       }
 
   val onSaveClick = { viewModel.save() }
