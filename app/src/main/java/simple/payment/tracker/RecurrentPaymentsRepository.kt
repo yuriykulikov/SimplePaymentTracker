@@ -6,10 +6,7 @@ import java.time.Instant
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
 
 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY)
@@ -40,7 +37,9 @@ class RecurrentPaymentsRepository(firebaseDatabase: FirebaseDatabase) {
       firebaseDatabase
           .reference("recurringpayments")
           .valueEvents
-          .map { it.value<Map<String, RecurrringPayment>>().values.toList() }
+          .mapNotNull {
+            runCatching { it.value<Map<String, RecurrringPayment>>().values.toList() }.getOrNull()
+          }
           .shareIn(scope, SharingStarted.WhileSubscribed(250), 1)
 
   val payments: Flow<List<Payment>> =
