@@ -1,6 +1,8 @@
 package simple.payment.tracker.compose
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,7 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -18,27 +21,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlinx.coroutines.flow.Flow
 import simple.payment.tracker.GroupReport
 import simple.payment.tracker.Payment
 import simple.payment.tracker.RecurringPayment
+import simple.payment.tracker.theme.Theme
 
 data class CategoryData(
     val category: String,
     val payments: List<Payment>,
 ) {
   val sum by lazy { payments.sumOf { it.sum } }
-  val byWeek: List<Pair<Int, List<Payment>>> by lazy {
-    payments
-        .groupBy {
-          Calendar.getInstance().apply { timeInMillis = it.time }.get(Calendar.WEEK_OF_YEAR)
-        }
-        .entries
-        .map { (weekOfYear, payments) -> weekOfYear to payments }
-        .sortedByDescending { (_, payments) -> payments.sumOf { it.sum } }
-  }
+  val byMerchant by lazy { payments.groupBy { it.merchant } }
 }
 
 @Composable
@@ -78,83 +72,76 @@ private fun GroupDetailsColumn(
   }
 }
 
+/**
+ * Category sum Merchant sum
+ * ```
+ *     comment  sum
+ *     comment  sum
+ * ```
+ * Merchant sum
+ * ```
+ *     comment  sum
+ *     comment  sum
+ * ```
+ */
 @Composable
 private fun CategoryBreakdown(categoryData: CategoryData, showDetails: (Payment?) -> Unit) {
-  Card(modifier = Modifier.fillMaxWidth().padding(15.dp), elevation = 10.dp) {
-    Column {
-      CategoryHeader(categoryData)
-      categoryData.byWeek.forEachIndexed { index, (weekNumber, payments) ->
-        Card(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = if (index == categoryData.byWeek.lastIndex) 16.dp else 8.dp),
-            elevation = 10.dp) {
-              val tag = remember {
-                val calendar =
-                    Calendar.getInstance().apply { set(Calendar.WEEK_OF_YEAR, weekNumber) }
-                calendar.get(Calendar.WEEK_OF_MONTH)
-                val month =
-                    SimpleDateFormat("MMM", Locale.getDefault()).format(calendar.timeInMillis)
-                val week = SimpleDateFormat("W", Locale.getDefault()).format(calendar.timeInMillis)
-                "$month, week $week"
-              }
-              WeekBreakdown(tag, payments, showDetails)
-            }
+  Card(modifier = Modifier.padding(4.dp), elevation = 4.dp) {
+    Column(Modifier.padding(4.dp)) {
+      CategoryHeader(categoryData.category, categoryData.sum)
+      categoryData.byMerchant.forEach { (merchant, payments) ->
+        MerchantBreakdown(merchant, payments, showDetails)
       }
     }
   }
 }
 
 @Composable
-private fun CategoryHeader(categoryData: CategoryData) {
-  Row(
-      modifier = Modifier.fillMaxWidth().padding(16.dp),
-      horizontalArrangement = Arrangement.SpaceBetween) {
-        Column {
-          Text(
-              text = categoryData.category,
-              style = MaterialTheme.typography.h5,
-              color = MaterialTheme.colors.secondary,
-          )
-        }
-        Column {
-          Text(
-              text = categoryData.sum.toString(),
-              style = MaterialTheme.typography.h5,
-              color = MaterialTheme.colors.secondary,
-          )
-        }
-      }
+private fun CategoryHeader(category: String, sum: Int) {
+  Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Text(
+        text = category,
+        style = typography.h6,
+        color = colors.secondary,
+    )
+    Text(
+        text = sum.toString(),
+        style = typography.h6,
+        color = Theme.colors.surfaceAccent,
+    )
+  }
 }
 
+/** Merchant sum comment sum */
 @Composable
-private fun WeekBreakdown(cat: String, payments: List<Payment>, showDetails: (Payment?) -> Unit) {
-  Column(Modifier.padding(10.dp)) {
-    Row(Modifier.padding(16.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-      Column {
-        Text(
-            text = cat,
-            style = MaterialTheme.typography.h6,
-        )
-      }
-      Column {
-        Text(
-            text = "${payments.sumOf { it.sum }}",
-            style = MaterialTheme.typography.h6,
-            color = MaterialTheme.colors.secondary,
-        )
-      }
+private fun MerchantBreakdown(
+    merchant: String,
+    payments: List<Payment>,
+    showDetails: (Payment?) -> Unit
+) {
+  Column {
+    Row(horizontalArrangement = Arrangement.Start) {
+      Text(text = merchant, style = typography.subtitle1)
     }
-    Row {
-      Column {
-        payments.forEachIndexed { index, transaction ->
-          TransactionListRow(transaction, showDetails = showDetails)
-          if (index != payments.lastIndex) {
-            ListDivider()
-          }
-        }
+    payments.forEach { transaction ->
+      Row(
+          modifier =
+              Modifier.clickable(onClick = { showDetails(transaction) })
+                  .fillMaxWidth()
+                  .padding(start = 4.dp),
+          horizontalArrangement = SpaceBetween,
+      ) {
+        Text(
+            text = transaction.comment,
+            style = typography.subtitle2,
+            color = Theme.colors.text,
+        )
+
+        Text(
+            text = transaction.annotatedSumWithRefunds(),
+            style = typography.body1,
+            color = Theme.colors.textAccent,
+        )
       }
     }
   }
