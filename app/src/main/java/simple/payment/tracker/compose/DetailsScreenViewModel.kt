@@ -20,8 +20,10 @@ interface DetailsScreenStateCallback {
       merchant: String? = null,
       comment: String? = null,
       category: String? = null,
-      refund: Pair<Int, Refund>? = null,
   ) {}
+
+  fun addRefund() {}
+  fun changeRefund(index: Int, refund: Refund) {}
 }
 
 data class Refund(
@@ -100,30 +102,25 @@ class DetailsScreenViewModel(
       trip: String?,
       merchant: String?,
       comment: String?,
-      category: String?,
-      refund: Pair<Int, Refund>?
+      category: String?
   ) {
     sum?.let { check(this.sum.tryEmit(this.sum.value.copy(initialSum = sum))) }
-    refund?.let {
-      check(
-          this.sum.tryEmit(
-              this.sum.value.copy(
-                  refunds =
-                      this.sum.value.refunds
-                          .toMutableList()
-                          .apply {
-                            if (refund.first > lastIndex) {
-                              add(refund.second)
-                            } else {
-                              set(refund.first, refund.second)
-                            }
-                          }
-                          .toList())))
-    }
     merchant?.let { check(this.merchant.tryEmit(it)) }
     comment?.let { check(this.comment.tryEmit(it)) }
     category?.let { check(this.category.tryEmit(it)) }
     trip?.let { check(this.trip.tryEmit(it)) }
+  }
+
+  override fun addRefund() {
+    val updatedRefunds = this.sum.value.refunds.plus(Refund("", ""))
+    val updatedSum = this.sum.value.copy(refunds = updatedRefunds)
+    check(this.sum.tryEmit(updatedSum))
+  }
+
+  override fun changeRefund(index: Int, refund: Refund) {
+    val updatedRefunds = this.sum.value.refunds.toMutableList().apply { set(index, refund) }
+    val updatedSum = this.sum.value.copy(refunds = updatedRefunds)
+    check(this.sum.tryEmit(updatedSum))
   }
 
   fun save() {

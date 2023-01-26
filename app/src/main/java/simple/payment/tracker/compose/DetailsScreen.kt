@@ -243,7 +243,7 @@ private fun DetailsScreenContent(
                 }
 
                 Button(
-                    onClick = { state.change(refund = 0 to Refund("", "")) },
+                    onClick = { state.addRefund() },
                     colors = ButtonDefaults.buttonColors(backgroundColor = colors.secondary),
                     modifier = Modifier.padding(horizontal = 5.dp)) {
                       Text(text = "Add refund")
@@ -259,7 +259,7 @@ private fun DetailsScreenContent(
                   TextField(
                       value = refund.sum,
                       onValueChange = { value ->
-                        state.change(refund = index to refund.copy(sum = value))
+                        state.changeRefund(index, refund.copy(sum = value))
                       },
                       label = { Text("€") },
                       readOnly = false, // TODO
@@ -272,7 +272,7 @@ private fun DetailsScreenContent(
                   TextField(
                       value = refund.comment,
                       onValueChange = { value ->
-                        state.change(refund = index to refund.copy(comment = value))
+                        state.changeRefund(index, refund.copy(comment = value))
                       },
                       label = { Text("Refund for") },
                       readOnly = false, // TODO
