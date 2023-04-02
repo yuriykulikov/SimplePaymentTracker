@@ -299,7 +299,12 @@ fun findAutomatic(
 // You paid 43,05 EUR to MGP Vinted - Kleiderkreisel
 // You saved 1,36 EUR on a 34,10 EUR purchase at Georg Endres
 // You sent 14,00 EUR to Iaroslav Karpenko
+@Deprecated("Use sumCents", ReplaceWith("sumCents() / 100"))
 fun Notification.sum(): Int {
+  return sumCents() / 100
+}
+
+fun Notification.sumCents(): Int {
   return runCatching {
         val sumText =
             when {
@@ -323,10 +328,10 @@ fun Notification.sum(): Int {
                 ?: 0
         val sum =
             when (currency) {
-              "EUR" -> number / 100
-              "USD" -> number / 100
-              "GBP" -> number / 100
-              "RUB" -> number / 100 / 80
+              "EUR" -> number
+              "USD" -> number
+              "GBP" -> number
+              "RUB" -> number / 80
               else -> error("Cannot parse $text")
             }
         sum
