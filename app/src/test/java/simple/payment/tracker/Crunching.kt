@@ -29,8 +29,8 @@ class Crunching {
     val aggregated: List<Payment> =
         TransactionsRepository.createForTest(
                 logger,
-                flowOf(firebase.notifications().values.toList()),
-                flowOf(firebase.payments().values.toList()),
+                flowOf(firebase.notifications(prod = true).values.toList()),
+                flowOf(firebase.payments(prod = true).values.toList()),
                 flowOf(firebase.automatic().values.toList()),
             )
             .transactions()
@@ -69,7 +69,7 @@ class Crunching {
   @Test
   fun `crunch trips`() = runBlocking {
     firebase
-        .payments()
+        .payments(prod = true)
         .values
         .filter { it.trip != null }
         .groupBy { it.trip }
@@ -77,7 +77,7 @@ class Crunching {
         .forEach { (trip, sum) -> println("$trip: $sum") }
 
     firebase
-        .payments()
+        .payments(prod = true)
         .values
         .filter { it.trip != null }
         .groupBy { it.trip }

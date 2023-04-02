@@ -6,22 +6,24 @@ suspend fun FirebaseTestAccess.automatic(): Map<String, PaymentMatcher> =
         cacheFile = "build/testcache/automatic.json",
     )
 
-suspend fun FirebaseTestAccess.notifications(): Map<String, Notification> {
+suspend fun FirebaseTestAccess.notifications(prod: Boolean = false): Map<String, Notification> {
+  val testPrefix = if (prod) "" else "test"
   return getOrLoad(
-      firebaseUrl = "https://simplepaymenttracker.firebaseio.com/testnotifications.json",
-      cacheFile = "build/testcache/notifications.json")
+      firebaseUrl = "https://simplepaymenttracker.firebaseio.com/${testPrefix}notifications.json",
+      cacheFile = "build/testcache/${testPrefix}notifications.json")
 }
 
-suspend fun FirebaseTestAccess.payments(): Map<String, PaymentRecord> {
+suspend fun FirebaseTestAccess.payments(prod: Boolean = false): Map<String, PaymentRecord> {
+  val testPrefix = if (prod) "" else "test"
   return getOrLoad(
-      firebaseUrl = "https://simplepaymenttracker.firebaseio.com/testpayments.json",
-      cacheFile = "build/testcache/payments.json")
+      firebaseUrl = "https://simplepaymenttracker.firebaseio.com/${testPrefix}payments.json",
+      cacheFile = "build/testcache/${testPrefix}payments.json")
 }
 
 suspend fun FirebaseTestAccess.recurring(): Map<String, RecurrringPayment> {
   return getOrLoad(
       firebaseUrl = "https://simplepaymenttracker.firebaseio.com/recurringpayments.json",
-      cacheFile = "build/testcache/recurring.json")
+      cacheFile = "build/testcache/recurringpayments.json")
 }
 
 suspend fun FirebaseTestAccess.amazon(): Map<String, AmazonPayment> {
