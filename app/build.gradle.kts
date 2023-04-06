@@ -83,7 +83,7 @@ dependencies {
   implementation("androidx.compose.material:material-icons-core:$jetpackCompose")
   implementation("androidx.compose.material:material-icons-extended:$jetpackCompose")
 
-  implementation("com.google.accompanist:accompanist-systemuicontroller:0.27.1")
+  implementation("com.google.accompanist:accompanist-systemuicontroller:0.30.1")
 
   // Activity
   implementation("androidx.activity:activity-compose:1.6.1")
