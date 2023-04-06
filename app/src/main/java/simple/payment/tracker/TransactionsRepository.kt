@@ -328,11 +328,12 @@ fun Notification.sumCents(): Int {
                 ?: 0
         val sum =
             when (currency) {
+              "€ EUR" -> number
               "EUR" -> number
               "USD" -> number
               "GBP" -> number
               "RUB" -> number / 80
-              else -> error("Cannot parse $text")
+              else -> error("Cannot parse: $text, sumText: $sumText")
             }
         sum
       }
