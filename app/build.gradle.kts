@@ -49,7 +49,7 @@ repositories {
 dependencies {
   implementation("org.koin:koin-core:2.2.2")
   implementation("org.koin:koin-android:2.2.2")
-  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
   implementation("androidx.datastore:datastore:1.0.0")
   implementation("androidx.appcompat:appcompat:1.5.1")
