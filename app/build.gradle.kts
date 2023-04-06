@@ -68,7 +68,7 @@ dependencies {
   implementation("com.google.firebase:firebase-common-ktx")
 
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
-  implementation("com.google.android.gms:play-services-auth:20.4.0")
+  implementation("com.google.android.gms:play-services-auth:20.5.0")
 }
 
 dependencies {
