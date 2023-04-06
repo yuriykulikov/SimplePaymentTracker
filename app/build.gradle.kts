@@ -54,7 +54,7 @@ dependencies {
   implementation("androidx.datastore:datastore:1.0.0")
   implementation("androidx.appcompat:appcompat:1.5.1")
 
-  api("org.slf4j:slf4j-api:2.0.6")
+  api("org.slf4j:slf4j-api:2.0.7")
   // we need 1.3.x on android because of the Java version
   implementation("ch.qos.logback:logback-classic:1.3.4")
 
