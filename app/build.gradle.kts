@@ -94,7 +94,7 @@ dependencies {
 // test
 dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.1")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
   testImplementation("org.assertj:assertj-core:3.23.1")
   testImplementation("io.strikt:strikt-core:0.34.1")
   testImplementation("io.kotest:kotest-assertions-core-jvm:5.5.5")
