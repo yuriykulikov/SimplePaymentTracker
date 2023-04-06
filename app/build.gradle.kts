@@ -52,7 +52,7 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
   implementation("androidx.datastore:datastore:1.0.0")
-  implementation("androidx.appcompat:appcompat:1.5.1")
+  implementation("androidx.appcompat:appcompat:1.6.1")
 
   api("org.slf4j:slf4j-api:2.0.6")
   // we need 1.3.x on android because of the Java version
