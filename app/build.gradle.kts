@@ -86,7 +86,7 @@ dependencies {
   implementation("com.google.accompanist:accompanist-systemuicontroller:0.27.1")
 
   // Activity
-  implementation("androidx.activity:activity-compose:1.6.1")
+  implementation("androidx.activity:activity-compose:1.7.0")
   // UI Tests
   androidTestImplementation("androidx.compose.ui:ui-test-junit4:$jetpackCompose")
 }
