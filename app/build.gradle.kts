@@ -60,7 +60,7 @@ dependencies {
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
   implementation("dev.gitlive:firebase-database:1.4.3")
-  implementation(platform("com.google.firebase:firebase-bom:30.5.0"))
+  implementation(platform("com.google.firebase:firebase-bom:31.4.0"))
   implementation("com.google.firebase:firebase-database")
   implementation("com.google.firebase:firebase-database-ktx")
   implementation("com.google.firebase:firebase-auth")
