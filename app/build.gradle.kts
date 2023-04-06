@@ -6,7 +6,7 @@ plugins {
   id("kotlinx-serialization")
 }
 
-val jetpackCompose = "1.3.1"
+val jetpackCompose = "1.4.1"
 
 android {
   compileSdk = 33
