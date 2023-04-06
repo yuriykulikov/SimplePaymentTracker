@@ -99,7 +99,7 @@ dependencies {
   testImplementation("io.strikt:strikt-core:0.34.1")
 
   testImplementation("com.google.auth:google-auth-library-oauth2-http:1.7.0")
-  val ktor_version = "2.1.0"
+  val ktor_version = "2.2.4"
   testImplementation("io.ktor:ktor-client-core:$ktor_version")
   testImplementation("io.ktor:ktor-client-cio:$ktor_version")
   testImplementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
