@@ -59,7 +59,7 @@ dependencies {
   implementation("ch.qos.logback:logback-classic:1.3.4")
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
-  implementation("dev.gitlive:firebase-database:1.4.3")
+  implementation("dev.gitlive:firebase-database:1.8.1")
   implementation(platform("com.google.firebase:firebase-bom:30.5.0"))
   implementation("com.google.firebase:firebase-database")
   implementation("com.google.firebase:firebase-database-ktx")
