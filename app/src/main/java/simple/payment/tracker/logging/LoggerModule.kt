@@ -2,13 +2,8 @@ package simple.payment.tracker.logging
 
 import android.content.Context
 import ch.qos.logback.core.rolling.RollingFileAppender
-import org.koin.core.scope.Scope
 import org.koin.dsl.module
 import org.slf4j.ILoggerFactory
-
-fun Scope.logger(tag: String): Logger {
-  return get<LoggerFactory>().createLogger(tag)
-}
 
 /**
  * Creates a module which exports a [LoggerFactory] to create loggers. These [Logger]s are backed by

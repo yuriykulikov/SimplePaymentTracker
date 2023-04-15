@@ -1,15 +1,12 @@
-package simple.payment.tracker.compose
+package simple.payment.tracker
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomAppBar
-import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
@@ -45,16 +42,6 @@ fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
         onClick = { currentScreen.value = Screen.Trips },
         modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Trips)) {
           Text(text = "Trips")
-        }
-
-    IconButton(
-        onClick = { currentScreen.value = Screen.Settings },
-        modifier = Modifier.highlightIf(currentScreen, Screen.Settings)) {
-          Icon(
-              Icons.Default.MoreHoriz,
-              contentDescription = "More",
-              tint = if (colors.isLight) colors.onPrimary else colors.onSurface,
-          )
         }
   }
 }

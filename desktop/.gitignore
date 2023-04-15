@@ -1,0 +1,5 @@
+/build
+/release/app-release.aab
+/release/output-metadata.json
+/src/test/resources/Amazon*
+service-user.json

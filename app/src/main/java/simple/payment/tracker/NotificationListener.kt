@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.core.qualifier.named
 
 /**
  * Listens for incoming PayPal notificationsStore. Skips all other notificationsStore as well as
@@ -15,7 +16,7 @@ import org.koin.android.ext.android.inject
  */
 class NotificationListener : NotificationListenerService() {
   private val notificationsRepository: NotificationsRepository by inject()
-  private val settings: DataStore<Settings> by inject()
+  private val settings: DataStore<Settings> by inject(named("settingsStore"))
   private val scope = CoroutineScope(Dispatchers.Main)
   override fun onListenerConnected() {
     super.onListenerConnected()
