@@ -2,7 +2,6 @@ package simple.payment.tracker.compose
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme.colors
@@ -16,13 +15,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.datastore.core.DataStore
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import kotlin.random.Random.Default.nextInt
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
@@ -32,6 +31,7 @@ import simple.payment.tracker.GroupReport
 import simple.payment.tracker.MonthlyStatistics
 import simple.payment.tracker.Payment
 import simple.payment.tracker.PaymentsRepository
+import simple.payment.tracker.R
 import simple.payment.tracker.Settings
 import simple.payment.tracker.SwipedPaymentsRepository
 import simple.payment.tracker.TransactionsRepository
@@ -41,6 +41,7 @@ import simple.payment.tracker.logging.LoggerFactory
 import simple.payment.tracker.theme.ColoredTheme
 import simple.payment.tracker.theme.ExtendedColors
 import simple.payment.tracker.theme.Theme
+import simple.payment.tracker.theme.themeTypography
 import simple.payment.tracker.theme.toColors
 
 sealed class Screen {
@@ -70,41 +71,52 @@ fun PaymentsApp(
       remember { settings.data.map { it.theme.toColors() } }
           .collectAsState(initial = runBlocking { settings.data.first().theme.toColors() })
 
-  ColoredTheme(colors.value) {
-    // Remember a SystemUiController
-    val systemUiController = rememberSystemUiController()
-    val topColor = Theme.colors.topBar
-    val bottomColor = Theme.colors.bottomBar
-
-    SideEffect {
-      systemUiController.setStatusBarColor(color = topColor)
-      systemUiController.setNavigationBarColor(
-          color = bottomColor, navigationBarContrastEnforced = false)
-    }
-
-    val signedInAs = firebaseSignIn.signedInUserEmail().collectAsState()
-
-    if (signedInAs.value == null) {
-      Scaffold(
-          content = {
-            SignInScreen(
-                Modifier.padding(it),
-                firebaseSignIn,
-            )
-          })
-    } else {
-      AppContent(
-          transactions,
-          paymentsRepository,
-          monthlyStatistics,
-          tripsStatistics,
-          swipedPaymentsRepository,
-          settings,
-          loggers,
-          firebaseSignIn,
-      )
-    }
+  CategoriesDialogFactory = { onDismissRequest, content ->
+    Dialog(onDismissRequest = onDismissRequest) { content() }
   }
+
+  ColoredTheme(
+      colors.value,
+      typography =
+          themeTypography(
+              FontFamily(
+                  Font(R.font.montserrat_regular),
+                  Font(R.font.montserrat_medium, FontWeight.W500),
+                  Font(R.font.montserrat_semibold, FontWeight.W600)))) {
+        // Remember a SystemUiController
+        val systemUiController = rememberSystemUiController()
+        val topColor = Theme.colors.topBar
+        val bottomColor = Theme.colors.bottomBar
+
+        SideEffect {
+          systemUiController.setStatusBarColor(color = topColor)
+          systemUiController.setNavigationBarColor(
+              color = bottomColor, navigationBarContrastEnforced = false)
+        }
+
+        val signedInAs = firebaseSignIn.signedInUserEmail().collectAsState()
+
+        if (signedInAs.value == null) {
+          Scaffold(
+              content = {
+                SignInScreen(
+                    Modifier.padding(it),
+                    firebaseSignIn,
+                )
+              })
+        } else {
+          AppContent(
+              transactions,
+              paymentsRepository,
+              monthlyStatistics,
+              tripsStatistics,
+              swipedPaymentsRepository,
+              settings,
+              loggers,
+              firebaseSignIn,
+          )
+        }
+      }
 }
 
 @Composable
@@ -199,26 +211,4 @@ private fun AppContent(
       }
     }
   }
-}
-
-val borderColors =
-    listOf(
-        Color.Black,
-        Color.DarkGray,
-        Color.Gray,
-        Color.LightGray,
-        Color.White,
-        Color.Red,
-        Color.Green,
-        Color.Blue,
-        Color.Yellow,
-        Color.Cyan,
-        Color.Magenta,
-        Color.Transparent)
-
-fun Modifier.debugBorder(): Modifier = composed {
-  if (false) {
-    border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
-  }
-  this
 }
