@@ -12,11 +12,19 @@ pluginManagement {
   }
 }
 
-include(":app")
+include(":app-android")
 
-include(":common")
+include(":app-desktop")
 
-include(":desktop")
+include(":compose-common")
+
+include(":domain")
+
+include(":logging-api")
+
+include(":logging-logback")
+
+include(":data")
 
 rootProject.name = "SimplePaymentTracker"
 
