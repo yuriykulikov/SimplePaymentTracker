@@ -56,7 +56,7 @@ dependencies {
 
   api("org.slf4j:slf4j-api:2.0.6")
   // we need 1.3.x on android because of the Java version
-  implementation("ch.qos.logback:logback-classic:1.3.4")
+  implementation("ch.qos.logback:logback-classic:1.4.7")
 
   implementation("dev.gitlive:firebase-auth:1.4.3")
   implementation("dev.gitlive:firebase-database:1.4.3")
