@@ -1,6 +1,5 @@
 package simple.payment.tracker
 
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -125,18 +124,16 @@ fun main() = application {
       onCloseRequest = ::exitApplication,
       state = buildWindowState(),
   ) {
-    MaterialTheme {
-      with(koin.koin) {
-        AppContent(
-            get(),
-            get(),
-            get(),
-            get(),
-            get(),
-            get(),
-            get(named("settingsStore")),
-            get(named("userEmailStore")))
-      }
+    with(koin.koin) {
+      AppContent(
+          get(),
+          get(),
+          get(),
+          get(),
+          get(),
+          get(),
+          get(named("settingsStore")),
+          get(named("userEmailStore")))
     }
   }
 }
