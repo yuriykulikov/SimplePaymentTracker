@@ -11,7 +11,9 @@ import androidx.compose.ui.window.rememberWindowState
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.Serializer
+import ch.qos.logback.classic.Level
 import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.core.rolling.RollingFileAppender
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
@@ -34,6 +36,7 @@ import simple.payment.tracker.logging.addAppender
 import simple.payment.tracker.logging.hide
 import simple.payment.tracker.logging.logback
 import simple.payment.tracker.logging.patternLayoutEncoder
+import simple.payment.tracker.logging.timeBasedRollingPolicy
 
 @Composable
 fun buildWindowState() =
@@ -46,6 +49,21 @@ fun loggerModule(): Module = module {
             patternLayoutEncoder(
                 "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n")
           }
+          addAppender(RollingFileAppender(), async = true) {
+            isAppend = true
+            rollingPolicy = timeBasedRollingPolicy {
+              fileNamePattern = "build/rolling-%d{yyyy-MM-dd}.log"
+              maxHistory = 3
+              isCleanHistoryOnStart = true
+            }
+
+            encoder =
+                patternLayoutEncoder(
+                    "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n")
+          }
+
+          getLogger("com.google.firebase").level = Level.WARN
+          getLogger("io.netty").level = Level.WARN
         }
         .hide()
   }
@@ -53,7 +71,7 @@ fun loggerModule(): Module = module {
 
 private fun desktopModule() = module {
   val scope = CoroutineScope(Dispatchers.Default)
-  single(named("fs")) { { filename: String -> File(filename) } }
+  single(named("fs")) { { filename: String -> File("build/$filename") } }
   single(named("userEmailStore")) {
     DataStoreFactory.create(
         serializer =
