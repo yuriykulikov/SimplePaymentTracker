@@ -44,7 +44,7 @@ class TransactionsRepositoryMediumTest {
                 .transactions()
                 .first()
 
-        uniquePayments shouldHaveSize 2455
+        uniquePayments shouldHaveSize 2435
       }
 
   @Test
