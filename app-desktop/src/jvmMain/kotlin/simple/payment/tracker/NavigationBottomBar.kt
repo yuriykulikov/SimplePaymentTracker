@@ -14,6 +14,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.unit.dp
 import simple.payment.tracker.theme.Theme
 
+@Deprecated("Use function without mutablestate")
 @Composable
 fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
   BottomAppBar(
@@ -55,3 +56,44 @@ private fun Modifier.highlightIf(currentScreen: MutableState<Screen>, target: Sc
         else -> this
       }
     }
+
+@Composable
+fun NavigationBottomBar(currentScreen: Screen?, onChange: (Screen) -> Unit) {
+  BottomAppBar(
+      modifier = Modifier.fillMaxWidth(),
+      backgroundColor = Theme.colors.bottomBar,
+  ) {
+    IconButton(
+        onClick = { onChange(Screen.List) },
+        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.List)) {
+          Text(text = "Inbox")
+        }
+
+    IconButton(
+        onClick = { onChange(Screen.ListAll) },
+        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.ListAll)) {
+          Text(text = "All")
+        }
+
+    IconButton(
+        onClick = { onChange(Screen.Monthly) },
+        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Monthly)) {
+          Text(text = "Stats")
+        }
+
+    IconButton(
+        onClick = { onChange(Screen.Trips) },
+        modifier = Modifier.weight(1f).highlightIf(currentScreen, Screen.Trips)) {
+          Text(text = "Trips")
+        }
+  }
+}
+
+private fun Modifier.highlightIf(currentScreen: Screen?, target: Screen): Modifier = composed {
+  when (currentScreen) {
+    target -> {
+      background(color = colors.onSurface.copy(alpha = 0.1f), shape = RoundedCornerShape(20.dp))
+    }
+    else -> this
+  }
+}
