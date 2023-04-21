@@ -104,7 +104,7 @@ fun DetailsScreen(
   val merchant by viewModel.merchant.collectAsState()
   val comment by viewModel.comment.collectAsState()
   val category by viewModel.category.collectAsState()
-  val canSave by viewModel.canSave().collectAsState()
+  val canSave by remember { viewModel.canSave() }.collectAsState()
 
   // changing refunds need to change sum...
 
