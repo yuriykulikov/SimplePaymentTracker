@@ -36,7 +36,10 @@ import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.platform.Font
 import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import kotlinx.coroutines.CoroutineScope
@@ -140,7 +143,13 @@ fun AppContent(
         }
   }
 
-  ColoredTheme(colors.value) {
+  val typography =
+      themeTypography(
+          FontFamily(
+              Font(resource = "montserrat_regular.ttf"),
+              Font(resource = "montserrat_medium.ttf", FontWeight.W500),
+              Font(resource = "montserrat_semibold.ttf", FontWeight.W600)))
+  ColoredTheme(colors.value, typography) {
     Surface(modifier = Modifier.background(colors.value.background)) {
       Row(Modifier.debugBorder()) {
         Column(Modifier.debugBorder().weight(1f, false)) {
