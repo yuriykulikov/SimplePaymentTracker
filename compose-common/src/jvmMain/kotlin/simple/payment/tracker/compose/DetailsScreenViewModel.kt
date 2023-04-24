@@ -89,11 +89,17 @@ class DetailsScreenViewModel(
   }
 
   init {
-    if (payment is PaypalPayment) {
-      check(trip.tryEmit(payment.trip ?: ""))
-    } else {
-      // for new transactions get the value from settings
-      viewModelScope.launch { trip.emit(settings.data.first().trip) }
+    when (payment) {
+      is PaypalPayment -> check(trip.tryEmit(payment.trip ?: ""))
+      is ManualPayment -> check(trip.tryEmit(payment.trip ?: ""))
+      is InboxPayment -> {
+        //     // for new transactions get the value from settings
+        viewModelScope.launch { trip.emit(settings.data.first().trip) }
+      }
+      is AmazonPayment,
+      is AutomaticPayment,
+      is RecurringPayment,
+      null -> Unit
     }
   }
 
