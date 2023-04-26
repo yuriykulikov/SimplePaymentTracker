@@ -2,3 +2,4 @@
 /release/app-release.aab
 /release/output-metadata.json
 google-services.json
+/upload-keystore.jks

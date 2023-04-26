@@ -8,6 +8,7 @@ plugins {
 
 val jetpackCompose = "1.3.1"
 
+@Suppress("UnstableApiUsage")
 android {
   compileSdk = 33
   defaultConfig {
@@ -19,11 +20,20 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     multiDexEnabled = true
   }
+  signingConfigs {
+    create("release") {
+      storeFile = file("upload-keystore.jks")
+      storePassword = System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+      keyAlias = System.getenv("UPLOAD_KEYSTORE_KEY_ALIAS")
+      keyPassword = System.getenv("UPLOAD_KEYSTORE_KEY_PASSWORD")
+    }
+  }
   buildTypes {
     getByName("debug") {
       isTestCoverageEnabled = true
       isMinifyEnabled = false
     }
+    getByName("release") { signingConfig = signingConfigs.getByName("release") }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_1_8

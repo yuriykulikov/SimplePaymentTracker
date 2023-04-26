@@ -46,3 +46,23 @@ jobs:
         name: Unit Test Reports
         path: ${{ github.workspace }}/**/build/reports/**/*
         retention-days: 5
+    - name: Extract upload store
+      run: 'echo "$UPLOAD_STORE_BASE64" | base64 --decode > app-android/upload-keystore.jks'
+      shell: bash
+      env:
+        UPLOAD_STORE_BASE64: ${{secrets.UPLOAD_STORE_BASE64}}
+    - name: Bundle
+      run: ./gradlew :app-android:bundleRelease
+      env:
+        UPLOAD_KEYSTORE_PASSWORD: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
+        UPLOAD_KEYSTORE_KEY_ALIAS: ${{secrets.UPLOAD_KEYSTORE_KEY_ALIAS}}
+        UPLOAD_KEYSTORE_KEY_PASSWORD: ${{secrets.UPLOAD_KEYSTORE_KEY_PASSWORD}}
+    - name: Publish to google play
+      uses: r0adkll/upload-google-play@v1.1.1
+      continue-on-error: true
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON_PLAIN_TEXT }}
+        packageName: simple.payment.tracker
+        releaseFiles: app-android/build/outputs/bundle/release/app-android-release.aab
+        track: internal
+        inAppUpdatePriority: 2
