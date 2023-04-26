@@ -1,0 +1,3 @@
+[submodule "firebase-kotlin-sdk"]
+	path = firebase-kotlin-sdk
+	url = git@github.com:yuriykulikov/firebase-kotlin-sdk.git

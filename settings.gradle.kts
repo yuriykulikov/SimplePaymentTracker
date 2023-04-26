@@ -28,4 +28,4 @@ include(":data")
 
 rootProject.name = "SimplePaymentTracker"
 
-includeBuild("../firebase-kotlin-sdk")
+includeBuild("./firebase-kotlin-sdk")
