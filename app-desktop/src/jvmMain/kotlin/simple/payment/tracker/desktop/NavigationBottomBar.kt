@@ -1,4 +1,4 @@
-package simple.payment.tracker
+package simple.payment.tracker.desktop
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth

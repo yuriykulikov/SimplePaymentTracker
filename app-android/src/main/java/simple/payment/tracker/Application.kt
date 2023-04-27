@@ -6,7 +6,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import simple.payment.tracker.firebase.FirebaseSignIn
-import simple.payment.tracker.firebase.firebaseRepositoriesModule
+import simple.payment.tracker.firebase.firebaseAndroidRepositoriesModule
 import simple.payment.tracker.koin.commonModule
 import simple.payment.tracker.koin.logger
 import simple.payment.tracker.logging.loggerModule
@@ -18,7 +18,7 @@ class Application : Application() {
       modules(
           loggerModule(),
           commonModule(),
-          firebaseRepositoriesModule(),
+          firebaseAndroidRepositoriesModule(),
           module {
             single { applicationContext }
             single<FirebaseSignIn> { FirebaseSignIn(logger("GoogleSignIn"), get()) }

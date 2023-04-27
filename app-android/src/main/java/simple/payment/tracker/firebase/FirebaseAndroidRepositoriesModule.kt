@@ -11,7 +11,7 @@ import simple.payment.tracker.SwipedPaymentsRepository
 import simple.payment.tracker.TinkoffPaymentsRepository
 import simple.payment.tracker.koin.logger
 
-fun firebaseRepositoriesModule() = module {
+fun firebaseAndroidRepositoriesModule() = module {
   single<NotificationsRepository> {
     FirebaseAndroidNotificationsRepository(logger("NotificationsRepository"), get())
   }

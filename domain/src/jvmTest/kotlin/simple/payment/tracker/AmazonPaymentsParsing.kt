@@ -32,7 +32,7 @@ class AmazonPaymentsParsing {
   private fun parseAmazonPayments(): List<AmazonPayment> {
     val loader = requireNotNull(Thread.currentThread().contextClassLoader)
 
-    return listOf(
+    return listOfNotNull(
             loader.getResource("Amazon - 2019.tsv"),
             loader.getResource("Amazon - 2020.tsv"),
             loader.getResource("Amazon - 2021.tsv"),
