@@ -1,6 +1,7 @@
 plugins {
   kotlin("multiplatform")
   kotlin("plugin.serialization")
+  id("org.jetbrains.kotlinx.kover")
 }
 
 group = "io.github.yuriykulikov"
@@ -40,3 +41,5 @@ kotlin {
     }
   }
 }
+
+kover { useKoverTool() }

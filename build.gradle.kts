@@ -17,6 +17,7 @@ plugins {
   id("com.diffplug.spotless") version "6.11.0"
   kotlin("android") version kotlin apply false
   kotlin("plugin.serialization") version kotlin apply false
+  id("org.jetbrains.kotlinx.kover") version "0.7.0-Beta"
 }
 
 allprojects {
@@ -45,3 +46,5 @@ subprojects {
     }
   }
 }
+
+dependencies { kover(project(":domain")) }

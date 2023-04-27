@@ -1,4 +1,4 @@
-package simple.payment.tracker
+package simple.payment.tracker.desktop
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
@@ -54,6 +54,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import simple.payment.tracker.GroupReport
+import simple.payment.tracker.MonthlyStatistics
+import simple.payment.tracker.Payment
+import simple.payment.tracker.PaymentsRepository
+import simple.payment.tracker.Settings
+import simple.payment.tracker.SwipedPaymentsRepository
+import simple.payment.tracker.Transactions
+import simple.payment.tracker.TripStatistics
 import simple.payment.tracker.compose.DetailsScreen
 import simple.payment.tracker.compose.GroupDetailsScreen
 import simple.payment.tracker.compose.InboxList

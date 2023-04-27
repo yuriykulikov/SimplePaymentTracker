@@ -44,10 +44,10 @@ kotlin {
 
 compose.desktop {
   application {
-    mainClass = "simple.payment.tracker.Main.kt"
+    mainClass = "simple.payment.tracker.desktop.Main.kt"
     nativeDistributions {
       targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-      packageName = "MovieQuotes"
+      packageName = "Simple Payment Tracker"
       packageVersion = "1.0.0"
     }
   }

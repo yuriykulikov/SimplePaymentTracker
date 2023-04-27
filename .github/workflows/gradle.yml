@@ -39,25 +39,41 @@ jobs:
         GOOGLE_SERVICES: ${{secrets.GOOGLE_SERVICES}}
     - name: Unit tests
       run: ./gradlew test
-    - name: Upload Reports
+    - name: Generate koverXmlReport
+      run: ./gradlew koverXmlReport
+    - name: Generate koverHtmlReport
+      run: ./gradlew koverHtmlReport
+    - name: Upload codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./build/reports/kover/report.xml
+    - name: Upload reports
       uses: actions/upload-artifact@v3
       if: always()
       with:
-        name: Unit Test Reports
+        name: Reports
         path: ${{ github.workspace }}/**/build/reports/**/*
         retention-days: 5
+    - name: Add coverage to PR
+      uses: madrapps/jacoco-report@v1.1
+      with:
+        path: ${{ github.workspace }}/build/reports/kover/report.xml
+        token: ${{ secrets.GITHUB_TOKEN }}
+        min-coverage-overall: 40
     - name: Extract upload store
       run: 'echo "$UPLOAD_STORE_BASE64" | base64 --decode > app-android/upload-keystore.jks'
       shell: bash
       env:
         UPLOAD_STORE_BASE64: ${{secrets.UPLOAD_STORE_BASE64}}
     - name: Bundle
+      if: github.ref == 'refs/heads/develop'
       run: ./gradlew :app-android:bundleRelease
       env:
         UPLOAD_KEYSTORE_PASSWORD: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
         UPLOAD_KEYSTORE_KEY_ALIAS: ${{secrets.UPLOAD_KEYSTORE_KEY_ALIAS}}
         UPLOAD_KEYSTORE_KEY_PASSWORD: ${{secrets.UPLOAD_KEYSTORE_KEY_PASSWORD}}
     - name: Publish to google play
+      if: github.ref == 'refs/heads/develop'
       uses: r0adkll/upload-google-play@v1.1.1
       continue-on-error: true
       with:

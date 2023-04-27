@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalComposeUiApi::class)
 
-package simple.payment.tracker
+package simple.payment.tracker.desktop
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -43,7 +43,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import simple.payment.tracker.firebase.firebaseRepositoriesModule
+import simple.payment.tracker.firebase.firebaseAdminRepositoriesModule
 import simple.payment.tracker.koin.commonModule
 import simple.payment.tracker.logging.LoggerFactory
 import simple.payment.tracker.logging.addAppender
@@ -148,7 +148,7 @@ fun main() = application {
         loggerModule(),
         commonModule(),
         desktopModule(),
-        firebaseRepositoriesModule(),
+        firebaseAdminRepositoriesModule(),
     )
   }
   val keyPresses = MutableSharedFlow<KeyEvent>(extraBufferCapacity = 1)
