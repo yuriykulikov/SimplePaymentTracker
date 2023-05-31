@@ -55,7 +55,7 @@ jobs:
         path: ${{ github.workspace }}/**/build/reports/**/*
         retention-days: 5
     - name: Add coverage to PR
-      uses: madrapps/jacoco-report@v1.1
+      uses: madrapps/jacoco-report@v1.4
       with:
         path: ${{ github.workspace }}/build/reports/kover/report.xml
         token: ${{ secrets.GITHUB_TOKEN }}
